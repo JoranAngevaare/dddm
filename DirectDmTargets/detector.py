@@ -76,7 +76,7 @@ def det_res_XENON1T(E):
     """
     a = 0.310
     b = 0.0037
-    return  a * np.sqrt(E) + b * E
+    return a * np.sqrt(E) + b * E
 
 
 def migdal_background_XENON1T(e_min, e_max, nbins):
