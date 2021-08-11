@@ -470,8 +470,39 @@ class DetectorSpectrum(GenSpectrum):
             res[i] = np.sum(rates[mask] * bin_width)
         return res
 
-    def above_threshold(self, rates, energies):
-        rates[energies < self.experiment['E_thr']] = 0
+    @staticmethod
+    @numba.njit
+    def above_threshold(rates, e_bin_edges, e_thr):
+        """
+        Apply threshold to the rates. We are right edge inclusive
+        bin edges : |bin0|bin1|bin2|
+        e_thr     :        |
+        bin0 -> 0
+        bin1 -> fraction of bin1 > e_thr
+        bin2 -> full content
+
+        :param rates: bins with the number of counts
+        :param e_bin_edges: 2d array of the left, right bins
+        :param e_thr: energy threshold
+        :return: rates with energy threshold applied
+        """
+        for r_i, r in enumerate(rates):
+            left_edge, right_edge = e_bin_edges[r_i]
+            if left_edge >= e_thr:
+                # From now on all the bins will be above threshold we don't
+                # have to set to 0 anymore
+                break
+            if right_edge <= e_thr:
+                # this bin is fully below threshold
+                rates[r_i] = 0
+                continue
+            elif e_thr >= left_edge and e_thr <= right_edge:
+                fraction_above = (right_edge - e_thr) / (right_edge - left_edge)
+                rates[r_i] = r * fraction_above
+            else:
+                print(left_edge, right_edge, e_thr)
+                raise ValueError('How did this happen?')
+
         return rates
 
     def compute_detected_spectrum(self):
@@ -479,11 +510,12 @@ class DetectorSpectrum(GenSpectrum):
 
         :return: spectrum taking into account the detector properties
         """
-        # The numerical integration requires finer binning, therefore compute a
-        # spectrum at finer binning than the number of bins the result should be
-        # in.
         self.n_bins_result = self.n_bins
-        self.n_bins = self.n_bins * self.rebin_factor
+        if self.rebin_factor != 1:
+            # The numerical integration requires finer binning,
+            # therefore compute a spectrum at finer binning than the
+            # number of bins the result should be in.
+            self.n_bins = self.n_bins * self.rebin_factor
         # get the spectrum
         rates = self.spectrum_simple([self.mw, self.sigma_nucleon])
         # if this option is set to true, add a background component
@@ -496,19 +528,23 @@ class DetectorSpectrum(GenSpectrum):
             rates += self.experiment['bg_func'](self.E_min,
                                                 self.E_max,
                                                 self.n_bins) * (
-                self.experiment['exp'] / self.experiment['exp_eff'])
-        energies = self.get_bin_centers()
+                             self.experiment['exp'] / self.experiment['exp_eff'])
+        e_bin_centers = self.get_bin_centers()
+        e_bin_edges = np.array(self.get_bin_edges())
 
         # Set the rate to zero for energies smaller than the threshold
-        rates = self.above_threshold(rates, energies)
+        rates = self.above_threshold(rates, e_bin_edges, self.experiment['E_thr'])
         result_bins = get_bins(self.E_min, self.E_max, self.n_bins_result)
-        sigma = self.experiment['res'](energies)
-        bin_width = np.mean(np.diff(energies))
+        sigma = self.experiment['res'](e_bin_centers)
+        bin_width = np.mean(np.diff(e_bin_centers))
         # Smear (using numerical integration) the rates with the detector
         # resolution
-        events = np.array(smear_signal(rates, energies, sigma, bin_width))
+        events = np.array(smear_signal(rates, e_bin_centers, sigma, bin_width))
         # re-bin final result to the desired number of bins
-        events = self.chuck_integration(events, energies, result_bins)
+        if self.rebin_factor == 1:
+            events *= bin_width
+        else:
+            events = self.chuck_integration(events, e_bin_centers, result_bins)
         return events * self.experiment['exp_eff']
 
     def get_events(self):
