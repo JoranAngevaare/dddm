@@ -56,13 +56,15 @@ class GenSpectrum:
         return f"spectrum_simple of a DM model ({self.dm_model}) in a " \
                f"{self.experiment['name']} detector"
 
+    def get_bin_edges(self):
+        return utils.get_bins(
+            self.E_min,
+            self.E_max,
+            self.n_bins),
+
     def get_bin_centers(self):
-        return np.mean(
-            utils.get_bins(
-                self.E_min,
-                self.E_max,
-                self.n_bins),
-            axis=1)
+        return np.mean(self.get_bin_edges(),
+                       axis=1)
 
     def spectrum_simple(self, benchmark):
         """
