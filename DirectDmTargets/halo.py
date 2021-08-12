@@ -60,7 +60,7 @@ class GenSpectrum:
         return utils.get_bins(
             self.E_min,
             self.E_max,
-            self.n_bins),
+            self.n_bins)
 
     def get_bin_centers(self):
         return np.mean(self.get_bin_edges(),
