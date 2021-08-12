@@ -440,7 +440,7 @@ class DetectorSpectrum(GenSpectrum):
         # GenSpectrum generates a number of bins (default 10), however, since a
         # numerical integration is performed in compute_detected_spectrum, this
         # number is multiplied here.
-        self.rebin_factor = 10
+        self.rebin_factor = 1
         self.n_bins_result = None
         # Please note that this is NOT pretty. It was a monkey patch implemented since
         # many spectra were already computed using this naming hence we have to deal
