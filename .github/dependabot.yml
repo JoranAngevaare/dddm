@@ -17,3 +17,13 @@ updates:
     open-pull-requests-limit: 25
     assignees:
       - jorana
+  # Maintain the requirements requirements folder
+  - package-ecosystem: "pip"
+    directory: "/extra_requirements"
+    schedule:
+      # Check for updates to requirements every week
+      interval: "daily"
+      time: "12:00"
+    open-pull-requests-limit: 25
+    assignees:
+      - jorana
