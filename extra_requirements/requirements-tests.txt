@@ -16,6 +16,7 @@ scipy==1.7.0
 seaborn==0.11.1
 tqdm==4.62.0
 
-# Do pip + git magic to install custom branches
+# These two packages require metadata not shipped via pip+git
 git+https://github.com/jorana/wimprates
-git+https://github.com/jorana/verne
+# git+https://github.com/jorana/verne
+

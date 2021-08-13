@@ -14,5 +14,7 @@ hypothesis
 pytest
 pytest-runner
 tqdm
-git+https://github.com/jorana/wimprates
-git+https://github.com/jorana/verne
+
+# These two packages require metadata not shipped via pip+git
+# git+https://github.com/jorana/wimprates
+# git+https://github.com/jorana/verne
