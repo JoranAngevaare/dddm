@@ -14,12 +14,5 @@ hypothesis
 pytest
 pytest-runner
 tqdm
-# # Optional for notebooks
-# jupyter
-# ipython
-# parso==0.7.1
-# jupyter-resource-usage   # Memory viewer for notebooks
-# cmake
-# scikit-build
-# scikit-learn
-# line_profiler
+git+https://github.com/jorana/wimprates
+git+https://github.com/jorana/verne
