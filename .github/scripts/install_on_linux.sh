@@ -1,3 +1,4 @@
+# Install dddm on a linux environment
 
 # Installing multinest
 echo "do install of multinest"
