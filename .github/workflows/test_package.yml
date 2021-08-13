@@ -54,11 +54,11 @@ jobs:
           pip install -r extra_requirements/requirements-tests.txt
           python setup.py develop
       - name: Test package (windows)
-        if: matrix.os == 'windows-latest' && matrix.test = 'pytest'
+        if: matrix.os == 'windows-latest' && matrix.test == 'pytest'
         run: |
             pytest --verbose
       - name: Test package (linux)
-        if: matrix.os == 'ubuntu-latest' && matrix.test = 'pytest'
+        if: matrix.os == 'ubuntu-latest' && matrix.test == 'pytest'
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/DirectDmTargets/DirectDmTargets/MultiNest/lib
           pytest --verbose
