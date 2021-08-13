@@ -39,7 +39,7 @@ jobs:
         run: |
           bash .github/scripts/install_on_linux.sh
       - name: Make installation windows
-        if: matrix.os == 'windows'
+        if: matrix.os == 'windows-latest'
         run: |
           cmd .github/scripts/install_on_windows.sh
       - name: Install other stuff
