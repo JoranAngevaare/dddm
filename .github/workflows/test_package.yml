@@ -44,7 +44,7 @@ jobs:
           cmd .github/scripts/install_on_windows.sh
       - name: Install other stuff
         run: |
-          pip install -r extra_requirements.txt
+          pip install -r extra_requirements/requirements-test.txt
           python setup.py develop
       - name: Build coverage file (windows)
         if: matrix.os == 'windows-latest'
