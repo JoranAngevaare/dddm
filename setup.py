@@ -13,7 +13,6 @@ readme = open('README.md').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 requirements = open_requirements('requirements.txt')
 
-
 setuptools.setup(
     name='DirectDmTargets',
     version='1.0.0',
@@ -22,12 +21,14 @@ setuptools.setup(
     long_description=readme + '\n\n' + history,
     author='Joran Angevaare',
     url='https://github.com/jorana/DD_DM_targets',
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages() + ['extra_requirements'],
+    package_dir={'DirectDmTargets': 'DirectDmTargets',
+                 'extra_requirements': 'extra_requirements'},
+    package_data={'DirectDmTargets': ['data/*'],
+                  'extra_requirements': ['requirements-tests.txt'],
+                  },
     setup_requires=['pytest-runner'],
     install_requires=requirements,
-    package_dir={'DirectDmTargets': 'DirectDmTargets'},
-    package_data={'DirectDmTargets': [
-        'data/*']},
     python_requires=">=3.8",
     tests_require=requirements + ['pytest',
                                   'hypothesis-numpy'],
