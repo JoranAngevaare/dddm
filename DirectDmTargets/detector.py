@@ -246,7 +246,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS100,  # table I
         'bg_func': nr_background_superCDMS_Ge,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     'Ge_migd_iZIP_bg': {
@@ -259,7 +259,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS50,  # table I
         'bg_func': migdal_background_superCDMS_Ge_iZIP,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     # --- Si iZIP bg --- #
@@ -273,7 +273,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS110,  # table I
         'bg_func': nr_background_superCDMS_Si,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     'Ge_migd_iZIP_Si_bg': {
@@ -286,7 +286,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS25,  # table I
         'bg_func': migdal_background_superCDMS_Si_iZIP,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     # --- Ge HV bg --- #
@@ -300,7 +300,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS10,  # table I
         'bg_func': migdal_background_superCDMS_Ge_HV,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     'Ge_migd_HV_bg': {
@@ -313,7 +313,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS10,  # table I
         'bg_func': migdal_background_superCDMS_Ge_HV,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     # --- Si HV bg --- #
@@ -328,7 +328,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS5,  # table I
         'bg_func': migdal_background_superCDMS_Si_HV,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     'Ge_migd_HV_Si_bg': {
@@ -342,7 +342,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS5,  # table I
         'bg_func': migdal_background_superCDMS_Si_HV,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     'Xe_migd_bg': {
