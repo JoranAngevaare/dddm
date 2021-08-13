@@ -1,8 +1,18 @@
 import setuptools
 
+
+def open_requirements(path):
+    with open(path) as f:
+        requires = [
+            r.split('/')[-1] if r.startswith('git+') else r
+            for r in f.read().splitlines()]
+    return requires
+
+
 readme = open('README.md').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
-requirements = open('requirements.txt').read().splitlines()
+requirements = open_requirements('requirements.txt')
+
 
 setuptools.setup(
     name='DirectDmTargets',
@@ -18,6 +28,7 @@ setuptools.setup(
     package_dir={'DirectDmTargets': 'DirectDmTargets'},
     package_data={'DirectDmTargets': [
         'data/*']},
+    python_requires=">=3.8",
     tests_require=requirements + ['pytest',
                                   'hypothesis-numpy'],
     scripts=['scripts/run_combined_multinest',
@@ -26,6 +37,12 @@ setuptools.setup(
     keywords='todo',
     classifiers=['Intended Audience :: Science/Research',
                  'Development Status :: 3 - Alpha',
-                 'Programming Language :: Python',
-                 'Programming Language :: Python :: 3'],
+                 'Programming Language :: Python :: 3.8',
+                 'Natural Language :: English',
+                 'Programming Language :: Python :: 3.8',
+                 'Programming Language :: Python :: 3.9',
+                 'Intended Audience :: Science/Research',
+                 'Programming Language :: Python :: Implementation :: CPython',
+                 'Topic :: Scientific/Engineering :: Physics',
+                 ],
     zip_safe=False)
