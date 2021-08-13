@@ -41,7 +41,11 @@ jobs:
       - name: Make installation windows
         if: matrix.os == 'windows-latest'
         run: |
-          cmd .github/scripts/install_on_windows.sh
+          pip install emcee
+          pip install git+https://github.com/jorana/wimprates
+          git clone https://github.com/jorana/verne
+          pip install -e verne
+          pip install git+https://github.com/JohannesBuchner/PyMultiNest
       - name: Install other stuff
         run: |
           pip install -r extra_requirements/requirements-tests.txt
