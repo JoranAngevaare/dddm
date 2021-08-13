@@ -55,16 +55,16 @@ jobs:
           pip install -r extra_requirements/requirements-tests.txt
           python setup.py develop
       - name: Test package (windows)
-        if: matrix.os == 'windows-latest' && matrix.test = 'pytest'
+        if: matrix.os == 'windows-latest' && matrix.test == 'pytest'
         run: |
             pytest --verbose
       - name: Test package (linux)
-        if: matrix.os == 'ubuntu-latest' && matrix.test = 'pytest'
+        if: matrix.os == 'ubuntu-latest' && matrix.test == 'pytest'
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/DirectDmTargets/DirectDmTargets/MultiNest/lib
           pytest --verbose
       - name: Coveralls
-        if matrix.test = 'coveralls'
+        if: matrix.test == 'coveralls'
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
           NUMBA_DISABLE_JIT: 1
