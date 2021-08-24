@@ -458,7 +458,7 @@ class DetectorSpectrum(GenSpectrum):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if 'bg_func' in self.experiment:
+        if 'bg_func' in self.config:
             self.add_background = kwargs.get('add_background', True)
         else:
             self.log.info(f'No bg_func in experiment config')
@@ -517,23 +517,23 @@ class DetectorSpectrum(GenSpectrum):
             # multiplied by the total exposure (rather than the effective exposure that
             # is multiplied by at the end of this subroutine. Hence the bg rates obtained
             # from that function is multiplied by the ratio between the two.
-            rates += self.experiment['bg_func'](self.E_min,
-                                                self.E_max,
-                                                self.n_bins) * (
-                self.experiment['exp'] / self.experiment['exp_eff'])
+            rates += self.config['bg_func'](self.E_min,
+                                            self.E_max,
+                                            self.n_bins) * (
+                             self.config['exp'] / self.config['exp_eff'])
         e_bin_centers = self.get_bin_centers()
         e_bin_edges = np.array(self.get_bin_edges())
         bin_width = np.mean(np.diff(e_bin_centers))
 
         # Set the rate to zero for energies smaller than the threshold
-        rates = self.above_threshold(rates, e_bin_edges, self.experiment['E_thr'])
-        sigma = self.experiment['res'](e_bin_centers)
+        rates = self.above_threshold(rates, e_bin_edges, self.config['E_thr'])
+        sigma = self.config['res'](e_bin_centers)
 
         # Smear the rates with the detector resolution
         events = np.array(smear_signal(rates, e_bin_centers, sigma, bin_width))
 
         # Calculate the total number of events per bin
-        events = events * bin_width * self.experiment['exp_eff']
+        events = events * bin_width * self.config['exp_eff']
         return events
 
     def get_events(self):

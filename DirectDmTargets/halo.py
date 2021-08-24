@@ -46,6 +46,15 @@ class SHM:
         """
         return wr.observed_speed_dist(v, t, self.v_0, self.v_esc)
 
+    def parameter_dict(self):
+        """Return a dict of readable parameters of the current settings"""
+        parameters = dict(
+            v_0 = self.v_0 / (nu.km / nu.s),
+            v_esc = self.v_esc / (nu.km / nu.s),
+            rho_dm = self.rho_dm / (nu.GeV / nu.c0 ** 2 / nu.cm ** 3),
+        )
+        return parameters
+
 
 class VerneSHM:
     """
@@ -183,6 +192,15 @@ class VerneSHM:
             self.load_f()
         return self.itp_func(v, t)
 
+    def parameter_dict(self):
+        """Return a dict of readable parameters of the current settings"""
+        parameters = dict(
+            v_0 = self.v_0_nodim,
+            v_esc = self.v_esc_nodim,
+            rho_dm = self.rho_dm_nodim,
+        )
+        return parameters
+
 
 class GenSpectrum:
     def __init__(self,
@@ -203,20 +221,35 @@ class GenSpectrum:
         self.sigma_nucleon = wimp_nucleon_cross_section
 
         self.dm_model = dark_matter_model
-        self.experiment = det
+        self.config = det
         self.log = utils.get_logger(self.__class__.__name__)
 
     @property
     def E_min(self):
-        return self.experiment.get('E_min', 0)
+        return self.config.get('E_min', 0)
 
     @property
     def E_max(self):
-        return self.experiment.get('E_max', 10)
+        return self.config.get('E_max', 10)
 
     @property
     def n_bins(self):
-        return self.experiment.get('n_energy_bins', 50)
+        return self.config.get('n_energy_bins', 50)
+
+    def set_config(self, update: dict, check_if_set: bool=True) -> None:
+        """
+        Update the config with the provided update
+        :param update: a dictionaty of items to update
+        :param check_if_set: Check that a previous version is actually
+            set
+        :return: None
+        """
+        assert isinstance(update, dict)
+        for key in update.keys():
+            if check_if_set and key not in self.config:
+                raise ValueError(f'{key} not in config of {str(self)}')
+
+        self.config.update(update)
 
     @staticmethod
     def _check_detector(det):
@@ -234,7 +267,7 @@ class GenSpectrum:
         :return: sting of class info
         """
         return f"spectrum_simple of a DM model ({self.dm_model}) in a " \
-               f"{self.experiment['name']} detector"
+               f"{self.config['name']} detector"
 
     def get_bin_centers(self) -> np.ndarray:
         """Given Emin and Emax, get an array with bin centers """
@@ -255,8 +288,8 @@ class GenSpectrum:
         else:
             assert 'mw' in benchmark and 'sigma_nucleon' in benchmark
 
-        material = self.experiment['material']
-        exp_type = self.experiment['type']
+        material = self.config['material']
+        exp_type = self.config['type']
 
         self.log.debug(f'Eval {benchmark} for {material}-{exp_type}')
 
@@ -291,12 +324,12 @@ class GenSpectrum:
         """
         :return: Events (binned)
         """
-        assert self.experiment != {}, "First enter the parameters of the detector"
+        assert self.config != {}, "First enter the parameters of the detector"
         rate = self.spectrum_simple([self.mw, self.sigma_nucleon])
         bin_width = np.diff(
             utils.get_bins(self.E_min, self.E_max, self.n_bins),
             axis=1)[:, 0]
-        events = rate * bin_width * self.experiment['exp_eff']
+        events = rate * bin_width * self.config['exp_eff']
         return events
 
     def get_poisson_events(self):

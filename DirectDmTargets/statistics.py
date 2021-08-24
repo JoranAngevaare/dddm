@@ -398,6 +398,7 @@ class StatModel:
             interm_exists, interm_file, interm_spec = self.find_intermediate_result()
             if interm_exists:
                 return interm_spec
+
         # Initialize the spectrum class if:
         # A) we are not saving intermediate results
         # B) we haven't yet computed the desired intermediate spectrum
@@ -406,15 +407,13 @@ class StatModel:
             10. ** self.config['sigma'],
             self.config['halo_model'],
             self.config['detector_config'])
-        spectrum.n_bins = self.config['n_energy_bins']
-        if 'E_max' in self.config:
-            self.log.info(
-                f'StatModel::\tcheck_spectrum\tset E_max to {self.config["E_max"]}')
-            spectrum.E_max = self.config['E_max']
-        if 'E_min' in self.config:
-            self.log.info(
-                f'StatModel::\tcheck_spectrum\tset E_max to {self.config["E_min"]}')
-            spectrum.E_max = self.config['E_min']
+        spectrum.set_config(dict(n_bins=self.config['n_energy_bins']))
+
+        for e_min_max in 'E_min E_max'.split():
+            if e_min_max in self.config:
+                self.log.info(f'set {e_min_max} to {self.config[e_min_max]}')
+                spectrum.set_config(dict(e_min_max=self.config[e_min_max]))
+
         binned_spectrum = spectrum.get_data(
             poisson=self.config['poisson'] if poisson is None else poisson
         )
@@ -595,15 +594,8 @@ class StatModel:
                 10. ** x1,
                 fit_shm,
                 self.config['detector_config'])
-            if 'E_max' in self.config:
-                self.log.info(
-                    f'StatModel::\teval_spectrum\tset E_max to {self.config["E_max"]} for 2 params')
-                spectrum.E_max = self.config['E_max']
-            if 'E_min' in self.config:
-                self.log.info(
-                    f'StatModel::\teval_spectrum\tset E_max to {self.config["E_min"]} for 2 params')
-                spectrum.E_max = self.config['E_min']
-            spectrum.n_bins = self.config['n_energy_bins']
+            spectrum = config_to_spectrum(spectrum)
+
             self.log.debug(
                 f"StatModel::\tSUPERVERBOSE\tAlright spectrum set. Evaluate now!")
             binned_spectrum = spectrum.get_data(poisson=False)
@@ -685,6 +677,20 @@ class StatModel:
             raise NotImplementedError(
                 f"Something strange went wrong here. Trying to fit for the"
                 f"parameter_names = {parameter_names}")
+
+    def config_to_spectrum(self, spectrum,
+                           copy_fields=('E_min',
+                                        'E_max',
+                                        'n_energy_bins',
+                                        )
+                           ):
+        """Set the config of the spectrum to have the same value as we do"""
+        for to_copy in copy_fields:
+            if to_copy in self.config:
+                self.log.info(f'set {to_copy} to {self.config[to_copy]}')
+                spectrum.set_config(dict(e_min_max=self.config[to_copy]))
+        return spectrum
+
 
 
 def log_likelihood_function(nb, nr):
