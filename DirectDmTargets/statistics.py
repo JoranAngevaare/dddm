@@ -2,11 +2,10 @@
 
 import logging
 import os
-import time
 from sys import platform
 import numericalunits as nu
 import numpy as np
-import pandas as pd
+import numba
 from DirectDmTargets import context, detector, halo, utils
 from scipy.special import loggamma
 import typing as ty
@@ -61,7 +60,8 @@ def get_priors(priors_from="Evans_2019"):
                               'std': 0.5},
                   'v_0': {'range': [80, 380], 'prior_type': 'gauss', 'mean': 233, 'std': 90},
                   'v_esc': {'range': [379, 709], 'prior_type': 'gauss', 'mean': 528, 'std': 99},
-                  'k': {'range': [0.5, 3.5], 'prior_type': 'flat'}}
+                  'k': {'range': [0.5, 3.5], 'prior_type': 'flat'}
+                  }
     else:
         raise NotImplementedError(
             f"Taking priors from {priors_from} is not implemented")
@@ -236,9 +236,10 @@ class StatModel:
                 err_message = f"{param} does not match any of the known parameters try " \
                               f"any of {self.known_parameters}"
                 raise NotImplementedError(err_message)
-        if params != self.known_parameters[:len(params)]:
+        known_params = self.known_parameters[:len(params)]
+        if params != known_params and params != tuple(known_params):
             err_message = f"The parameters are not input in the correct order. Please" \
-                          f" insert {self.known_parameters[:len(params)]} rather than {params}."
+                          f" insert {known_params} rather than {params}."
             raise NameError(err_message)
         self.config['fit_parameters'] = params
 
@@ -263,11 +264,6 @@ class StatModel:
         # Save a copy of the benchmark in the config file
         self.config['benchmark_values'] = list(self.benchmark_values)
 
-    def check_bench_set(self):
-        if not self.bench_is_set:
-            self.log.info(f'benchmark not set->doing so now')
-            self.eval_benchmark()
-
     def log_probability(self, parameter_vals, parameter_names):
         """
 
@@ -275,9 +271,9 @@ class StatModel:
         :param parameter_names: the names of the parameter_values
         :return:
         """
-        self.log.info(
-            f'Engines running full! Lets get some probabilities')
-        self.check_bench_set()
+        self.log.info(f'Engines running full! Lets get some probabilities')
+        if not self.bench_is_set:
+            self.eval_benchmark()
 
         # single parameter to fit
         if isinstance(parameter_names, str):
@@ -476,7 +472,7 @@ def log_likelihood_function(nb, nr):
         nr = LL_LOW_BOUND
     return np.log(nr) * nb - loggamma(nb + 1) - nr
 
-
+@numba.jit(nopython=True)
 def log_likelihood(model, y):
     """
     :param model: pandas dataframe containing the number of counts in bin i
