@@ -48,6 +48,11 @@ class MCMCStatModel(statistics.StatModel):
         self.config['start'] = datetime.datetime.now()
         self.config['notes'] = "default"
 
+    @property
+    def mw(self):
+        """Lazy alias"""
+        return self.log_mass
+
     def get_pos_full_prior(self, use_pos=None):
         self.log_dict['pos'] = True
         if use_pos is not None:

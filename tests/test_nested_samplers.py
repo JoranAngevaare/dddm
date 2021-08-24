@@ -78,8 +78,6 @@ def test_nestle():
     stats.run_nestle()
     print('Save results')
     stats.save_results()
-    print('Empty garbade')
-    stats.empty_garbage()
     print('Show corner')
     try:
         stats.show_corner()
