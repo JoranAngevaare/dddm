@@ -19,9 +19,9 @@ from scipy.interpolate import interp1d
 class GenSpectrum:
 
     def __init__(self,
-                 wimp_mass : ty.Union[float, int],
-                 wimp_nucleon_cross_section : ty.Union[float, int],
-                 dark_matter_model : ty.Union[SHM, VerneSHM], det):
+                 wimp_mass: ty.Union[float, int],
+                 wimp_nucleon_cross_section: ty.Union[float, int],
+                 dark_matter_model: ty.Union[SHM, VerneSHM], det):
         """
         :param wimp_mass: wimp mass (not log)
         :param wimp_nucleon_cross_section: cross-section of the wimp nucleon interaction
