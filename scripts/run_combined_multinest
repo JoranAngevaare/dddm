@@ -96,7 +96,7 @@ def set_config(model_simulator, args):
         'range': [int(args.cross_section) - 7, int(args.cross_section) + 5],
         'prior_type': 'flat'}
     model_simulator.config['prior']['log_mass']['param'] = \
-    model_simulator.config['prior']['log_mass']['range']
+        model_simulator.config['prior']['log_mass']['range']
     model_simulator.config['prior']['log_cross_section']['param'] = \
         model_simulator.config['prior']['log_cross_section']['range']
 
