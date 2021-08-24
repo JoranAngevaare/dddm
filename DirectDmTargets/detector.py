@@ -428,47 +428,28 @@ def _smear_signal(rate, energy, sigma, bin_width):
 
 
 def smear_signal(rate, energy, sigma, bin_width):
-    if np.mean(sigma) < bin_width:
+    if np.max(sigma) < bin_width:
         # print(f'Resolution {np.mean(sigma)} better than bin_width {bin_width}!')
         return rate
     return _smear_signal(rate, energy, sigma, bin_width)
 
 
 class DetectorSpectrum(GenSpectrum):
-    def __init__(self, *args):
-        super().__init__(*args)
-        # GenSpectrum generates a number of bins (default 10), however, since a
-        # numerical integration is performed in compute_detected_spectrum, this
-        # number is multiplied here.
-        self.rebin_factor = 1
-        self.n_bins_result = None
-        # Please note that this is NOT pretty. It was a monkey patch implemented since
-        # many spectra were already computed using this naming hence we have to deal
-        # with this lack of clarity in earlier coding in this manner.
-        self.add_background = True if 'bg' in self.experiment['type'] else False
+    add_background = False
+    required_config_fields = 'exp exp_eff E_thr res'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if 'bg_func' in self.experiment:
+            self.add_background = kwargs.get('add_background', True)
+        else:
+            self.log.info(f'No bg_func in experiment config')
 
     def __str__(self):
         return (f"DetectorSpectrum class inherited from GenSpectrum.\nSmears "
                 f"spectrum with detector resolution and implements the energy "
                 f"threshold for the detector")
-
-    @staticmethod
-    def chuck_integration(rates, energies, bins):
-        """
-        :param rates: counts/bin
-        :param energies: energy bin_center
-        :param bins: two-dimensional array of the bin-boundaries wherein the
-        energies should be integrated
-        :return: the re-binned number of counts/bin specified by the two-
-        dimensional array bins
-        """
-        res = np.zeros(len(bins))
-        for i, bin_i in enumerate(bins):
-            # bin_i should be [right bin,  left bin]
-            mask = (energies > bin_i[0]) & (energies < bin_i[1])
-            bin_width = np.average(np.diff(energies[mask]))
-            res[i] = np.sum(rates[mask] * bin_width)
-        return res
 
     @staticmethod
     @numba.njit
@@ -510,15 +491,9 @@ class DetectorSpectrum(GenSpectrum):
 
         :return: spectrum taking into account the detector properties
         """
-        self.n_bins_result = self.n_bins
-        if self.rebin_factor != 1:
-            # The numerical integration requires finer binning,
-            # therefore compute a spectrum at finer binning than the
-            # number of bins the result should be in.
-            self.n_bins = self.n_bins * self.rebin_factor
         # get the spectrum
         rates = self.spectrum_simple([self.mw, self.sigma_nucleon])
-        # if this option is set to true, add a background component
+
         if self.add_background:
             # pay close attention, the events in the bg_func are already taking into
             # account the det. efficiency et cetera. Hence the number here should be
@@ -531,21 +506,18 @@ class DetectorSpectrum(GenSpectrum):
                 self.experiment['exp'] / self.experiment['exp_eff'])
         e_bin_centers = self.get_bin_centers()
         e_bin_edges = np.array(self.get_bin_edges())
+        bin_width = np.mean(np.diff(e_bin_centers))
 
         # Set the rate to zero for energies smaller than the threshold
         rates = self.above_threshold(rates, e_bin_edges, self.experiment['E_thr'])
-        result_bins = get_bins(self.E_min, self.E_max, self.n_bins_result)
         sigma = self.experiment['res'](e_bin_centers)
-        bin_width = np.mean(np.diff(e_bin_centers))
-        # Smear (using numerical integration) the rates with the detector
-        # resolution
+
+        # Smear the rates with the detector resolution
         events = np.array(smear_signal(rates, e_bin_centers, sigma, bin_width))
-        # re-bin final result to the desired number of bins
-        if self.rebin_factor == 1:
-            events *= bin_width
-        else:
-            events = self.chuck_integration(events, e_bin_centers, result_bins)
-        return events * self.experiment['exp_eff']
+
+        # Calculate the total number of events per bin
+        events = events * bin_width * self.experiment['exp_eff']
+        return events
 
     def get_events(self):
         """
@@ -553,21 +525,21 @@ class DetectorSpectrum(GenSpectrum):
         """
         return self.compute_detected_spectrum()
 
-    def get_data(self, poisson=True):
-        """
-
-        :param poisson: type bool, add poisson True or False
-        :return: pd.DataFrame containing events binned in energy
-        """
-        result = pd.DataFrame()
-        if poisson:
-            result['counts'] = self.get_poisson_events()
-        else:
-            result['counts'] = self.get_events()
-        bins = get_bins(self.E_min, self.E_max, self.n_bins_result)
-        result['bin_centers'] = np.mean(bins, axis=1)
-        result['bin_left'] = bins[:, 0]
-        result['bin_right'] = bins[:, 1]
-        result = self.set_negative_to_zero(result)
-
-        return result
+    # def get_data(self, poisson=True):
+    #     """
+    #
+    #     :param poisson: type bool, add poisson True or False
+    #     :return: pd.DataFrame containing events binned in energy
+    #     """
+    #     result = pd.DataFrame()
+    #     if poisson:
+    #         result['counts'] = self.get_poisson_events()
+    #     else:
+    #         result['counts'] = self.get_events()
+    #     bins = get_bins(self.E_min, self.E_max, self.n_bins)
+    #     result['bin_centers'] = np.mean(bins, axis=1)
+    #     result['bin_left'] = bins[:, 0]
+    #     result['bin_right'] = bins[:, 1]
+    #     result = self.set_negative_to_zero(result)
+    #
+    #     return result
