@@ -19,9 +19,9 @@ from scipy.interpolate import interp1d
 class GenSpectrum:
 
     def __init__(self,
-                 wimp_mass : ty.Union[float, int],
-                 wimp_nucleon_cross_section : ty.Union[float, int],
-                 dark_matter_model : ty.Union[SHM, VerneSHM], det):
+                 wimp_mass: ty.Union[float, int],
+                 wimp_nucleon_cross_section: ty.Union[float, int],
+                 dark_matter_model: ty.Union[SHM, VerneSHM], det):
         """
         :param wimp_mass: wimp mass (not log)
         :param wimp_nucleon_cross_section: cross-section of the wimp nucleon interaction
@@ -269,12 +269,12 @@ class VerneSHM:
         assertion_string = f'abs file {temp_file_name} should be a string\n'
         assertion_string += f'exists csv {exist_csv} should be a bool'
         self.log.info(f'load_f::\twrite to {file_name} ({not exist_csv}). '
-                 f'Then copy to {temp_file_name}')
+                      f'Then copy to {temp_file_name}')
         assert (isinstance(temp_file_name, str) and
                 isinstance(exist_csv, bool)), assertion_string
         if not exist_csv:
             self.log.info(f'Using {file_name} for the velocity distribution. '
-                     f'Writing to {temp_file_name}')
+                          f'Writing to {temp_file_name}')
             df = verne.CalcVelDist.avg_calcveldist(
                 m_x=10. ** self.log_mass,
                 sigma_p=10. ** self.log_cross_section,
