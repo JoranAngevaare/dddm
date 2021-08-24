@@ -134,39 +134,53 @@ class StatModel:
         else:
             level = 'WARNING'
 
-        self.log = utils.get_logger(self.__class__.__name__, level)
+        log = utils.get_logger(self.__class__.__name__, level)
 
         if 'win' not in platform:
             self.config['logging'] = os.path.join(
                 context.context['tmp_folder'],
                 f"log_{utils.now()}.log")
             print(f'StatModel::\tSave log to {self.config["logging"]}')
-            self.log.addHandler(logging.StreamHandler())
+            log.addHandler(logging.StreamHandler())
+
+        return log
 
     def __str__(self):
         return f"StatModel::for {self.config['detector']} detector. For info see the config file:\n{self.config}"
 
-    def read_priors_mean(self):
-        self.log.info(f'reading priors')
-        for prior_name in ['v_0', 'v_esc', 'density']:
-            self.config[prior_name] = self.config['prior'][prior_name]['mean']
+    def read_priors_mean(self, prior_name) -> ty.Union[int, float]:
+        self.log.debug(f'reading {prior_name}')
+        return self.config['prior'][prior_name]['mean']
+    
+    @property
+    def v_0(self) -> ty.Union[int, float]:
+        return self.read_priors_mean('v_0')
+
+    @property
+    def v_esc(self) -> ty.Union[int, float]:
+        return self.read_priors_mean('v_0')
+
+    @property
+    def density(self) -> ty.Union[int, float]:
+        return self.read_priors_mean('v_0')
+
+    @property
+    def log_mass(self):
+        return self.config['mw']
+
+    @property
+    def log_cross_section(self):
+        return self.config['sigma']
 
     def insert_prior_manually(self, input_priors):
         self.log.warning(
             f'Inserting {input_priors} as priors. For the right format check '
             f'DirectDmTargets/statistics.py. I assume your format is right.')
         self.config['prior'] = input_priors
-        self.read_priors_mean()
 
     def set_prior(self, priors_from):
         self.log.info(f'set_prior')
         self.config['prior'] = get_priors(priors_from)
-        self.read_priors_mean()
-
-    def set_nbins(self, nbins=10):
-        self.log.info(f'setting nbins to {nbins}')
-        self.config['n_energy_bins'] = nbins
-        self.eval_benchmark()
 
     def set_benchmark(self, mw=50, sigma=-45):
         """
@@ -204,9 +218,9 @@ class StatModel:
                 log_mass=self.config['mw'],
                 log_cross_section=self.config['sigma'],
                 location=self.config['detector_config']['location'],
-                v_0=self.config['v_0'] * nu.km / nu.s,
-                v_esc=self.config['v_esc'] * nu.km / nu.s,
-                rho_dm=self.config['density'] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
+                v_0=self.v_0 * nu.km / nu.s,
+                v_esc=self.v_esc * nu.km / nu.s,
+                rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
 
             self.config['halo_model'] = halo_model if halo_model != 'default' else model
             self.log.info(
@@ -218,9 +232,9 @@ class StatModel:
                 f'\nv_esc={self.config["v_esc"]} * nu.km / nu.s,'
                 f'\nrho_dm={self.config["density"]} * nu.GeV / nu.c0 ** 2 / nu.cm ** 3')
             self.config['halo_model'] = halo_model if halo_model != 'default' else halo.SHM(
-                v_0=self.config['v_0'] * nu.km / nu.s,
-                v_esc=self.config['v_esc'] * nu.km / nu.s,
-                rho_dm=self.config['density'] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
+                v_0=self.v_0 * nu.km / nu.s,
+                v_esc=self.v_esc * nu.km / nu.s,
+                rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
         if self.config['earth_shielding']:
             self.config['save_intermediate'] = True
         else:
@@ -299,11 +313,11 @@ class StatModel:
             'log_s-%.2f' %
             (self.config['sigma'] if sigma is None else sigma),
             'rho-%.2f' %
-            (self.config['density'] if rho is None else rho),
+            (self.density if rho is None else rho),
             'v_0-%.1f' %
-            (self.config['v_0'] if v_0 is None else v_0),
+            (self.v_0 if v_0 is None else v_0),
             'v_esc-%i' %
-            (self.config['v_esc'] if v_esc is None else v_esc),
+            (self.v_esc if v_esc is None else v_esc),
             'poisson_%i' %
             (int(
                 self.config['poisson'] if poisson is None else poisson)),
@@ -553,9 +567,9 @@ class StatModel:
                 model=str(spec_class),
                 mw=checked_values[0],
                 sigma=checked_values[1],
-                v_0=checked_values[2] if len(checked_values) > 2 else self.config['v_0'],
-                v_esc=checked_values[3] if len(checked_values) > 3 else self.config['v_esc'],
-                rho=checked_values[4] if len(checked_values) > 4 else self.config['density'],
+                v_0=checked_values[2] if len(checked_values) > 2 else self.v_0,
+                v_esc=checked_values[3] if len(checked_values) > 3 else self.v_esc,
+                rho=checked_values[4] if len(checked_values) > 4 else self.density,
                 poisson=False,
                 det_conf=self.config['detector_config']
             )
@@ -580,9 +594,9 @@ class StatModel:
                     log_mass=checked_values[0],  # self.config['mw'],
                     log_cross_section=checked_values[1],  # self.config['sigma'],
                     location=self.config['detector_config']['location'],
-                    v_0=self.config['v_0'] * nu.km / nu.s,
-                    v_esc=self.config['v_esc'] * nu.km / nu.s,
-                    rho_dm=self.config['density'] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
+                    v_0=self.v_0 * nu.km / nu.s,
+                    v_esc=self.v_esc * nu.km / nu.s,
+                    rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
             else:
                 fit_shm = self.config['halo_model']
 
