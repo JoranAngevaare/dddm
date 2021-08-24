@@ -47,7 +47,7 @@ def test_nested_simple_multinest_earth_shielding():
                              linestyles=['solid', 'dashed', 'dotted'][::-1]
                              )
     plot.plot_samples(alpha=0.2)
-    plot.plot_best_fit(c=cycle[0])
+    plot.plot_best_fit()
     plot.plot_bench()
     plt.text(.63, 0.93,
              'TEST',
