@@ -415,6 +415,7 @@ class CombinedInference(NestedSamplerStatModel):
 
     def _fix_parameters(self):
         """Fix the parameters of the sub classes"""
+        super()._fix_parameters(_do_evaluate_benchmark=False)
         self.copy_config('mw prior sigma halo_model spectrum_class'.split())
         for c in self.sub_classes:
             self.log.debug(f'Fixing parameters for {c}')

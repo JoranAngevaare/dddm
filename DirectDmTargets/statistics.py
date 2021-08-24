@@ -252,10 +252,11 @@ class StatModel:
             raise NameError(err_message)
         self.config['fit_parameters'] = params
 
-    def _fix_parameters(self):
+    def _fix_parameters(self, _do_evaluate_benchmark=True):
         """
         This is a very important function as it makes sure all the
         classes are setup in the right order
+        :param _do_evaluate_benchmark: Evaluate the benchmark
         :return:
         """
         no_prior_has_been_set = self.config['prior'] is None
@@ -274,7 +275,10 @@ class StatModel:
         self.set_models()
 
         # Finally, set the benchmark
-        self.eval_benchmark()
+        if _do_evaluate_benchmark:
+            # Only do this for the combined experiments!
+            self.log.info(f'Skipping evaluating the benchmark!')
+            self.eval_benchmark()
         self.log.info(f'evaluate benchmark\tall ready to go!')
 
     def check_spectrum(self):

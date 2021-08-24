@@ -35,28 +35,36 @@ def test_likelihood_converges(mass, sigma, detector_i, prior_i):
         assert c.log_cross_section == sigma
         assert c.log_mass == np.log10(mass)
         assert c.config['prior'] == dddm.get_priors(prior_name)
+        assert c.benchmark_values is not None
 
-    # Do the parameter scan
-    likelihoods = []
-    sigmas = np.linspace(sigma - 0.2, sigma + 0.2, 30)
-    m = mass
-    if not np.any(stats.sub_classes[0].benchmark_values):
+    benchmark_all_zero = not np.any(stats.sub_classes[0].benchmark_values)
+    if benchmark_all_zero:
         print('If everything is zero, I don\'t have to check if we converge')
         return
-    for s in tqdm(sigmas, desc='Cross-section scan'):
-        ll = stats.sub_classes[0]._log_probability_nested([np.log10(m), s])
-        likelihoods.append(ll)
 
-    max_ll = np.argmax(likelihoods)
-    if not np.isclose(sigmas[max_ll],
-                      sigma,
-                      # if the binning is course, the result will also be. Allow some tolerance
-                      atol=sigmas[1] - sigmas[0]
-                      ):
-        print(sigmas)
-        print(likelihoods)
-        if not np.all(np.isclose(likelihoods[0],
-                                 likelihoods)
+    # Do the parameter scan
+    likelihood_scan = []
+    # Hardcoding the range of parameters to scan for reproducibility
+    sigma_scan = np.linspace(sigma - 0.2, sigma + 0.2, 30)
 
-                      ):
+    for s in tqdm(sigma_scan, desc='Cross-section scan'):
+        ll = stats.sub_classes[0]._log_probability_nested([np.log10(mass), s])
+        likelihood_scan.append(ll)
+
+    max_likelihood_index = np.argmax(likelihood_scan)
+    max_is_close_to_true = np.isclose(
+        sigma_scan[max_likelihood_index],
+        sigma,
+        # if the binning is course, the result will also be. Allow some tolerance
+        atol=sigma_scan[1] - sigma_scan[0]
+    )
+
+    if not max_is_close_to_true:
+        # This is a reason to break generally
+        print(sigma_scan)
+        print(likelihood_scan)
+
+        # Check if the likelihood all has the same values, then we don't have to fail
+        likelihood_is_flat = np.all(np.isclose(likelihood_scan[0], likelihood_scan))
+        if not likelihood_is_flat:
             raise ValueError(f'{detector_name}-{prior_name}\tm:{mass}\ts:{sigma} failed')
