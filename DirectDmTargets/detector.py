@@ -239,11 +239,11 @@ benchmark = {'mw': 50., 'sigma_nucleon': 1e-45}
 
 experiment = {
     'Xe': {'material': 'Xe', 'type': 'SI', 'exp': 5., 'cut_eff': 0.8, 'nr_eff': 0.5, 'E_thr': 10.,
-           'location': "XENON", 'res': det_res_Xe},
+           'location': "XENON", 'res': det_res_Xe, 'n_energy_bins': 10, },
     'Ge': {'material': 'Ge', 'type': 'SI', 'exp': 3., 'cut_eff': 0.8, 'nr_eff': 0.9, 'E_thr': 10.,
-           'location': "SUF", 'res': det_res_Ge},
+           'location': "SUF", 'res': det_res_Ge, 'n_energy_bins': 10, },
     'Ar': {'material': 'Ar', 'type': 'SI', 'exp': 10., 'cut_eff': 0.8, 'nr_eff': 0.8, 'E_thr': 30.,
-           'location': "XENON", 'res': det_res_Ar},
+           'location': "XENON", 'res': det_res_Ar, 'n_energy_bins': 10, },
     # --- Ge iZIP bg --- #
     'Ge_iZIP_bg': {
         'material': 'Ge',
@@ -395,15 +395,6 @@ for name in experiment.keys():
                                    experiment[name]['cut_eff'] *
                                    experiment[name]['nr_eff'])
     experiment[name]['name'] = name
-
-# Make a copy with setting background to True!
-exp_names = experiment.keys()
-for name in list(exp_names):
-    if '_bg' not in name:
-        bg_name = name + '_bg'
-        if bg_name not in exp_names:
-            experiment[bg_name] = experiment[name].copy()
-            experiment[bg_name]['type'] = experiment[bg_name]['type'] + '_bg'
 
 # Make a new experiment that is a placeholder for the CombinedInference class.
 experiment['Combined'] = {'type': 'combined'}
