@@ -110,12 +110,12 @@ def plt_ll_mass_spec(det='Xe', bins=10, m=50, sig=1e-45):
 
 
 def plt_ll_sigma_det(det='Xe', bins=10, m=50, sig=1e-45):
-    spec = detector.DetectorSpectrum,
+    spec = detector.DetectorSpectrum
     plt_ll_sigma_mass(spec, 'sig', det=det, bins=bins, m=m, sig=sig)
 
 
 def plt_ll_mass_det(det='Xe', bins=10, m=50, sig=1e-45):
-    spec = detector.DetectorSpectrum,
+    spec = detector.DetectorSpectrum
     plt_ll_sigma_mass(spec, 'mass', det=det, bins=bins, m=m, sig=sig)
 
 
