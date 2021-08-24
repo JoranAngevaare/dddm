@@ -1,4 +1,5 @@
-"""Do a likelihood fit. The class MCMCStatModel is used for fitting applying
+"""
+Do a likelihood fit. The class MCMCStatModel is used for fitting applying
 the MCMC algorithm emcee.
 
 MCMC is:
@@ -6,14 +7,14 @@ MCMC is:
     harder to use since one has to choose the 'right' initial parameters
 
 Nevertheless, the walkers give great insight in how the likelihood-function is
-felt by the steps that the walkers make"""
+felt by the steps that the walkers make
+"""
 
 import datetime
 import json
 import logging
 import multiprocessing
 import os
-
 import corner
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,13 +29,6 @@ def default_emcee_save_dir():
 
 
 class MCMCStatModel(statistics.StatModel):
-    known_parameters = [
-        'log_mass',
-        'log_cross_section',
-        'v_0',
-        'v_esc',
-        'density']
-
     def __init__(self, *args):
         super().__init__(*args)
         self.nwalkers = 50
@@ -45,10 +39,9 @@ class MCMCStatModel(statistics.StatModel):
         self.log_dict = {'sampler': False, 'did_run': False, 'pos': False}
         self.remove_frac = 0.2
         self.thin = 15
-        self.config['start'] = datetime.datetime.now()
-        self.config['notes'] = "default"
 
     def get_pos_full_prior(self, use_pos=None):
+        """Get starting positions for the walker from the fill prior range"""
         self.log_dict['pos'] = True
         if use_pos is not None:
             self.pos = use_pos
@@ -63,10 +56,11 @@ class MCMCStatModel(statistics.StatModel):
         ])
         return pos.T
 
-    def set_pos(self, use_pos=None):
+    def _set_pos(self, use_pos=None):
+        """Set the starting position of the walkers"""
         self.log_dict['pos'] = True
         if use_pos is not None:
-            log.info("using specified start position")
+            self.log.info("using specified start position")
             self.pos = use_pos
             return
         nparameters = len(self.config['fit_parameters'])
@@ -77,19 +71,18 @@ class MCMCStatModel(statistics.StatModel):
         pos = []
 
         for i, key in enumerate(keys):
-            val = self.config.get(key)
+            val = getattr(self, key)
+            self.log.warning(f'{key} is {val}')
             a, b = ranges[i]
-            if key in []:
-                start_at = np.random.uniform(a, b, (self.nwalkers, 1))
-            else:
-                start_at = val + 0.005 * val * \
-                    np.random.randn(self.nwalkers, 1)
+            start_at = val + 0.005 * val * np.random.randn(self.nwalkers, 1)
+
             start_at = np.clip(start_at, a, b)
             pos.append(start_at)
         pos = np.hstack(pos)
         self.pos = pos
 
     def set_sampler(self, mult=True):
+        """init the MCMC sampler"""
         # Do the import of emcee inside the class such that the package can be
         # loaded without emcee
         try:
@@ -106,14 +99,15 @@ class MCMCStatModel(statistics.StatModel):
         self.log_dict['sampler'] = True
 
     def run_emcee(self):
+        self._fix_parameters()
+
         if not self.log_dict['sampler']:
             self.set_sampler()
         if not self.log_dict['pos']:
-            self.set_pos()
+            self._set_pos()
+        start = datetime.datetime.now()
         try:
-            start = datetime.datetime.now()
             self.sampler.run_mcmc(self.pos, self.nsteps, progress=False)
-            end = datetime.datetime.now()
         except ValueError as e:
             raise ValueError(
                 f"MCMC did not finish due to a ValueError. Was running with\n"
@@ -121,14 +115,11 @@ class MCMCStatModel(statistics.StatModel):
                 f"{self.nwalkers}, ndim = "
                 f"{len(self.config['fit_parameters'])} for fit parameters "
                 f"{self.config['fit_parameters']}") from e
+        end = datetime.datetime.now()
         self.log_dict['did_run'] = True
-        try:
-            dt = end - start
-            log.info("run_emcee::\tfit_done in %i s (%.1f h)" % (
-                dt.seconds, dt.seconds / 3600.))
-            self.config['fit_time'] = dt.seconds
-        except NameError:
-            self.config['fit_time'] = -1
+        dt = (end - start).total_seconds()
+        self.log.info(f"fit_done in {dt} s ({dt / 3600} h)")
+        self.config['fit_time'] = dt
 
     def show_walkers(self):
         if not self.log_dict['did_run']:
@@ -147,7 +138,7 @@ class MCMCStatModel(statistics.StatModel):
     def show_corner(self):
         if not self.log_dict['did_run']:
             self.run_emcee()
-        log.info(
+        self.log.info(
             f"Removing a fraction of {self.remove_frac} of the samples, total"
             f"number of removed samples = {self.nsteps * self.remove_frac}")
         flat_samples = self.sampler.get_chain(
@@ -155,7 +146,7 @@ class MCMCStatModel(statistics.StatModel):
             thin=self.thin,
             flat=True
         )
-        truths = [self.config[prior_name] for prior_name in
+        truths = [getattr(self, prior_name) for prior_name in
                   statistics.get_prior_list()[:len(self.config['fit_parameters'])]]
 
         corner.corner(flat_samples, labels=self.config['fit_parameters'], truths=truths)
@@ -170,7 +161,7 @@ class MCMCStatModel(statistics.StatModel):
             self.run_emcee()
         # open a folder where to save to results
         save_dir = utils.open_save_dir(
-            'emcee',
+            default_emcee_save_dir(),
             base_dir=save_to_dir,
             force_index=force_index)
         # save the config, chain and flattened chain
@@ -178,23 +169,28 @@ class MCMCStatModel(statistics.StatModel):
             json.dump(utils.convert_dic_to_savable(self.config), fp, indent=4)
         np.save(os.path.join(save_dir, 'config.npy'),
                 utils.convert_dic_to_savable(self.config))
-        np.save(
-            os.path.join(
-                save_dir,
-                'full_chain.npy'),
-            self.sampler.get_chain())
-        np.save(
-            os.path.join(
-                save_dir,
-                'flat_chain.npy'),
-            self.sampler.get_chain(
-                discard=int(
-                    self.nsteps *
-                    self.remove_frac),
-                thin=self.thin,
-                flat=True))
+
+        save_at = os.path.join(save_dir, 'full_chain.npy')
+        np.save(save_at, self.sampler.get_chain())
+
+        save_at = os.path.join(save_dir, 'flat_chain.npy')
+        flat_chain = self.sampler.get_chain(
+            discard=int(self.nsteps * self.remove_frac),
+            thin=self.thin, flat=True
+        )
+        np.save(save_at, flat_chain)
         self.config['save_dir'] = save_dir
-        log.info("save_results::\tdone_saving")
+        self.log.info("save_results::\tdone_saving")
+
+    @property
+    def mw(self):
+        """Lazy alias"""
+        return self.log_mass
+
+    @property
+    def sigma(self):
+        """Lazy alias"""
+        return self.log_cross_section
 
 
 def load_chain_emcee(load_from=default_emcee_save_dir(),
@@ -207,7 +203,6 @@ def load_chain_emcee(load_from=default_emcee_save_dir(),
     files = os.listdir(base)
     if item == 'latest':
         try:
-            item = max([int(f.split(save)[-1]) for f in files if save in f])
             item = files[-1]
         except ValueError:
             log.warning(files)
@@ -239,7 +234,7 @@ def load_chain_emcee(load_from=default_emcee_save_dir(),
 def emcee_plots(result, save=False, plot_walkers=True, show=False):
     if not isinstance(save, bool):
         assert os.path.exists(save), f"invalid path '{save}'"
-    info = r"$M_\chi}$=%.2f" % 10 ** np.float(result['config']['mw'])
+    info = r"$M_\chi}$=%.2f" % 10 ** np.float64(result['config']['mw'])
     for prior_key in result['config']['prior'].keys():
         try:
             mean = result['config']['prior'][prior_key]['mean']
@@ -248,27 +243,23 @@ def emcee_plots(result, save=False, plot_walkers=True, show=False):
             pass
     nsteps, nwalkers, ndim = np.shape(result['full_chain'])
 
-    for str_inf in [
-        'notes',
-        'start',
-        'fit_time',
-        'poisson',
-        'nwalkers',
-        'nsteps',
-            'n_energy_bins']:
+    for str_inf in ['notes', 'start', 'fit_time', 'poisson',
+                    'nwalkers', 'nsteps', 'n_energy_bins']:
         try:
             info += f"\n{str_inf} = %s" % result['config'][str_inf]
             if str_inf == 'start':
                 info = info[:-7]
             if str_inf == 'fit_time':
-                info += 's (%.1f h)' % (result['config'][str_inf] / 3600.)
-
+                info += 's (%.1f h)' % (float(result['config'][str_inf]) / 3600.)
         except KeyError:
             pass
     info += "\nnwalkers = %s" % nwalkers
     info += "\nnsteps = %s" % nsteps
     labels = statistics.get_param_list()[:ndim]
-    truths = [result['config'][prior_name] for prior_name in
+    truths = [result['config'][prior_name]
+              if prior_name in result['config']
+              else result['config']['prior'][prior_name]['mean']
+              for prior_name in
               statistics.get_prior_list()[:ndim]]
     fig = corner.corner(
         result['flat_chain'],

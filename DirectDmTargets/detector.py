@@ -1,12 +1,9 @@
 """Introduce detector effects into the expected detection spectrum"""
 
 from warnings import warn
-
 import numba
 import numpy as np
-import pandas as pd
 from DirectDmTargets.halo import GenSpectrum
-from DirectDmTargets.utils import get_bins
 
 
 def det_res_Xe(E):
@@ -70,7 +67,8 @@ def det_res_superCDMS110(E):
 
 def det_res_XENON1T(E):
     """
-    Detector resolution of XENON1T. See e.g. 1 of https://journals.aps.org/prd/pdf/10.1103/PhysRevD.102.072004
+    Detector resolution of XENON1T. See e.g. 1 of
+        https://journals.aps.org/prd/pdf/10.1103/PhysRevD.102.072004
     :param E: energy in keV
     :return: resolution at E
     """
@@ -107,21 +105,6 @@ def nr_background_xe(e_min, e_max, nbins):
         mes = f'Assume flat background only below 200 keV ({e_min}, {e_max})'
         raise ValueError(mes)
     return np.full(nbins, bg_rate)
-
-
-@numba.jit(nopython=True)
-def migdal_background_CDMS(e_min, e_max, nbins):
-    """
-    :return: background for Ge detector in events/keV/t/yr
-    """
-    bins = np.linspace(e_min, e_max, nbins)
-    res = []
-    conv_units = 1.0e-3 * (1 / 365.25)
-    for i in range(nbins):
-        res.append(
-            CDMS_background_functions(bins[i]) * conv_units)
-
-    return np.array(res)
 
 
 def migdal_background_superCDMS_Ge_HV(e_min, e_max, nbins):
@@ -202,7 +185,6 @@ def nr_background_superCDMS_Ge(e_min, e_max, nbins):
 
 def nr_background_superCDMS_Si(e_min, e_max, nbins):
     """
-    :param E: recoil energy (in keV)
     :return: background for Si iZIP/HV detector in events/keV/t/yr
     """
     # https://arxiv.org/abs/1610.00006
@@ -217,23 +199,6 @@ def nr_background_superCDMS_Si(e_min, e_max, nbins):
     return res
 
 
-@numba.jit(nopython=True)
-def CDMS_background_functions(E):
-    # background in XENON1T
-    # p. 140 https://pure.uva.nl/ws/files/31193425/Thesis.pdf
-    if E < 3:  # keV
-        return 0.9  # kg day / keV
-    if E < 5:
-        return 0.1
-    if E < 8:
-        return 0.01
-    return 0.01
-
-
-# Set the default benchmark for a 50 GeV WIMP with a cross-section of
-# 1e-45 cm^2
-benchmark = {'mw': 50., 'sigma_nucleon': 1e-45}
-
 # Set up a dictionary of the different detectors
 # Each experiment below lists:
 # Name :{Interaction type (type0, exposure [ton x yr] (exp.), cut efficiency (cut_eff),
@@ -242,15 +207,15 @@ benchmark = {'mw': 50., 'sigma_nucleon': 1e-45}
 
 experiment = {
     'Xe': {'material': 'Xe', 'type': 'SI', 'exp': 5., 'cut_eff': 0.8, 'nr_eff': 0.5, 'E_thr': 10.,
-           'location': "XENON", 'res': det_res_Xe},
+           'location': "XENON", 'res': det_res_Xe, 'n_energy_bins': 10, 'E_max': 100},
     'Ge': {'material': 'Ge', 'type': 'SI', 'exp': 3., 'cut_eff': 0.8, 'nr_eff': 0.9, 'E_thr': 10.,
-           'location': "SUF", 'res': det_res_Ge},
+           'location': "SUF", 'res': det_res_Ge, 'n_energy_bins': 10, 'E_max': 100},
     'Ar': {'material': 'Ar', 'type': 'SI', 'exp': 10., 'cut_eff': 0.8, 'nr_eff': 0.8, 'E_thr': 30.,
-           'location': "XENON", 'res': det_res_Ar},
+           'location': "XENON", 'res': det_res_Ar, 'n_energy_bins': 10, 'E_max': 100},
     # --- Ge iZIP bg --- #
     'Ge_iZIP_bg': {
         'material': 'Ge',
-        'type': 'SI_bg',
+        'type': 'SI',
         'exp': 56 * 1.e-3,  # Tonne year
         'cut_eff': 0.75,  # p. 11, right column
         'nr_eff': 0.85,  # p. 11, left column
@@ -263,7 +228,7 @@ experiment = {
     },
     'Ge_migd_iZIP_bg': {
         'material': 'Ge',
-        'type': 'migdal_bg',
+        'type': 'migdal',
         'exp': 56 * 1.e-3,  # Tonne year
         'cut_eff': 0.75,  # p. 11, right column
         'nr_eff': 0.5,  # p. 11, left column NOTE: migdal is ER type!
@@ -277,7 +242,7 @@ experiment = {
     # --- Si iZIP bg --- #
     'Ge_iZIP_Si_bg': {
         'material': 'Si',
-        'type': 'SI_bg',
+        'type': 'SI',
         'exp': 4.8 * 1.e-3,  # Tonne year
         'cut_eff': 0.75,  # p. 11, right column
         'nr_eff': 0.85,  # p. 11, left column
@@ -290,7 +255,7 @@ experiment = {
     },
     'Ge_migd_iZIP_Si_bg': {
         'material': 'Si',
-        'type': 'migdal_bg',
+        'type': 'migdal',
         'exp': 4.8 * 1.e-3,  # Tonne year
         'cut_eff': 0.75,  # p. 11, right column
         'nr_eff': 0.675,  # p. 11, left column NOTE: migdal is ER type!
@@ -304,7 +269,7 @@ experiment = {
     # --- Ge HV bg --- #
     'Ge_HV_bg': {
         'material': 'Ge',
-        'type': 'SI_bg',
+        'type': 'SI',
         'exp': 44 * 1.e-3,  # Tonne year
         'cut_eff': 0.85,  # p. 11, right column
         'nr_eff': 0.85,  # p. 11, left column NOTE: ER type!
@@ -317,7 +282,7 @@ experiment = {
     },
     'Ge_migd_HV_bg': {
         'material': 'Ge',
-        'type': 'migdal_bg',
+        'type': 'migdal',
         'exp': 44 * 1.e-3,  # Tonne year
         'cut_eff': 0.85,  # p. 11, right column
         'nr_eff': 0.5,  # p. 11, left column NOTE: migdal is ER type!
@@ -331,7 +296,7 @@ experiment = {
     # --- Si HV bg --- #
     'Ge_HV_Si_bg': {
         'material': 'Si',
-        'type': 'SI_bg',
+        'type': 'SI',
         'exp': 9.6 * 1.e-3,  # Tonne year
         # https://www.slac.stanford.edu/exp/cdms/ScienceResults/Publications/PhysRevD.95.082002.pdf
         'cut_eff': 0.85,  # p. 11, right column
@@ -345,7 +310,7 @@ experiment = {
     },
     'Ge_migd_HV_Si_bg': {
         'material': 'Si',
-        'type': 'migdal_bg',
+        'type': 'migdal',
         'exp': 9.6 * 1.e-3,  # Tonne year
         # https://www.slac.stanford.edu/exp/cdms/ScienceResults/Publications/PhysRevD.95.082002.pdf
         'cut_eff': 0.85,  # p. 11, right column
@@ -359,7 +324,7 @@ experiment = {
     },
     'Xe_migd_bg': {
         'material': 'Xe',
-        'type': 'migdal_bg',
+        'type': 'migdal',
         'exp': 20,  # https://arxiv.org/pdf/2007.08796.pdf
 
         # Combined cut & detection efficiency as in
@@ -376,7 +341,7 @@ experiment = {
     },
     'Xe_bg': {
         'material': 'Xe',
-        'type': 'SI_bg',
+        'type': 'SI',
         'exp': 20,  # https://arxiv.org/pdf/2007.08796.pdf
 
         # Combined cut & detection efficiency as in
@@ -398,15 +363,8 @@ for name in experiment.keys():
                                    experiment[name]['cut_eff'] *
                                    experiment[name]['nr_eff'])
     experiment[name]['name'] = name
-
-# Make a copy with setting background to True!
-exp_names = experiment.keys()
-for name in list(exp_names):
-    if '_bg' not in name:
-        bg_name = name + '_bg'
-        if bg_name not in exp_names:
-            experiment[bg_name] = experiment[name].copy()
-            experiment[bg_name]['type'] = experiment[bg_name]['type'] + '_bg'
+    if 'E_min' not in experiment[name]:
+        experiment[name]['E_min'] = 0
 
 # Make a new experiment that is a placeholder for the CombinedInference class.
 experiment['Combined'] = {'type': 'combined'}
@@ -448,88 +406,28 @@ def _smear_signal(rate, energy, sigma, bin_width):
 
 
 def smear_signal(rate, energy, sigma, bin_width):
-    if np.mean(sigma) < bin_width:
+    if np.max(sigma) < bin_width:
         # print(f'Resolution {np.mean(sigma)} better than bin_width {bin_width}!')
         return rate
     return _smear_signal(rate, energy, sigma, bin_width)
 
 
 class DetectorSpectrum(GenSpectrum):
-    def __init__(self, *args):
-        super().__init__(*args)
-        # GenSpectrum generates a number of bins (default 10), however, since a
-        # numerical integration is performed in compute_detected_spectrum, this
-        # number is multiplied here.
-        self.rebin_factor = 10
-        self.n_bins_result = None
-        # Please note that this is NOT pretty. It was a monkey patch implemented since
-        # many spectra were already computed using this naming hence we have to deal
-        # with this lack of clarity in earlier coding in this manner.
-        self.add_background = True if 'bg' in self.experiment['type'] else False
+    add_background = False
+    required_detector_fields = 'name material type exp_eff exp exp_eff E_thr res'.split()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if 'bg_func' in self.config:
+            self.add_background = kwargs.get('add_background', True)
+        else:
+            self.log.debug(f'No bg_func in experiment config')
 
     def __str__(self):
         return (f"DetectorSpectrum class inherited from GenSpectrum.\nSmears "
                 f"spectrum with detector resolution and implements the energy "
                 f"threshold for the detector")
-
-    @staticmethod
-    def chuck_integration(rates, energies, bins):
-        """
-        :param rates: counts/bin
-        :param energies: energy bin_center
-        :param bins: two-dimensional array of the bin-boundaries wherein the
-        energies should be integrated
-        :return: the re-binned number of counts/bin specified by the two-
-        dimensional array bins
-        """
-        res = np.zeros(len(bins))
-        for i, bin_i in enumerate(bins):
-            # bin_i should be [right bin,  left bin]
-            mask = (energies > bin_i[0]) & (energies < bin_i[1])
-            bin_width = np.average(np.diff(energies[mask]))
-            res[i] = np.sum(rates[mask] * bin_width)
-        return res
-
-    def above_threshold(self, rates, energies):
-        rates[energies < self.experiment['E_thr']] = 0
-        return rates
-
-    def compute_detected_spectrum(self):
-        """
-
-        :return: spectrum taking into account the detector properties
-        """
-        # The numerical integration requires finer binning, therefore compute a
-        # spectrum at finer binning than the number of bins the result should be
-        # in.
-        self.n_bins_result = self.n_bins
-        self.n_bins = self.n_bins * self.rebin_factor
-        # get the spectrum
-        rates = self.spectrum_simple([self.mw, self.sigma_nucleon])
-        # if this option is set to true, add a background component
-        if self.add_background:
-            # pay close attention, the events in the bg_func are already taking into
-            # account the det. efficiency et cetera. Hence the number here should be
-            # multiplied by the total exposure (rather than the effective exposure that
-            # is multiplied by at the end of this subroutine. Hence the bg rates obtained
-            # from that function is multiplied by the ratio between the two.
-            rates += self.experiment['bg_func'](self.E_min,
-                                                self.E_max,
-                                                self.n_bins) * (
-                self.experiment['exp'] / self.experiment['exp_eff'])
-        energies = self.get_bin_centers()
-
-        # Set the rate to zero for energies smaller than the threshold
-        rates = self.above_threshold(rates, energies)
-        result_bins = get_bins(self.E_min, self.E_max, self.n_bins_result)
-        sigma = self.experiment['res'](energies)
-        bin_width = np.mean(np.diff(energies))
-        # Smear (using numerical integration) the rates with the detector
-        # resolution
-        events = np.array(smear_signal(rates, energies, sigma, bin_width))
-        # re-bin final result to the desired number of bins
-        events = self.chuck_integration(events, energies, result_bins)
-        return events * self.experiment['exp_eff']
 
     def get_events(self):
         """
@@ -537,21 +435,70 @@ class DetectorSpectrum(GenSpectrum):
         """
         return self.compute_detected_spectrum()
 
-    def get_data(self, poisson=True):
+    def compute_detected_spectrum(self):
         """
 
-        :param poisson: type bool, add poisson True or False
-        :return: pd.DataFrame containing events binned in energy
+        :return: spectrum taking into account the detector properties
         """
-        result = pd.DataFrame()
-        if poisson:
-            result['counts'] = self.get_poisson_events()
-        else:
-            result['counts'] = self.get_events()
-        bins = get_bins(self.E_min, self.E_max, self.n_bins_result)
-        result['bin_centers'] = np.mean(bins, axis=1)
-        result['bin_left'] = bins[:, 0]
-        result['bin_right'] = bins[:, 1]
-        result = self.set_negative_to_zero(result)
+        # get the spectrum
+        rates = self.spectrum_simple([self.mw, self.sigma_nucleon])
 
-        return result
+        if self.add_background:
+            # pay close attention, the events in the bg_func are already taking into
+            # account the det. efficiency et cetera. Hence the number here should be
+            # multiplied by the total exposure (rather than the effective exposure that
+            # is multiplied by at the end of this subroutine. Hence the bg rates obtained
+            # from that function is multiplied by the ratio between the two.
+            rates += self.config['bg_func'](self.E_min,
+                                            self.E_max,
+                                            self.n_bins) * (
+                             self.config['exp'] / self.config['exp_eff'])
+        e_bin_edges = np.array(self.get_bin_edges())
+        e_bin_centers = np.mean(e_bin_edges, axis=1)
+        bin_width = np.mean(np.diff(e_bin_centers))
+
+        # Set the rate to zero for energies smaller than the threshold
+        rates = self.above_threshold(rates, e_bin_edges, self.config['E_thr'])
+        sigma = self.config['res'](e_bin_centers)
+
+        # Smear the rates with the detector resolution
+        events = np.array(smear_signal(rates, e_bin_centers, sigma, bin_width))
+
+        # Calculate the total number of events per bin
+        events = events * bin_width * self.config['exp_eff']
+        return events
+
+    @staticmethod
+    @numba.njit
+    def above_threshold(rates, e_bin_edges, e_thr):
+        """
+        Apply threshold to the rates. We are right edge inclusive
+        bin edges : |bin0|bin1|bin2|
+        e_thr     :        |
+        bin0 -> 0
+        bin1 -> fraction of bin1 > e_thr
+        bin2 -> full content
+
+        :param rates: bins with the number of counts
+        :param e_bin_edges: 2d array of the left, right bins
+        :param e_thr: energy threshold
+        :return: rates with energy threshold applied
+        """
+        for r_i, r in enumerate(rates):
+            left_edge, right_edge = e_bin_edges[r_i]
+            if left_edge >= e_thr:
+                # From now on all the bins will be above threshold we don't
+                # have to set to 0 anymore
+                break
+            if right_edge <= e_thr:
+                # this bin is fully below threshold
+                rates[r_i] = 0
+                continue
+            elif e_thr >= left_edge and e_thr <= right_edge:
+                fraction_above = (right_edge - e_thr) / (right_edge - left_edge)
+                rates[r_i] = r * fraction_above
+            else:
+                print(left_edge, right_edge, e_thr)
+                raise ValueError('How did this happen?')
+
+        return rates

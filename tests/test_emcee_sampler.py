@@ -29,8 +29,6 @@ def test_emcee_full_prior():
     fit_class.nsteps = 20
     fit_class.verbose = 1
     with tempfile.TemporaryDirectory() as tmpdirname:
-        use_pos = fit_class.get_pos_full_prior()
-        fit_class.set_pos(use_pos)
         fit_class.run_emcee()
         fit_class.show_corner()
         fit_class.show_walkers()

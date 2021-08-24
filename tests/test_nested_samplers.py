@@ -18,7 +18,7 @@ def test_nested_simple_multinest():
     fit_class = dddm.NestedSamplerStatModel('Xe')
     fit_class.config['tol'] = 0.1
     fit_class.config['nlive'] = 10
-    fit_class.set_benchmark(mw=49)
+    fit_class.set_benchmark(mass=49)
     print(f"Fitting for parameters:\n{fit_class.config['fit_parameters']}")
     fit_class.run_multinest()
     fit_class.get_summary()
@@ -49,7 +49,6 @@ def test_nested_astrophysics_multinest():
         fit_unconstrained.show_corner()
         r = dddm.nested_sampling.load_multinest_samples_from_file(save_as)
         dddm.nested_sampling.multinest_corner(r)
-        fit_unconstrained.empty_garbage()
         plt.clf()
         plt.close()
 
@@ -72,14 +71,10 @@ def test_nestle():
     stats.config['sampler'] = 'nestle'
     stats.config['tol'] = 0.1
     stats.config['nlive'] = 30
-    print('print info')
-    stats.print_before_run()
     print('Start run')
     stats.run_nestle()
     print('Save results')
     stats.save_results()
-    print('Empty garbade')
-    stats.empty_garbage()
     print('Show corner')
     try:
         stats.show_corner()

@@ -1,7 +1,9 @@
-"""Do a likelihood fit. The class NestedSamplerStatModel is used for fitting applying the bayesian algorithm nestle"""
+"""
+Do a likelihood fit. The class NestedSamplerStatModel is used for fitting
+applying the bayesian algorithm nestle/multinest
+"""
 
 from __future__ import absolute_import, unicode_literals
-
 import datetime
 import json
 import logging
@@ -9,10 +11,8 @@ import os
 import shutil
 import tempfile
 from warnings import warn
-
 import corner
 import matplotlib.pyplot as plt
-import numericalunits as nu
 import numpy as np
 from DirectDmTargets import context, detector, statistics, utils
 from scipy import special as spsp
@@ -20,44 +20,28 @@ from scipy import special as spsp
 log = logging.getLogger()
 
 
-# log.setLevel(logging.DEBUG)
-
-
-def default_nested_save_dir():
-    """The name of folders where to save results from the NestedSamplerStatModel"""
-    log.warning('Deprecated, please use something else')
-    return 'nested'
-
-
 class NestedSamplerStatModel(statistics.StatModel):
-    known_parameters = statistics.get_param_list()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.config['tol'] = 0.1  # Tolerance for sampling
-        self.config['nlive'] = 1024  # number of live points
-        self.config['sampler'] = 'multinest'
+
+        self.config.update(
+            {'tol': 0.1,  # Tolerance for sampling
+             'nlive': 1024,  # number of live points
+             'sampler': 'multinest',
+             })
         self.log_dict = {
             'did_run': False,
             'saved_in': None,
             'tmp_dir': None,
             'garbage_bin': []}
-        self.config['start'] = datetime.datetime.now()
-        self.config['notes'] = "default"
-        self.result = False
-        self.config['fit_parameters'] = None
-        self.set_fit_parameters(['log_mass', 'log_cross_section'])
 
-        self.log.info(f'NestedSamplerStatModel::\tVERBOSE ENABLED')
-        self.log.debug(
-            f"NestedSamplerStatModel::\t{utils.now()}\n\t"
-            f"SUPERVERBOSE ENABLED\n\tyou want to know it all? Here we go sit "
-            f"back and be blown by my output!")
+        self.result = False
+        self.set_fit_parameters(('log_mass', 'log_cross_section'))
 
     def check_did_run(self):
         if not self.log_dict['did_run']:
-            self.log.info(f'NestedSamplerStatModel::\tdid not '
-                          f'run yet, lets fire it up!')
+            self.log.info(f'did not run yet, lets fire it up!')
             if self.config['sampler'] == 'nestle':
                 self.run_nestle()
             elif self.config['sampler'] == 'multinest':
@@ -67,12 +51,10 @@ class NestedSamplerStatModel(statistics.StatModel):
                     f'No such sampler as {self.config["sampler"]}, perhaps '
                     f'try nestle or multinest')
         else:
-            self.log.info(f'NestedSamplerStatModel::\tdid run')
+            self.log.info(f'did run')
 
     def check_did_save(self):
-        self.log.info(
-            f'NestedSamplerStatModel::\tdid not save'
-            f' yet, we dont want to lose our results so better do it now')
+        self.log.info(f'did not save yet, we don\'t want to lose our results so better do it now')
         if self.log_dict['saved_in'] is None:
             self.save_results()
 
@@ -84,31 +66,29 @@ class NestedSamplerStatModel(statistics.StatModel):
         :param parameter_names: the names of the parameter_values
         :return:
         """
-        self.log.debug(
-            f'NestedSamplerStatModel::\tSUPERVERBOSE\tthere we go! Find that log probability')
+        self.log.debug(f'there we go! Find that log probability')
         evaluated_rate = self.eval_spectrum(parameter_vals, parameter_names)[
             'counts']
 
         ll = statistics.log_likelihood(self.benchmark_values, evaluated_rate)
         if np.isnan(ll):
-            raise ValueError(
-                f"Returned NaN from likelihood. ll = {ll}")
-        self.log.debug(
-            f'NestedSamplerStatModel::\tSUPERVERBOSE\tfound it! returning the log likelihood')
+            raise ValueError(f"Returned NaN from likelihood. ll = {ll}")
+        self.log.debug(f'found it! returning the log likelihood')
         return ll
 
     def log_prior_transform_nested(self, x, x_name):
-        self.log.debug(
-            f'NestedSamplerStatModel::\tSUPERVERBOSE\tdoing some transformations for nestle/multinest '
-            f'to read the priors')
-        if self.config['prior'][x_name]['prior_type'] == 'flat':
-            a, b = self.config['prior'][x_name]['param']
+        self.log.debug(f'doing some transformations for nestle/multinest to read the priors')
+        this_prior = self.config['prior'][x_name]
+        prior_type = this_prior['prior_type']
+
+        if prior_type == 'flat':
+            a, b = this_prior['param']
             # Prior transform of a flat prior is a simple line.
             return x * (b - a) + a
-        if self.config['prior'][x_name]['prior_type'] == 'gauss':
+        if prior_type == 'gauss':
             # Get the range from the config file
-            a, b = self.config['prior'][x_name]['range']
-            m, s = self.config['prior'][x_name]['param']
+            a, b = this_prior['range']
+            m, s = this_prior['param']
 
             # Here the prior transform is being constructed and shifted. This may not seem trivial
             # and one is advised to request a notebook where this is explained
@@ -118,37 +98,27 @@ class NestedSamplerStatModel(statistics.StatModel):
             xprime = x * (bprime - aprime) + aprime
             res = m + s * spsp.ndtri(xprime)
             return res
-        err_message = (
-            f"unknown prior type '{self.config['prior'][x_name]['prior_type']}',"
-            f" choose either gauss or flat")
-        raise TypeError(err_message)
+        raise ValueError(f"unknown prior type '{prior_type}'")
 
     def _log_probability_nested(self, theta):
+        """warp log_prior_transform_nested"""
         ndim = len(theta)
-        self.log.debug(
-            f'NestedSamplerStatModel::\tSUPERVERBOSE\tdoing '
-            f'_log_probability_nested for {ndim} parameters'
-            f'\n\t\tooph, what a nasty function to do some transformations behind the scenes')
         result = self.log_probability_nested(
             theta, self.known_parameters[:ndim])
         return result
 
     def _log_prior_transform_nested(self, theta):
-        self.log.debug(
-            f'NestedSamplerStatModel::\tSUPERVERBOSE\tdoing '
-            f'_log_prior_transform_nested for {len(theta)} parameters'
-            f'\n\t\tooph, what a nasty function to do some transformations behind the scenes')
         result = [
-            self.log_prior_transform_nested(
-                val,
-                self.known_parameters[i]) for i,
-            val in enumerate(theta)]
+            self.log_prior_transform_nested(val, self.known_parameters[i])
+            for i, val in enumerate(theta)]
         return np.array(result)
 
     def run_nestle(self):
-        self.print_before_run()
-        assert self.config[
-            'sampler'] == 'nestle', f'Trying to run nestle but initialization requires {self.config["sampler"]}'
+        self._fix_parameters()
+        self._print_before_run()
+        if self.config['sampler'] != 'nestle':
+            raise RuntimeError(f'Trying to run nestle but initialization '
+                               f'requires {self.config["sampler"]}')
 
         # Do the import of nestle inside the class such that the package can be
         # loaded without nestle
@@ -158,78 +128,64 @@ class NestedSamplerStatModel(statistics.StatModel):
             raise ModuleNotFoundError(
                 'package nestle not found. See README for installation')
 
-        self.log.info(
-            f'NestedSamplerStatModel::\tWe made it to my core function, lets do that optimization')
+        self.log.debug(f'We made it to my core function, lets do that optimization')
         method = 'multi'  # use MutliNest algorithm
         ndim = len(self.config['fit_parameters'])
         tol = self.config['tol']  # the stopping criterion
-        self.log.info(
-            f'NestedSamplerStatModel::\there we go! We are going to fit:\n\t{ndim} parameters\n')
+
         assert_str = f"Unknown configuration of fit pars: {self.config['fit_parameters']}"
         assert self.config["fit_parameters"] == self.known_parameters[:ndim], assert_str
+
+        self.log.warning(f'run_nestle::\tstart_fit for {ndim} parameters')
+
+        start = datetime.datetime.now()
         try:
-            self.log.warning(
-                f'run_nestle::\tstart_fit for %i parameters' %
-                ndim)
-            self.log.info(
-                f'NestedSamplerStatModel::\tbeyond this point, there is nothing '
-                f"I can say, you'll have to wait for my lower level "
-                f'algorithms to give you info, see you soon!')
-            start = datetime.datetime.now()
             self.result = nestle.sample(
                 self._log_probability_nested,
                 self._log_prior_transform_nested,
                 ndim,
                 method=method,
                 npoints=self.config['nlive'],
-                maxiter=self.config.get(
-                    'max_iter',
-                    None),
+                maxiter=self.config.get('max_iter'),
                 dlogz=tol)
-            end = datetime.datetime.now()
-            dt = end - start
-            self.log.info(
-                f'run_nestle::\tfit_done in %i s (%.1f h)' %
-                (dt.seconds, dt.seconds / 3600.))
-            self.log.debug(
-                f'NestedSamplerStatModel::\tSUPERVERBOSE\tWe are back!')
         except ValueError as e:
+            self.config['fit_time'] = -1
             self.log.error(
                 f'Nestle did not finish due to a ValueError. Was running with'
-                f'\n{len(self.config["fit_parameters"])} for fit '
-                'parameters '
                 f'{self.config["fit_parameters"]}')
             raise e
-        self.log_dict['did_run'] = True
-        try:
-            self.config['fit_time'] = dt.seconds
-        except NameError:
-            self.config['fit_time'] = -1
-        self.log.info(
-            f'NestedSamplerStatModel::\tFinished with running optimizer!')
 
-    def print_before_run(self):
-        self.log.warning(f"""--------------------------------------------------
-        NestedSamplerStatModel::\t{utils.now()}\n\tFinal print of all of the set options:
-        self.config['tol'] = {self.config['tol']}
-        self.config['nlive'] = {self.config['nlive']}
-        self.config["sampler"] = {self.config["sampler"]}
-        self.log = {self.log}
-        self.result = {self.result}
-        self.config["fit_parameters"] = {self.config["fit_parameters"]}
-        halo_model = {self.config['halo_model']} with:
-            v_0 = {self.config['halo_model'].v_0 / (nu.km / nu.s)}
-            v_esc = {self.config['halo_model'].v_esc / (nu.km / nu.s)}
-            rho_dm = {self.config['halo_model'].rho_dm / (nu.GeV / nu.c0 ** 2 / nu.cm ** 3)}
-        self.benchmark_values = {np.array(self.benchmark_values)}
-        self.config = {self.config}
-        --------------------------------------------------
-        """)
+        end = datetime.datetime.now()
+        dt = (end - start).total_seconds()
+        self.log.info(f'fit_done in {dt} s ({dt / 3600} h)')
+        self.config['fit_time'] = dt
+        self.log_dict['did_run'] = True
+        self.log.info(f'Finished with running optimizer!')
+
+    def _print_before_run(self):
+        self.log.warning(
+            f"""
+            --------------------------------------------------
+            {utils.now()}\n\tFinal print of all of the set options:
+            self.config['tol'] = {self.config['tol']}
+            self.config['nlive'] = {self.config['nlive']}
+            self.config["sampler"] = {self.config["sampler"]}
+            self.log = {self.log}
+            self.result = {self.result}
+            self.config["fit_parameters"] = {self.config["fit_parameters"]}
+            halo_model = {self.config['halo_model']} with:
+                v_0 = {self.config['halo_model'].parameter_dict()}
+            self.benchmark_values = {np.array(self.benchmark_values)}
+            self.config = {self.config}
+            --------------------------------------------------
+            """
+        )
 
     def run_multinest(self):
-        self.print_before_run()
-        assert self.config[
-            "sampler"] == 'multinest', f'Trying to run multinest but initialization requires {self.config["sampler"]}'
+        self._fix_parameters()
+        self._print_before_run()
+        if self.config["sampler"] != 'multinest':
+            raise ValueError(f'Wrong sampler {self.config["sampler"]}!')
         # Do the import of multinest inside the class such that the package can be
         # loaded without multinest
         try:
@@ -238,24 +194,14 @@ class NestedSamplerStatModel(statistics.StatModel):
             raise ModuleNotFoundError(
                 'package pymultinest not found. See README for installation')
 
-        self.log.info(
-            f'NestedSamplerStatModel::\tWe made it to my core function, lets do that optimization')
-
         n_dims = len(self.config["fit_parameters"])
         tol = self.config['tol']  # the stopping criterion
-        self.log.info(
-            f'NestedSamplerStatModel::\there we go! We are going to fit:\n\t{n_dims} parameters\n')
         save_at = self.get_save_dir()
         assert_str = f'Unknown configuration of fit pars: {self.config["fit_parameters"]}'
         assert self.config["fit_parameters"] == self.known_parameters[:n_dims], assert_str
-        # try:
-        self.log.warning(
-            f'NestedSamplerStatModel::\tstart_fit for %i parameters' %
-            n_dims)
-        self.log.info(
-            f'NestedSamplerStatModel::\tbeyond this point, there is nothing '
-            f"I can say, you'll have to wait for my lower level "
-            f'algorithms to give you info, see you soon!')
+
+        self.log.warning(f'start_fit for %i parameters' % n_dims)
+
         start = datetime.datetime.now()
 
         # Multinest saves output to a folder. First write to the tmp folder,
@@ -281,40 +227,16 @@ class NestedSamplerStatModel(statistics.StatModel):
         # multinest results there.
         utils.check_folder_for_file(save_at)
         end = datetime.datetime.now()
-        dt = end - start
-        self.log.warning(
-            f'run_multinest::\tfit_done in %i s (%.1f h)' %
-            (dt.seconds, dt.seconds / 3600.))
+        dt = (end - start).total_seconds()
+        self.log.info(f'fit_done in {dt} s ({dt / 3600} h)')
         self.log_dict['did_run'] = True
+        self.config['fit_time'] = dt
 
-        try:
-            self.config['fit_time'] = dt.seconds
-        except NameError:
-            self.config['fit_time'] = -1
-        self.log.info(
-            f'NestedSamplerStatModel::\tFinished with running Multinest!')
-
-    def empty_garbage(self):
-        self.log.warn(
-            f'Deprecation warning. Will remove empty_garbage in future versions')
-        for file in self.log_dict['garbage_bin']:
-            self.log.info(f'delete {file}')
-            if os.path.exists(file):
-                try:
-                    shutil.rmtree(file)
-                except FileNotFoundError:
-                    pass
-            else:
-                self.log.debug(
-                    f'Could not find {file} that is in the garbage bin?')
+        self.log.info(f'Finished with running Multinest!')
 
     def get_summary(self):
-        self.log.info(f'NestedSamplerStatModel::\tgetting the summary (or at'
-                      f"least trying) let's first see if I did run")
+        self.log.info(f"getting the summary (or at least trying) let\'s first see if I did run")
         self.check_did_run()
-        self.log.info(
-            f"NestedSamplerStatModel::\t{utils.now()}\n\tAlright, that's done. Let's get some "
-            f"info. I'm not going to print too much here")
         # keep a dictionary of all the results
         resdict = {}
 
@@ -326,8 +248,7 @@ class NestedSamplerStatModel(statistics.StatModel):
             except ModuleNotFoundError:
                 raise ModuleNotFoundError(
                     'package pymultinest not found. See README for installation')
-            self.log.info(
-                'NestedSamplerStatModel::\tget_summary::\tstart analyzer of results')
+            self.log.info('start analyzer of results')
             analyzer = Analyzer(len(self.config['fit_parameters']),
                                 outputfiles_basename=self.result_file)
             # Taken from multinest.solve
@@ -335,18 +256,18 @@ class NestedSamplerStatModel(statistics.StatModel):
             samples = analyzer.get_equal_weighted_posterior()[:, :-1]
 
             self.log.info('parameter values:')
-            for name, col in zip(
-                    self.config['fit_parameters'], samples.transpose()):
+            for name, col in zip(self.config['fit_parameters'],
+                                 samples.transpose()):
                 self.log.info(
                     '%15s : %.3f +- %.3f' %
                     (name, col.mean(), col.std()))
-                resdict[name +
-                        '_fit_res'] = ('{0:5.2f} +/- {1:5.2f}'.format(col.mean(), col.std()))
+                resdict[name + '_fit_res'] = (
+                    '{0:5.2f} +/- {1:5.2f}'.format(col.mean(), col.std()))
                 if 'log_' in name:
                     resdict[name[4:] + '_fit_res'] = '%.3g +/- %.2g' % (
                         10. ** col.mean(), 10. ** (col.mean()) * np.log(10.) * col.std())
-                    self.log.info(
-                        f'\t {name[4:]}, {resdict[name[4:] + "_fit_res"]}')
+                    self.log.info(f'\t {name[4:]},'
+                                  f' {resdict[name[4:] + "_fit_res"]}')
             resdict['n_samples'] = len(samples.transpose()[0])
             # Pass the samples to the self.result to be saved.
             self.result['samples'] = samples
@@ -358,7 +279,7 @@ class NestedSamplerStatModel(statistics.StatModel):
             except ModuleNotFoundError:
                 raise ModuleNotFoundError(
                     'package nestle not found. See README for installation')
-            # taken from mattpitkin.github.io/samplers-demo/pages/samplers-samplers-everywhere/#Nestle
+            # taken from mattpitkin.github.io/samplers-demo/pages/samplers-samplers-everywhere/#Nestle  # noqa
             # estimate of the statistical uncertainty on logZ
             logZerrnestle = np.sqrt(self.result.h / self.config['nlive'])
             # re-scale weights to have a maximum of one
@@ -385,9 +306,7 @@ class NestedSamplerStatModel(statistics.StatModel):
                         10. ** p[i], 10. ** (p[i]) * np.log(10) * np.sqrt(cov[i, i]))
                     self.log.info(
                         f'\t, {key[4:]}, {resdict[key[4:] + "_fit_res"]}')
-        self.log.info(
-            f'NestedSamplerStatModel::\tAlright we got all the info we need, '
-            f"let's return it to whomever asked for it")
+        self.log.info(f"Alright we got all the info we need")
         return resdict
 
     def get_save_dir(self, force_index=False, _hash=None) -> str:
@@ -399,7 +318,7 @@ class NestedSamplerStatModel(statistics.StatModel):
                                           force_index=force_index,
                                           _hash=_hash)
         self.log_dict['saved_in'] = target_save
-        self.log.info(f'NestedSamplerStatModel::\tget_save_dir\tsave_dir = {target_save}')
+        self.log.info(f'get_save_dir\tsave_dir = {target_save}')
         return target_save
 
     def get_tmp_dir(self, force_index=False, _hash=None):
@@ -410,20 +329,16 @@ class NestedSamplerStatModel(statistics.StatModel):
                 force_index=force_index,
                 _hash=_hash)
         self.log.info(
-            f'NestedSamplerStatModel::\tget_tmp_dir\ttmp_dir = {self.log_dict["tmp_dir"]}')
+            f'get_tmp_dir\ttmp_dir = {self.log_dict["tmp_dir"]}')
         return self.log_dict['tmp_dir']
 
     def save_results(self, force_index=False):
-        self.log.info(
-            f'NestedSamplerStatModel::\tAlmost there! We are about to save the '
-            f'results. But first do some checks, did we actually run?')
+        self.log.info('Saving results after checking we did run')
         # save fit parameters to config
         self.check_did_run()
         save_dir = self.get_save_dir(force_index=force_index)
         fit_summary = self.get_summary()
-        self.log.info(
-            f'NestedSamplerStatModel::\tAlright all set, let put all that info'
-            f' in {save_dir} and be done with it')
+        self.log.info(f'storing in {save_dir}')
         # save the config, chain and flattened chain
         pid_id = 'pid' + str(os.getpid()) + '_'
         with open(os.path.join(save_dir, f'{pid_id}config.json'), 'w') as file:
@@ -435,34 +350,30 @@ class NestedSamplerStatModel(statistics.StatModel):
             convert_dic_to_savable(self.config))
         np.save(os.path.join(save_dir, f'{pid_id}res_dict.npy'),
                 convert_dic_to_savable(fit_summary))
+
         for col in self.result.keys():
             if col == 'samples' or not isinstance(col, dict):
                 if self.config["sampler"] == 'multinest' and col == 'samples':
                     # in contrast to nestle, multinest returns the weighted
                     # samples.
-                    np.save(os.path.join(save_dir, f'{pid_id}weighted_samples.npy'),
-                            self.result[col])
+                    store_at = os.path.join(save_dir,
+                                            f'{pid_id}weighted_samples.npy')
+                    np.save(store_at, self.result[col])
                 else:
-                    np.save(
-                        os.path.join(
-                            save_dir,
-                            pid_id + col + '.npy'),
-                        self.result[col])
+                    store_at = os.path.join(
+                        save_dir,
+                        pid_id + col + '.npy')
+                    np.save(store_at, self.result[col])
             else:
                 np.save(os.path.join(save_dir, pid_id + col + '.npy'),
                         convert_dic_to_savable(self.result[col]))
         if 'logging' in self.config:
-            shutil.copy(
-                self.config['logging'],
-                os.path.join(save_dir,
-                             self.config['logging'].split('/')[-1]))
+            store_at = os.path.join(save_dir,
+                                    self.config['logging'].split('/')[-1])
+            shutil.copy(self.config['logging'], store_at)
         self.log.info(f'save_results::\tdone_saving')
 
     def show_corner(self):
-        self.log.info(
-            f"NestedSamplerStatModel::\t{utils.now(self.config['start'])}"
-            f"\n\tLet's do some graphics, I'll make you a "
-            f"nice corner plot just now")
         self.check_did_save()
         save_dir = self.log_dict['saved_in']
 
@@ -475,9 +386,7 @@ class NestedSamplerStatModel(statistics.StatModel):
         else:
             # This cannot happen
             raise ValueError(f"Impossible, sampler was {self.config['sampler']}")
-        self.log.info(
-            f'NestedSamplerStatModel::\tEnjoy the plot. Maybe you do want to'
-            f' save it too?')
+        self.log.info(f'Enjoy the plot. Maybe you do want to save it too?')
 
 
 class CombinedInference(NestedSamplerStatModel):
@@ -499,6 +408,19 @@ class CombinedInference(NestedSamplerStatModel):
         ]
         self.log.debug(f'Sub detectors are set: {self.sub_classes}')
 
+    def _print_before_run(self):
+        for c in self.sub_classes:
+            self.log.debug(f'Printing det config for {c}')
+            c._print_before_run()
+
+    def _fix_parameters(self):
+        """Fix the parameters of the sub classes"""
+        super()._fix_parameters(_do_evaluate_benchmark=False)
+        self.copy_config('mw prior sigma halo_model spectrum_class'.split())
+        for c in self.sub_classes:
+            self.log.debug(f'Fixing parameters for {c}')
+            c._fix_parameters()
+
     def _log_probability_nested(self, theta):
         return np.sum([c._log_probability_nested(theta)
                        for c in self.sub_classes])
@@ -507,16 +429,13 @@ class CombinedInference(NestedSamplerStatModel):
         for k in keys:
             if k not in self.config:
                 raise ValueError(
-                    f'One or more of keys not in config: {np.setdiff1d(keys, list(self.config.keys()))}')
+                    f'One or more of keys not in config: '
+                    f'{np.setdiff1d(keys, list(self.config.keys()))}')
         copy_of_config = {k: self.config[k] for k in keys}
         self.log.info(f'update config with {copy_of_config}')
         for c in self.sub_classes:
-            c.config.update(copy_of_config)
-            c.read_priors_mean()
             self.log.debug(f'{c} with config {c.config}')
-            c.eval_benchmark()
-            c.set_models()
-            c.print_before_run()
+            c.config.update(copy_of_config)
 
     def save_sub_configs(self, force_index=False):
         save_dir = self.get_save_dir(force_index=force_index)
@@ -549,7 +468,7 @@ def convert_dic_to_savable(config):
 
 
 def load_nestle_samples(
-        load_from=default_nested_save_dir(),
+        load_from='nested',
         base=utils.get_result_folder(),
         item='latest'):
     save = load_from
@@ -618,7 +537,7 @@ def do_strip_from_pid(string):
     return new_key
 
 
-def load_multinest_samples(load_from=default_nested_save_dir(), item='latest'):
+def load_multinest_samples(load_from='nested', item='latest'):
     base = utils.get_result_folder()
     save = load_from
     files = os.listdir(base)
@@ -648,7 +567,7 @@ def _get_info(result, _result_key):
             if str_inf == 'start':
                 info = info[:-7]
             if str_inf == 'fit_time':
-                info += 's (%.1f h)' % (result['config'][str_inf] / 3600.)
+                info += 's (%.1f h)' % (float(result['config'][str_inf]) / 3600.)
     return info, ndim
 
 
@@ -661,10 +580,13 @@ def multinest_corner(
     labels = statistics.get_param_list()[:ndim]
     truths = []
     for prior_name in statistics.get_prior_list()[:ndim]:
-        if prior_name != "rho_0":
+        if prior_name == "rho_0":
+            prior_name = 'density'
+        if prior_name in result['config']:
             truths.append(result['config'][prior_name])
         else:
-            truths.append(result['config']['density'])
+            truths.append(result['config']['prior'][prior_name]['mean'])
+
     weight_kwargs = dict(weights=result['weights']) if _weights else {}
     fig = corner.corner(
         result[_result_key],
@@ -704,13 +626,13 @@ def solve_multinest(LogLikelihood, Prior, n_dims, **kwargs):
 
     def SafeLoglikelihood(cube, ndim, nparams, lnew):
         a = np.array([cube[i] for i in range(n_dims)])
-        l = float(LogLikelihood(a))
-        if not np.isfinite(l):
-            warn('WARNING: loglikelihood not finite: %f\n' % (l))
+        likelihood = float(LogLikelihood(a))
+        if not np.isfinite(likelihood):
+            warn('WARNING: loglikelihood not finite: %f\n' % likelihood)
             warn('         for parameters: %s\n' % a)
             warn('         returned very low value instead\n')
             return -statistics.LL_LOW_BOUND
-        return l
+        return likelihood
 
     kwargs['LogLikelihood'] = SafeLoglikelihood
     kwargs['Prior'] = SafePrior

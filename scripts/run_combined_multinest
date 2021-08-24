@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import warnings
 import os
 import time
 import multiprocessing
@@ -8,6 +7,7 @@ import wimprates as wr
 import numpy as np
 import argparse
 import json
+
 assert wr.__version__ != '0.2.2'
 
 
@@ -33,6 +33,8 @@ def main():
     stats = set_config(stats, args)
     stats.print_before_run()
 
+    log = stats.log
+
     if args.multicore_hash != "":
         stats.get_save_dir(_hash=args.multicore_hash)
         stats.get_tmp_dir(_hash=args.multicore_hash)
@@ -41,15 +43,14 @@ def main():
     elif stats.config['sampler'] == 'nestle':
         stats.run_nestle()
     if args.multicore_hash == "" or (args.sampler == 'multinest' and rank == 0):
-        print('SAVING THE RESULTS')
+        log.info('saving the results')
         stats.save_results()
         stats.save_sub_configs()
     assert stats.log_dict['did_run']
 
-    print(f"run_dddm_multinest.py::\t"
-          f"finished for mw = {args.mw}, sigma = {args.cross_section}")
+    log.info(f"run_dddm_multinest.py::\t"
+             f"finished for mw = {args.mw}, sigma = {args.cross_section}")
     print("finished, bye bye")
-    print(rank, args.sampler)
 
 
 def set_context(args):
@@ -83,10 +84,8 @@ def set_config(model_simulator, args):
         'notes': args.notes,
         'earth_shielding': args.shielding,
         'n_energy_bins': args.bins,
-        'save_intermediate': args.save_intermediate,
         'fit_parameters': model_simulator.known_parameters[:args.nparams],
         'nlive': args.nlive,
-        #        'E_max': args.e_max,
         'tol': args.tol}
 
     model_simulator.set_prior(args.priors_from)
@@ -96,7 +95,8 @@ def set_config(model_simulator, args):
     model_simulator.config['prior']['log_cross_section'] = {
         'range': [int(args.cross_section) - 7, int(args.cross_section) + 5],
         'prior_type': 'flat'}
-    model_simulator.config['prior']['log_mass']['param'] = model_simulator.config['prior']['log_mass']['range']
+    model_simulator.config['prior']['log_mass']['param'] = \
+    model_simulator.config['prior']['log_mass']['range']
     model_simulator.config['prior']['log_cross_section']['param'] = \
         model_simulator.config['prior']['log_cross_section']['range']
 
@@ -170,23 +170,13 @@ def parse_arguments():
         help="Set to 0 (no print statements), 1 (some print statements) "
              "or >1 (a lot of print statements). Set the level of print "
              "statements while fitting.")
-#    parser.add_argument(
-#        '-save_intermediate',
-#        type=str,
-#        default="no",
-#        help="yes / no / default, override internal determination if "
-#             "we need to take into account earth shielding.")
     parser.add_argument(
         '-multicore_hash',
         type=str,
         default="",
         help="no / default, override internal determination if we need "
              "to take into account earth shielding.")
-#    parser.add_argument(
-#        '-e_max',
-#        type=int,
-#        default=10,
-#        help="Max energy to consider [keV]")
+
     parser.add_argument(
         '-target',
         type=str,
@@ -197,8 +187,6 @@ def parse_arguments():
     parser.add_argument('--poisson', action='store_true',
                         help="add poisson noise to data")
     parser.add_argument('--shielding', action='store_true',
-                        help="add shielding to simulation")
-    parser.add_argument('--save_intermediate', action='store_true',
                         help="add shielding to simulation")
     args = parser.parse_args()
     return args

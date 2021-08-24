@@ -43,9 +43,9 @@ def _galactic_spectrum_inner(
     E_max = None
     args = (mw, sigma, use_SHM, dddm.experiment[det])
     events = event_class(*args)
-    events.n_bins = nbins
+    events.set_config({'n_energy_bins': nbins})
     if E_max:
-        events.E_max = E_max
+        events.set_config({'E_max': E_max})
     events.get_data(poisson=False)
 
 

@@ -67,7 +67,7 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
     assert vary in ['mass', 'sig'], "use sig or mass"
     use_SHM = halo.SHM()
     events = spec_clas(m, sig, use_SHM, detector.experiment[det])
-    events.n_bins = bins
+    events.config['n_bins'] = bins
     data = events.get_data(poisson=False)
     if vary == 'sig':
         plt.xlabel(r'$\sigma$ $[cm^2]$')
@@ -76,19 +76,17 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
 
         def model(x):
             res = spec_clas(m, x, use_SHM, detector.experiment[det])
-            res.n_bins = bins
+            res.config['n_bins'] = bins
             return res.get_data(poisson=False)['counts']
 
     elif vary == 'mass':
         plt.xlabel('mass [GeV/$c^2$]')
         plt.axvline(m, alpha=0.5, color='red', label='truth')
-        plt.axvline(33, alpha=0.1, color='black', label='binning boundary')
-        var = np.concatenate((np.linspace(1, 33, 50),
-                              np.linspace(33, 300, 50)))
+        var = np.linspace(m / 10, m * 10, 50)
 
         def model(x):
             res = spec_clas(x, sig, use_SHM, detector.experiment[det])
-            res.n_bins = bins
+            res.config['n_bins'] = bins
             return res.get_data(poisson=False)['counts']
     else:
         raise ValueError(f'Can not vary {vary}')
@@ -102,43 +100,23 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
 
 
 def plt_ll_sigma_spec(det='Xe', bins=10, m=50, sig=1e-45):
-    plt_ll_sigma_mass(
-        halo.GenSpectrum,
-        'sig',
-        det=det,
-        bins=bins,
-        m=m,
-        sig=sig)
+    spec = halo.GenSpectrum
+    plt_ll_sigma_mass(spec, 'sig', det=det, bins=bins, m=m, sig=sig)
 
 
 def plt_ll_mass_spec(det='Xe', bins=10, m=50, sig=1e-45):
-    plt_ll_sigma_mass(
-        halo.GenSpectrum,
-        'mass',
-        det=det,
-        bins=bins,
-        m=m,
-        sig=sig)
+    spec = halo.GenSpectrum
+    plt_ll_sigma_mass(spec, 'mass', det=det, bins=bins, m=m, sig=sig)
 
 
 def plt_ll_sigma_det(det='Xe', bins=10, m=50, sig=1e-45):
-    plt_ll_sigma_mass(
-        detector.DetectorSpectrum,
-        'sig',
-        det=det,
-        bins=bins,
-        m=m,
-        sig=sig)
+    spec = detector.DetectorSpectrum
+    plt_ll_sigma_mass(spec, 'sig', det=det, bins=bins, m=m, sig=sig)
 
 
 def plt_ll_mass_det(det='Xe', bins=10, m=50, sig=1e-45):
-    plt_ll_sigma_mass(
-        detector.DetectorSpectrum,
-        'mass',
-        det=det,
-        bins=bins,
-        m=m,
-        sig=sig)
+    spec = detector.DetectorSpectrum
+    plt_ll_sigma_mass(spec, 'mass', det=det, bins=bins, m=m, sig=sig)
 
 
 def plt_priors(itot=100):
@@ -221,5 +199,5 @@ def pickle_dump_figure(name):
 
 
 def open_pickle_figure(name):
-    figx = pickle.load(open(name, 'rb'))
+    figx = pickle.load(open(name, 'rb'))  # nosec
     return figx

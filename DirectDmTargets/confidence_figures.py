@@ -11,10 +11,14 @@ from tqdm import tqdm
 
 
 class DDDMResult:
-    """Class to parse results from fitting from nested sampling"""
+    """Parse results from fitting from nested sampling"""
     result: dict = None
 
     def __init__(self, path):
+        """
+        Open a class for organizing the results from running an optimization
+        :param path: Path to the base dir of the results to open
+        """
         assert os.path.exists(path)
         self.path = path
         self.setup()
@@ -33,13 +37,13 @@ class DDDMResult:
 
     def config_summary(self,
                        get_props=(
-                           'detector',
-                           'mass',
-                           'sigma',
-                           'nlive',
-                           'halo_model',
-                           'notes',
-                           'n_parameters',
+                               'detector',
+                               'mass',
+                               'sigma',
+                               'nlive',
+                               'halo_model',
+                               'notes',
+                               'n_parameters',
                        )
                        ) -> pd.DataFrame:
         df = {k: [getattr(self, k)] for k in get_props}
@@ -56,6 +60,9 @@ class DDDMResult:
 
     def get_from_config(self, to_get: str):
         return self.result.get('config', {}).get(to_get)
+
+    def get_samples(self):
+        return self.result.get('weighted_samples').T[:2]
 
     @property
     def detector(self):
@@ -92,9 +99,6 @@ class DDDMResult:
             return None
 
         return len(param)
-
-    def get_samples(self):
-        return self.result.get('weighted_samples').T[:2]
 
 
 class SeabornPlot:
@@ -177,12 +181,6 @@ class ResultsManager:
         return f'info for {len(self.result_cache)}'
 
     def _add_result(self, path: str, tolerant=False):
-        """
-
-        :param path:
-        :param tolerant:
-        :return:
-        """
         if self.result_cache is None:
             self.result_cache = []
         try:

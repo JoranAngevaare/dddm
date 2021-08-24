@@ -44,12 +44,10 @@ def load_folder_from_context(request):
     try:
         folder = context.context[request]
     except KeyError:
-        log.info(
-            f'load_folder_from_context::\tRequesting {request} but that is not in {context.context.keys()}')
+        log.info(f'Requesting {request} but that is not in {context.context.keys()}')
         raise KeyError
     if not os.path.exists(folder):
-        raise FileNotFoundError(
-            f'load_folder_from_context::\tCould not find {folder}')
+        raise FileNotFoundError(f'Could not find {folder}')
     # Should end up here:
     return folder
 
@@ -79,7 +77,7 @@ def is_savable_type(item):
     :param item: input of any type.
     :return: bool if the type is saveable by checking if it is in a limitative list
     """
-    savables = (list, np.ndarray, int, str, np.int, np.float, bool, np.float64)
+    savables = (list, np.ndarray, int, str, np.int32, np.int64, np.float32, bool, np.float64)
     if isinstance(item, savables):
         return True
     return False
@@ -125,17 +123,25 @@ def open_save_dir(save_as, base_dir=None, force_index=False, _hash=None):
     """
 
     :param save_as: requested name of folder to open in the result folder
-    :param base_dir: folder where the save_as dir is to be saved in. This is the results folder by default
-    :param force_index: option to force to write to a number (must be an override!)
-    :param _hash: add a has to save_as dir to avoid duplicate naming conventions while running multiple jobs
-    :return: the name of the folder as was saveable (usually input + some number)
+    :param base_dir: folder where the save_as dir is to be saved in.
+        This is the results folder by default
+    :param force_index: option to force to write to a number (must be an
+        override!)
+    :param _hash: add a has to save_as dir to avoid duplicate naming
+        conventions while running multiple jobs
+    :return: the name of the folder as was saveable (usually input +
+        some number)
     """
     if base_dir is None:
         base_dir = get_result_folder()
     if force_index:
         results_path = os.path.join(base_dir, save_as + str(force_index))
     elif _hash is None:
-        assert force_index is False, f'do not set _hash to {_hash} and force_index to {force_index} simultaneously'
+        if force_index is not False:
+            raise ValueError(
+                f'do not set _hash to {_hash} and force_index to '
+                f'{force_index} simultaneously'
+            )
         results_path = _folders_plus_one(base_dir, save_as)
     else:
         results_path = os.path.join(base_dir, save_as + '_HASH' + str(_hash))
@@ -289,7 +295,7 @@ def bin_edges(a, b, n):
     return edges
 
 
-def get_bins(a, b, n):
+def get_bins(a, b, n) -> np.ndarray:
     """
     :param a: lower limit
     :param b: upper limit
@@ -300,23 +306,42 @@ def get_bins(a, b, n):
     return np.transpose(result)
 
 
-def get_logger(name, level='INFO'):
+def get_logger(name, level='INFO', path=None) -> logging.Logger:
+    """
+    Get logger with hander in nice format
+    :param name: name of the logger
+    :param level: logging level
+    :param path: where to save the log files
+    :return: logger
+    """
     level = level.upper()
     new_log = logging.getLogger(name)
     if not hasattr(logging, level):
         raise ValueError(f'{level} is invalid for logging')
     new_log.setLevel(getattr(logging, level))
-    new_log.handlers = [FormattedHandler()]
+    new_log.handlers = [FormattedHandler(path=path)]
     return new_log
 
 
 class FormattedHandler(logging.Handler):
+    def __init__(self, *args, path=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.path = path
+
     def emit(self, record):
-        m = self.FormattedMessage(record)
+        m = self.formatted_message(record)
+        self.write(m)
         # Strip \n
         print(m[:-1])
 
-    def FormattedMessage(self, record):
+    def write(self, m):
+        if self.path is None:
+            return
+        self.f = open(self.path, 'a')
+        self.f.write(m)
+
+    @staticmethod
+    def formatted_message(record):
         func_line = f'{record.funcName} (L{record.lineno})'
         date = datetime.datetime.fromtimestamp(record.created)
         date.isoformat(sep=' ')

@@ -1,160 +1,19 @@
-"""For a given detector get a WIMPrate for a given detector (not taking into
-account any detector effects"""
+"""
+For a given detector get a WIMPrate for a given detector (not taking into
+account any detector effects
+"""
 
-import logging
 import os
 import shutil
-
 import numericalunits as nu
 import numpy as np
 import pandas as pd
 import verne
 import wimprates as wr
 from DirectDmTargets import utils
+import typing as ty
 from DirectDmTargets.context import context
 from scipy.interpolate import interp1d
-
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
-
-
-class GenSpectrum:
-    def __init__(self, mw, sig, model, det):
-        """
-        :param mw: wimp mass
-        :param sig: cross-section of the wimp nucleon interaction
-        :param model: the dark matter model
-        :param det: detector name
-        """
-        assert isinstance(
-            det, dict), "Invalid detector type. Please provide dict."
-        self.mw = mw  # note that this is not in log scale!
-        self.sigma_nucleon = sig  # note that this is not in log scale!
-        self.dm_model = model
-        self.experiment = det
-
-        self.n_bins = 10
-        if self.experiment['type'] in ['SI', 'SI_bg']:
-            self.E_min = 0  # keV
-            self.E_max = 100  # keV
-        elif self.experiment['type'] in ['migdal', 'migdal_bg']:
-            self.E_min = 0  # keV
-            self.E_max = 10  # keV
-        else:
-            raise NotImplementedError(
-                f'Exp. type {self.experiment["type"]} is unknown')
-
-        if 'E_min' in self.experiment:
-            self.E_min = self.experiment['E_min']
-        if 'E_max' in self.experiment:
-            self.E_max = self.experiment['E_max']
-
-    def __str__(self):
-        """
-        :return: info
-        """
-        return f"spectrum_simple of a DM model ({self.dm_model}) in a " \
-               f"{self.experiment['name']} detector"
-
-    def get_bin_centers(self):
-        return np.mean(
-            utils.get_bins(
-                self.E_min,
-                self.E_max,
-                self.n_bins),
-            axis=1)
-
-    def spectrum_simple(self, benchmark):
-        """
-        :param benchmark: insert the kind of DM to consider (should contain Mass
-         and cross-section)
-        :return: returns the rate
-        """
-        if not isinstance(benchmark, (dict, pd.DataFrame)):
-            benchmark = {'mw': benchmark[0], 'sigma_nucleon': benchmark[1]}
-
-        try:
-            kwargs = {'material': self.experiment['material']}
-        except KeyError as e:
-            raise KeyError(f'Invalid experiment {self.experiment}') from e
-        if self.experiment['type'] in ['SI', 'SI_bg']:
-            rate = wr.rate_wimp_std(self.get_bin_centers(),
-                                    benchmark["mw"],
-                                    benchmark["sigma_nucleon"],
-                                    halo_model=self.dm_model,
-                                    **kwargs
-                                    )
-        elif self.experiment['type'] in ['migdal', 'migdal_bg']:
-            # This integration takes a long time, hence, we will lower the
-            # default precision of the scipy dblquad integration
-            migdal_integration_kwargs = dict(epsabs=1e-4,
-                                             epsrel=1e-4)
-            convert_units = (nu.keV * (1000 * nu.kg) * nu.year)
-            rate = convert_units * wr.rate_migdal(
-                self.get_bin_centers() * nu.keV,
-                benchmark["mw"] * nu.GeV / nu.c0 ** 2,
-                benchmark["sigma_nucleon"] * nu.cm ** 2,
-                # TODO should this be different for the different experiments?
-                q_nr=0.15,
-                halo_model=self.dm_model,
-                material=self.experiment['material'],
-                **migdal_integration_kwargs
-            )
-        else:
-            raise NotImplementedError(
-                f'No type of matching {self.experiment["type"]} interactions.')
-        return rate
-
-    def get_events(self):
-        """
-        :return: Events (binned)
-        """
-        assert self.experiment != {}, "First enter the parameters of the detector"
-        rate = self.spectrum_simple([self.mw, self.sigma_nucleon])
-        bin_width = np.diff(
-            utils.get_bins(
-                self.E_min,
-                self.E_max,
-                self.n_bins),
-            axis=1)[
-            :,
-            0]
-        events = rate * bin_width * self.experiment['exp_eff']
-        return events
-
-    def get_poisson_events(self):
-        """
-        :return: events with poisson noise
-        """
-        return np.random.exponential(self.get_events()).astype(np.float)
-
-    def get_data(self, poisson=True):
-        """
-
-        :param poisson: type bool, add poisson True or False
-        :return: pd.DataFrame containing events binned in energy
-        """
-        result = pd.DataFrame()
-        if poisson:
-            result['counts'] = self.get_poisson_events()
-        else:
-            result['counts'] = self.get_events()
-        result['bin_centers'] = self.get_bin_centers()
-        bins = utils.get_bins(self.E_min, self.E_max, self.n_bins)
-        result['bin_left'] = bins[:, 0]
-        result['bin_right'] = bins[:, 1]
-        result = self.set_negative_to_zero(result)
-        return result
-
-    @staticmethod
-    def set_negative_to_zero(result):
-        mask = result['counts'] < 0
-        if np.any(mask):
-            log.warning(
-                '\n\n----\nWARNING::\nfinding negative rates. Doing hard override!!\n----\n\n')
-            result['counts'][mask] = 0
-            return result
-        return result
 
 
 class SHM:
@@ -187,6 +46,15 @@ class SHM:
         """
         return wr.observed_speed_dist(v, t, self.v_0, self.v_esc)
 
+    def parameter_dict(self):
+        """Return a dict of readable parameters of the current settings"""
+        parameters = dict(
+            v_0=self.v_0 / (nu.km / nu.s),
+            v_esc=self.v_esc / (nu.km / nu.s),
+            rho_dm=self.rho_dm / (nu.GeV / nu.c0 ** 2 / nu.cm ** 3),
+        )
+        return parameters
+
 
 class VerneSHM:
     """
@@ -208,8 +76,8 @@ class VerneSHM:
         # the respective units
         self.v_0_nodim = 230 if v_0 is None else v_0 / (nu.km / nu.s)
         self.v_esc_nodim = 544 if v_esc is None else v_esc / (nu.km / nu.s)
-        self.rho_dm_nodim = 0.3 if rho_dm is None else rho_dm / \
-            (nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
+        self.rho_dm_nodim = (0.3 if rho_dm is None else
+                             rho_dm / (nu.GeV / nu.c0 ** 2 / nu.cm ** 3))
 
         # Here we keep the units dimensionful as these parameters are requested
         # by wimprates and therefore must have dimensions
@@ -235,6 +103,7 @@ class VerneSHM:
         )
 
         self.itp_func = None
+        self.log = utils.get_logger(self.__class__.__name__)
 
     def __str__(self):
         # The standard halo model observed at some location shielded from strongly
@@ -259,13 +128,13 @@ class VerneSHM:
         exist_csv = os.path.exists(file_name)
         assertion_string = f'abs file {temp_file_name} should be a string\n'
         assertion_string += f'exists csv {exist_csv} should be a bool'
-        log.info(f'load_f::\twrite to {file_name} ({not exist_csv}). '
-                 f'Then copy to {temp_file_name}')
+        self.log.info(f'load_f::\twrite to {file_name} ({not exist_csv}). '
+                      f'Then copy to {temp_file_name}')
         assert (isinstance(temp_file_name, str) and
                 isinstance(exist_csv, bool)), assertion_string
         if not exist_csv:
-            log.info(f'Using {file_name} for the velocity distribution. '
-                     f'Writing to {temp_file_name}')
+            self.log.info(f'Using {file_name} for the velocity distribution. '
+                          f'Writing to {temp_file_name}')
             df = verne.CalcVelDist.avg_calcveldist(
                 m_x=10. ** self.log_mass,
                 sigma_p=10. ** self.log_cross_section,
@@ -276,15 +145,15 @@ class VerneSHM:
             )
 
             if not os.path.exists(file_name):
-                log.info(f'writing to {temp_file_name}')
+                self.log.info(f'writing to {temp_file_name}')
                 df.to_csv(temp_file_name, index=False)
                 if not os.path.exists(file_name):
-                    log.info(f'moving {temp_file_name} to {file_name}')
+                    self.log.info(f'moving {temp_file_name} to {file_name}')
                     shutil.move(temp_file_name, file_name)
             else:
-                log.warning(f'while writing {temp_file_name}, {file_name} was created')
+                self.log.warning(f'while writing {temp_file_name}, {file_name} was created')
         else:
-            log.info(f'Using {file_name} for the velocity distribution')
+            self.log.info(f'Using {file_name} for the velocity distribution')
             try:
                 df = pd.read_csv(file_name)
             except pd.io.common.EmptyDataError as pandas_error:
@@ -322,3 +191,182 @@ class VerneSHM:
         if self.itp_func is None:
             self.load_f()
         return self.itp_func(v, t)
+
+    def parameter_dict(self):
+        """Return a dict of readable parameters of the current settings"""
+        parameters = dict(
+            v_0=self.v_0_nodim,
+            v_esc=self.v_esc_nodim,
+            rho_dm=self.rho_dm_nodim,
+            log_cross_section=self.log_cross_section,
+            log_mass=self.log_mass,
+            location=self.location,
+        )
+        return parameters
+
+
+class GenSpectrum:
+    required_detector_fields = 'name material type exp_eff'.split()
+
+    def __init__(self,
+                 wimp_mass: ty.Union[float, int],
+                 wimp_nucleon_cross_section: ty.Union[float, int],
+                 dark_matter_model: ty.Union[SHM, VerneSHM], det):
+        """
+        :param wimp_mass: wimp mass (not log)
+        :param wimp_nucleon_cross_section: cross-section of the wimp nucleon interaction
+            (not log)
+        :param dark_matter_model: the dark matter model
+        :param det: dictionary containing detector parameters
+        """
+        self._check_input_detector_config(det)
+
+        # note that this is not in log scale!
+        self.mw = wimp_mass
+        self.sigma_nucleon = wimp_nucleon_cross_section
+
+        self.dm_model = dark_matter_model
+        self.config = det
+        self.log = utils.get_logger(self.__class__.__name__)
+
+    def __str__(self):
+        """
+        :return: sting of class info
+        """
+        return f"spectrum_simple of a DM model ({self.dm_model}) in a " \
+               f"{self.config['name']} detector"
+
+    def get_data(self, poisson=True):
+        """
+
+        :param poisson: type bool, add poisson True or False
+        :return: pd.DataFrame containing events binned in energy
+        """
+        result = pd.DataFrame()
+        if poisson:
+            result['counts'] = self.get_poisson_events()
+        else:
+            result['counts'] = self.get_events()
+        bins = utils.get_bins(self.E_min, self.E_max, self.n_bins)
+        result['bin_centers'] = np.mean(bins, axis=1)
+        result['bin_left'] = bins[:, 0]
+        result['bin_right'] = bins[:, 1]
+        result = self.set_negative_to_zero(result)
+        return result
+
+    def spectrum_simple(self, benchmark):
+        """
+        Compute the spectrum for a given mass and cross-section
+        :param benchmark: insert the kind of DM to consider (should contain Mass
+         and cross-section)
+        :return: returns the rate
+        """
+        if not isinstance(benchmark, (dict, pd.DataFrame)):
+            benchmark = {'mw': benchmark[0],
+                         'sigma_nucleon': benchmark[1]}
+        else:
+            assert 'mw' in benchmark and 'sigma_nucleon' in benchmark
+
+        material = self.config['material']
+        exp_type = self.config['type']
+
+        self.log.debug(f'Eval {benchmark} for {material}-{exp_type}')
+
+        if exp_type in ['SI']:
+            rate = wr.rate_wimp_std(self.get_bin_centers(),
+                                    benchmark["mw"],
+                                    benchmark["sigma_nucleon"],
+                                    halo_model=self.dm_model,
+                                    material=material
+                                    )
+        elif exp_type in ['migdal']:
+            # This integration takes a long time, hence, we will lower the
+            # default precision of the scipy dblquad integration
+            migdal_integration_kwargs = dict(epsabs=1e-4,
+                                             epsrel=1e-4)
+            convert_units = (nu.keV * (1000 * nu.kg) * nu.year)
+            rate = convert_units * wr.rate_migdal(
+                self.get_bin_centers() * nu.keV,
+                benchmark["mw"] * nu.GeV / nu.c0 ** 2,
+                benchmark["sigma_nucleon"] * nu.cm ** 2,
+                # TODO should this be different for the different experiments?
+                q_nr=0.15,
+                halo_model=self.dm_model,
+                material=material,
+                **migdal_integration_kwargs
+            )
+        else:
+            raise NotImplementedError(f'Unknown {exp_type}-interaction')
+        return rate
+
+    def set_config(self, update: dict, check_if_set: bool = True) -> None:
+        """
+        Update the config with the provided update
+        :param update: a dictionary of items to update
+        :param check_if_set: Check that a previous version is actually
+            set
+        :return: None
+        """
+        assert isinstance(update, dict)
+        for key in update.keys():
+            if check_if_set and key not in self.config:
+                message = f'{key} not in config of {str(self)}'
+                raise ValueError(message)
+
+        self.config.update(update)
+
+    def _check_input_detector_config(self, det):
+        """Given the a detector config, check that all the required fields are available"""
+        if not isinstance(det, dict):
+            raise ValueError("Detector should be dict")
+        missing = []
+        for field in self.required_detector_fields:
+            if field not in det:
+                missing.append(field)
+        if missing:
+            raise ValueError(f'Missing {missing} fields in detector config')
+
+    def get_bin_centers(self) -> np.ndarray:
+        """Given Emin and Emax, get an array with bin centers """
+        return np.mean(self.get_bin_edges(), axis=1)
+
+    def get_bin_edges(self):
+        return utils.get_bins(self.E_min, self.E_max, self.n_bins)
+
+    def get_events(self):
+        """
+        :return: Events (binned)
+        """
+        assert self.config != {}, "First enter the parameters of the detector"
+        rate = self.spectrum_simple([self.mw, self.sigma_nucleon])
+        bin_width = np.diff(
+            utils.get_bins(self.E_min, self.E_max, self.n_bins),
+            axis=1)[:, 0]
+        events = rate * bin_width * self.config['exp_eff']
+        return events
+
+    def get_poisson_events(self):
+        """
+        :return: events with poisson noise
+        """
+        return np.random.exponential(self.get_events()).astype(np.float)
+
+    def set_negative_to_zero(self, result):
+        mask = result['counts'] < 0
+        if np.any(mask):
+            self.log.warning('Finding negative rates. Doing hard override!')
+            result['counts'][mask] = 0
+            return result
+        return result
+
+    @property
+    def E_min(self):
+        return self.config.get('E_min', 0)
+
+    @property
+    def E_max(self):
+        return self.config.get('E_max', 10)
+
+    @property
+    def n_bins(self):
+        return self.config.get('n_energy_bins', 50)
