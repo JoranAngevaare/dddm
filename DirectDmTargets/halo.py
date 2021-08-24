@@ -1,10 +1,10 @@
-"""For a given detector get a WIMPrate for a given detector (not taking into
-account any detector effects"""
+"""
+For a given detector get a WIMPrate for a given detector (not taking into
+account any detector effects
+"""
 
-import logging
 import os
 import shutil
-
 import numericalunits as nu
 import numpy as np
 import pandas as pd
@@ -14,155 +14,6 @@ from DirectDmTargets import utils
 import typing as ty
 from DirectDmTargets.context import context
 from scipy.interpolate import interp1d
-
-
-class GenSpectrum:
-
-    def __init__(self,
-                 wimp_mass: ty.Union[float, int],
-                 wimp_nucleon_cross_section: ty.Union[float, int],
-                 dark_matter_model: ty.Union[SHM, VerneSHM], det):
-        """
-        :param wimp_mass: wimp mass (not log)
-        :param wimp_nucleon_cross_section: cross-section of the wimp nucleon interaction
-            (not log)
-        :param dark_matter_model: the dark matter model
-        :param det: dictionary containing detector parameters
-        """
-        self._check_detector(det)
-
-        # note that this is not in log scale!
-        self.mw = wimp_mass
-        self.sigma_nucleon = wimp_nucleon_cross_section
-
-        self.dm_model = dark_matter_model
-        self.experiment = det
-        self.log = utils.get_logger(self.__class__.__name__)
-
-    @property
-    def E_min(self):
-        return self.experiment.get('E_min', 0)
-
-    @property
-    def E_max(self):
-        return self.experiment.get('E_max', 10)
-
-    @property
-    def n_bins(self):
-        return self.experiment.get('n_energy_bins', 50)
-
-    @staticmethod
-    def _check_detector(det):
-        if not isinstance(det, dict):
-            raise ValueError("Detector should be dict")
-        missing = []
-        for field in 'name n_energy_bins material type exp_eff'.split():
-            if field not in det:
-                missing.append(field)
-        if missing:
-            raise ValueError(f'Missing {missing} fields in detector config')
-
-    def __str__(self):
-        """
-        :return: sting of class info
-        """
-        return f"spectrum_simple of a DM model ({self.dm_model}) in a " \
-               f"{self.experiment['name']} detector"
-
-    def get_bin_centers(self) -> np.ndarray:
-        """Given Emin and Emax, get an array with bin centers """
-        return np.mean(
-            utils.get_bins(self.E_min, self.E_max, self.n_bins),
-            axis=1)
-
-    def spectrum_simple(self, benchmark):
-        """
-        Compute the spectrum for a given mass and cross-section
-        :param benchmark: insert the kind of DM to consider (should contain Mass
-         and cross-section)
-        :return: returns the rate
-        """
-        if not isinstance(benchmark, (dict, pd.DataFrame)):
-            benchmark = {'mw': benchmark[0],
-                         'sigma_nucleon': benchmark[1]}
-        else:
-            assert 'mw' in benchmark and 'sigma_nucleon' in benchmark
-
-        material = self.experiment['material']
-        exp_type = self.experiment['type']
-
-        self.log.debug(f'Eval {benchmark} for {material}-{exp_type}')
-
-        if exp_type in ['SI']:
-            rate = wr.rate_wimp_std(self.get_bin_centers(),
-                                    benchmark["mw"],
-                                    benchmark["sigma_nucleon"],
-                                    halo_model=self.dm_model,
-                                    material=material
-                                    )
-        elif exp_type in ['migdal']:
-            # This integration takes a long time, hence, we will lower the
-            # default precision of the scipy dblquad integration
-            migdal_integration_kwargs = dict(epsabs=1e-4,
-                                             epsrel=1e-4)
-            convert_units = (nu.keV * (1000 * nu.kg) * nu.year)
-            rate = convert_units * wr.rate_migdal(
-                self.get_bin_centers() * nu.keV,
-                benchmark["mw"] * nu.GeV / nu.c0 ** 2,
-                benchmark["sigma_nucleon"] * nu.cm ** 2,
-                # TODO should this be different for the different experiments?
-                q_nr=0.15,
-                halo_model=self.dm_model,
-                material=material,
-                **migdal_integration_kwargs
-            )
-        else:
-            raise NotImplementedError(f'Unknown {exp_type}-interaction')
-        return rate
-
-    def get_events(self):
-        """
-        :return: Events (binned)
-        """
-        assert self.experiment != {}, "First enter the parameters of the detector"
-        rate = self.spectrum_simple([self.mw, self.sigma_nucleon])
-        bin_width = np.diff(
-            utils.get_bins(self.E_min, self.E_max, self.n_bins),
-            axis=1)[:, 0]
-        events = rate * bin_width * self.experiment['exp_eff']
-        return events
-
-    def get_poisson_events(self):
-        """
-        :return: events with poisson noise
-        """
-        return np.random.exponential(self.get_events()).astype(np.float)
-
-    def get_data(self, poisson=True):
-        """
-
-        :param poisson: type bool, add poisson True or False
-        :return: pd.DataFrame containing events binned in energy
-        """
-        result = pd.DataFrame()
-        if poisson:
-            result['counts'] = self.get_poisson_events()
-        else:
-            result['counts'] = self.get_events()
-        result['bin_centers'] = self.get_bin_centers()
-        bins = utils.get_bins(self.E_min, self.E_max, self.n_bins)
-        result['bin_left'] = bins[:, 0]
-        result['bin_right'] = bins[:, 1]
-        result = self.set_negative_to_zero(result)
-        return result
-
-    def set_negative_to_zero(self, result):
-        mask = result['counts'] < 0
-        if np.any(mask):
-            self.log.warning('Finding negative rates. Doing hard override!')
-            result['counts'][mask] = 0
-            return result
-        return result
 
 
 class SHM:
@@ -331,3 +182,151 @@ class VerneSHM:
         if self.itp_func is None:
             self.load_f()
         return self.itp_func(v, t)
+
+
+class GenSpectrum:
+    def __init__(self,
+                 wimp_mass: ty.Union[float, int],
+                 wimp_nucleon_cross_section: ty.Union[float, int],
+                 dark_matter_model: ty.Union[SHM, VerneSHM], det):
+        """
+        :param wimp_mass: wimp mass (not log)
+        :param wimp_nucleon_cross_section: cross-section of the wimp nucleon interaction
+            (not log)
+        :param dark_matter_model: the dark matter model
+        :param det: dictionary containing detector parameters
+        """
+        self._check_detector(det)
+
+        # note that this is not in log scale!
+        self.mw = wimp_mass
+        self.sigma_nucleon = wimp_nucleon_cross_section
+
+        self.dm_model = dark_matter_model
+        self.experiment = det
+        self.log = utils.get_logger(self.__class__.__name__)
+
+    @property
+    def E_min(self):
+        return self.experiment.get('E_min', 0)
+
+    @property
+    def E_max(self):
+        return self.experiment.get('E_max', 10)
+
+    @property
+    def n_bins(self):
+        return self.experiment.get('n_energy_bins', 50)
+
+    @staticmethod
+    def _check_detector(det):
+        if not isinstance(det, dict):
+            raise ValueError("Detector should be dict")
+        missing = []
+        for field in 'name n_energy_bins material type exp_eff'.split():
+            if field not in det:
+                missing.append(field)
+        if missing:
+            raise ValueError(f'Missing {missing} fields in detector config')
+
+    def __str__(self):
+        """
+        :return: sting of class info
+        """
+        return f"spectrum_simple of a DM model ({self.dm_model}) in a " \
+               f"{self.experiment['name']} detector"
+
+    def get_bin_centers(self) -> np.ndarray:
+        """Given Emin and Emax, get an array with bin centers """
+        return np.mean(
+            utils.get_bins(self.E_min, self.E_max, self.n_bins),
+            axis=1)
+
+    def spectrum_simple(self, benchmark):
+        """
+        Compute the spectrum for a given mass and cross-section
+        :param benchmark: insert the kind of DM to consider (should contain Mass
+         and cross-section)
+        :return: returns the rate
+        """
+        if not isinstance(benchmark, (dict, pd.DataFrame)):
+            benchmark = {'mw': benchmark[0],
+                         'sigma_nucleon': benchmark[1]}
+        else:
+            assert 'mw' in benchmark and 'sigma_nucleon' in benchmark
+
+        material = self.experiment['material']
+        exp_type = self.experiment['type']
+
+        self.log.debug(f'Eval {benchmark} for {material}-{exp_type}')
+
+        if exp_type in ['SI']:
+            rate = wr.rate_wimp_std(self.get_bin_centers(),
+                                    benchmark["mw"],
+                                    benchmark["sigma_nucleon"],
+                                    halo_model=self.dm_model,
+                                    material=material
+                                    )
+        elif exp_type in ['migdal']:
+            # This integration takes a long time, hence, we will lower the
+            # default precision of the scipy dblquad integration
+            migdal_integration_kwargs = dict(epsabs=1e-4,
+                                             epsrel=1e-4)
+            convert_units = (nu.keV * (1000 * nu.kg) * nu.year)
+            rate = convert_units * wr.rate_migdal(
+                self.get_bin_centers() * nu.keV,
+                benchmark["mw"] * nu.GeV / nu.c0 ** 2,
+                benchmark["sigma_nucleon"] * nu.cm ** 2,
+                # TODO should this be different for the different experiments?
+                q_nr=0.15,
+                halo_model=self.dm_model,
+                material=material,
+                **migdal_integration_kwargs
+            )
+        else:
+            raise NotImplementedError(f'Unknown {exp_type}-interaction')
+        return rate
+
+    def get_events(self):
+        """
+        :return: Events (binned)
+        """
+        assert self.experiment != {}, "First enter the parameters of the detector"
+        rate = self.spectrum_simple([self.mw, self.sigma_nucleon])
+        bin_width = np.diff(
+            utils.get_bins(self.E_min, self.E_max, self.n_bins),
+            axis=1)[:, 0]
+        events = rate * bin_width * self.experiment['exp_eff']
+        return events
+
+    def get_poisson_events(self):
+        """
+        :return: events with poisson noise
+        """
+        return np.random.exponential(self.get_events()).astype(np.float)
+
+    def get_data(self, poisson=True):
+        """
+
+        :param poisson: type bool, add poisson True or False
+        :return: pd.DataFrame containing events binned in energy
+        """
+        result = pd.DataFrame()
+        if poisson:
+            result['counts'] = self.get_poisson_events()
+        else:
+            result['counts'] = self.get_events()
+        result['bin_centers'] = self.get_bin_centers()
+        bins = utils.get_bins(self.E_min, self.E_max, self.n_bins)
+        result['bin_left'] = bins[:, 0]
+        result['bin_right'] = bins[:, 1]
+        result = self.set_negative_to_zero(result)
+        return result
+
+    def set_negative_to_zero(self, result):
+        mask = result['counts'] < 0
+        if np.any(mask):
+            self.log.warning('Finding negative rates. Doing hard override!')
+            result['counts'][mask] = 0
+            return result
+        return result
