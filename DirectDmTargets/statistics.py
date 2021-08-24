@@ -153,6 +153,8 @@ class StatModel:
 
     def read_priors_mean(self, prior_name) -> ty.Union[int, float]:
         self.log.debug(f'reading {prior_name}')
+        if self.config['prior'] is None:
+            raise ValueError(f'Prior not set!')
         return self.config['prior'][prior_name]['mean']
 
     @property
