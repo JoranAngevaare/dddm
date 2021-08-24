@@ -31,7 +31,7 @@ def test_nested_simple_multinest_earth_shielding():
 
     print('opening results')
     result_path = os.path.join(dddm.context.context['results_dir'], 'nes_mu_HASH*')
-    print(os.listdir(result_path))
+    print(dddm.context.context['results_dir'])
     results = dddm.ResultsManager(result_path)
     print(results)
     results.apply_mask(results.df['nlive'] > 1)
