@@ -88,6 +88,7 @@ def get_param_list():
 class StatModel:
     # Keep these fit parameters in this order
     _parameter_order = ('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k')
+    benchmark_values = None
 
     def __init__(
             self,
@@ -105,45 +106,42 @@ class StatModel:
         if detector_config is None:
             detector_config = detector.experiment[detector_name]
 
-        self.config = dict()
-        self.config['detector'] = detector_name
-        self.config['detector_config'] = detector_config
-        self.config['poisson'] = False
-        self.config['n_energy_bins'] = detector_config.get('n_energy_bins', 10)
-        self.config['earth_shielding'] = False
-        self.config['save_intermediate'] = False
-        self.config['E_max'] = detector_config.get('E_max', 100)
-        self.verbose = verbose
-        self.benchmark_values = None
+        self.config = dict(detector=detector_name,
+                           detector_config=detector_config,
+                           # poisson=False,
+                           n_energy_bins=detector_config.get('n_energy_bins', 10),
+                           earth_shielding=False,
+                           save_intermediate=False,
+                           E_max=detector_config.get('E_max', 100)
+                           )
 
-        if self.verbose > 1:
-            level = logging.DEBUG
-            print(f'StatModel::\tSUPERVERBOSE ENABLED\n\t'
-                  f'prepare for the ride, here comes all my output!')
-        elif self.verbose:
-            level = logging.INFO
-            print(f'StatModel::\tVERBOSE ENABLED')
-        else:
-            level = logging.WARNING
-
-        if 'win' not in platform:
-            self.config['logging'] = os.path.join(
-                context.context['tmp_folder'], f"log_{utils.now()}.log")
-            print(f'StatModel::\tSave log to {self.config["logging"]}')
-            logging.basicConfig(
-                handlers=[
-                    logging.FileHandler(
-                        self.config['logging']),
-                    logging.StreamHandler()],
-                level=level,
-                format='%(relativeCreated)6d %(threadName)s %(name)s %(message)s')
-        self.log = logging.getLogger()
-        self.bench_is_set = False
+        self.log = self.get_logger(verbose)
         self.set_prior("Pato_2010")
         self.log.info(
             f"initialized for {detector_name} detector. See  print(stat_model) for default settings")
         if do_init:
             self.set_default()
+
+    @property
+    def bench_is_set(self):
+        return self.benchmark_values is None
+
+    def get_logger(self, verbosity):
+        if verbosity > 1:
+            level = 'DEBUG'
+        elif verbosity:
+            level = 'INFO'
+        else:
+            level = 'WARNING'
+
+        self.log = utils.get_logger(self.__class__.__name__, level)
+
+        if 'win' not in platform:
+            self.config['logging'] = os.path.join(
+                context.context['tmp_folder'],
+                f"log_{utils.now()}.log")
+            print(f'StatModel::\tSave log to {self.config["logging"]}')
+            self.log.addHandler(logging.StreamHandler())
 
     def __str__(self):
         return f"StatModel::for {self.config['detector']} detector. For info see the config file:\n{self.config}"
@@ -661,7 +659,7 @@ class StatModel:
         for to_copy in copy_fields:
             if to_copy in self.config:
                 self.log.info(f'set {to_copy} to {self.config[to_copy]}')
-                spectrum.set_config(dict(e_min_max=self.config[to_copy]))
+                spectrum.set_config({to_copy: self.config[to_copy]})
         return spectrum
 
 
