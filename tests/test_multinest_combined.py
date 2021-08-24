@@ -15,10 +15,9 @@ def test_nested_simple_multinest_earth_shielding():
         ('Xe', 'Ge'),
         'Combined',
         do_init=False)
-    update = {}
-    update['prior'] = dddm.statistics.get_priors("Evans_2019")
-    update['halo_model'] = dddm.SHM()
-    update['type'] = 'SI'
+    update = {'prior': dddm.statistics.get_priors("Evans_2019"),
+              'halo_model': dddm.SHM(),
+              'type': 'SI'}
     stats.config.update(update)
     stats.copy_config(list(update.keys()))
     stats.print_before_run()
