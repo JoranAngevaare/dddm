@@ -112,7 +112,6 @@ class StatModel:
                            # poisson=False,
                            n_energy_bins=detector_config.get('n_energy_bins', 10),
                            earth_shielding=False,
-                           save_intermediate=False,
                            E_max=detector_config.get('E_max', 100)
                            )
 
@@ -221,8 +220,6 @@ class StatModel:
                 v_0=self.v_0 * nu.km / nu.s,
                 v_esc=self.v_esc * nu.km / nu.s,
                 rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
-
-        self.log.info(f'save_intermediate:\t{self.config["save_intermediate"]}')
 
         self.config['spectrum_class'] = spec if spec != 'default' else detector.DetectorSpectrum
 
@@ -370,30 +367,6 @@ class StatModel:
 
         checked_values = check_shape(values)
 
-        if self.config['save_intermediate']:
-            self.log.info(f"load results from intermediate file")
-
-            spec_class = self.config['halo_model']
-
-            if self.config['earth_shielding']:
-                if str(spec_class) != str(halo.VerneSHM()):
-                    raise ValueError('Not running with shielding!')
-
-            interm_exists, interm_file, interm_spec = self.find_intermediate_result(
-                nbin=self.config['n_energy_bins'],
-                model=str(spec_class),
-                mw=checked_values[0],
-                sigma=checked_values[1],
-                v_0=checked_values[2] if len(checked_values) > 2 else self.v_0,
-                v_esc=checked_values[3] if len(checked_values) > 3 else self.v_esc,
-                rho=checked_values[4] if len(checked_values) > 4 else self.density,
-                poisson=False,
-                det_conf=self.config['detector_config']
-            )
-            if interm_exists:
-                return interm_spec
-            self.log.info(f"No file found, save intermediate result later")
-
         if len(parameter_names) == 2:
             if parameter_names[0] == 'log_mass' and parameter_names[1] == 'log_cross_section':
                 # This is the right order
@@ -474,9 +447,7 @@ class StatModel:
                 self.log.error(error_message)
             else:
                 raise ValueError(error_message)
-        if self.config['save_intermediate']:
-            self.log.debug(f"saving results")
-            self.save_intermediate_result(binned_spectrum, interm_file)
+
         self.log.debug(f"returning results")
         return binned_spectrum
 
