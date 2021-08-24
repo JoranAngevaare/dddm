@@ -472,7 +472,7 @@ def log_likelihood_function(nb, nr):
         nr = LL_LOW_BOUND
     return np.log(nr) * nb - loggamma(nb + 1) - nr
 
-@numba.jit(nopython=True)
+
 def log_likelihood(model, y):
     """
     :param model: pandas dataframe containing the number of counts in bin i

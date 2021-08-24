@@ -51,8 +51,7 @@ class NestedSamplerStatModel(statistics.StatModel):
 
     def check_did_run(self):
         if not self.log_dict['did_run']:
-            self.log.info(f'did not '
-                          f'run yet, lets fire it up!')
+            self.log.info(f'did not run yet, lets fire it up!')
             if self.config['sampler'] == 'nestle':
                 self.run_nestle()
             elif self.config['sampler'] == 'multinest':
@@ -65,9 +64,7 @@ class NestedSamplerStatModel(statistics.StatModel):
             self.log.info(f'did run')
 
     def check_did_save(self):
-        self.log.info(
-            f'did not save'
-            f' yet, we dont want to lose our results so better do it now')
+        self.log.info(f'did not save yet, we don\'t want to lose our results so better do it now')
         if self.log_dict['saved_in'] is None:
             self.save_results()
 
@@ -79,31 +76,29 @@ class NestedSamplerStatModel(statistics.StatModel):
         :param parameter_names: the names of the parameter_values
         :return:
         """
-        self.log.debug(
-            f'SUPERVERBOSE\tthere we go! Find that log probability')
+        self.log.debug(f'there we go! Find that log probability')
         evaluated_rate = self.eval_spectrum(parameter_vals, parameter_names)[
             'counts']
 
         ll = statistics.log_likelihood(self.benchmark_values, evaluated_rate)
         if np.isnan(ll):
-            raise ValueError(
-                f"Returned NaN from likelihood. ll = {ll}")
-        self.log.debug(
-            f'SUPERVERBOSE\tfound it! returning the log likelihood')
+            raise ValueError(f"Returned NaN from likelihood. ll = {ll}")
+        self.log.debug(f'found it! returning the log likelihood')
         return ll
 
     def log_prior_transform_nested(self, x, x_name):
-        self.log.debug(
-            f'SUPERVERBOSE\tdoing some transformations for nestle/multinest '
-            f'to read the priors')
-        if self.config['prior'][x_name]['prior_type'] == 'flat':
-            a, b = self.config['prior'][x_name]['param']
+        self.log.debug(f'doing some transformations for nestle/multinest to read the priors')
+        this_prior = self.config['prior'][x_name]
+        prior_type = this_prior['prior_type']
+
+        if prior_type == 'flat':
+            a, b = this_prior['param']
             # Prior transform of a flat prior is a simple line.
             return x * (b - a) + a
-        if self.config['prior'][x_name]['prior_type'] == 'gauss':
+        if prior_type == 'gauss':
             # Get the range from the config file
-            a, b = self.config['prior'][x_name]['range']
-            m, s = self.config['prior'][x_name]['param']
+            a, b = this_prior['range']
+            m, s = this_prior['param']
 
             # Here the prior transform is being constructed and shifted. This may not seem trivial
             # and one is advised to request a notebook where this is explained
@@ -113,26 +108,16 @@ class NestedSamplerStatModel(statistics.StatModel):
             xprime = x * (bprime - aprime) + aprime
             res = m + s * spsp.ndtri(xprime)
             return res
-        err_message = (
-            f"unknown prior type '{self.config['prior'][x_name]['prior_type']}',"
-            f" choose either gauss or flat")
-        raise TypeError(err_message)
+        raise ValueError(f"unknown prior type '{prior_type}'")
 
     def _log_probability_nested(self, theta):
+        """warp log_prior_transform_nested"""
         ndim = len(theta)
-        self.log.debug(
-            f'SUPERVERBOSE\tdoing '
-            f'_log_probability_nested for {ndim} parameters'
-            f'\n\t\tooph, what a nasty function to do some transformations behind the scenes')
-        result = self.log_probability_nested(
-            theta, self.known_parameters[:ndim])
+        result = self.log_probability_nested(theta,
+                                             self.known_parameters[:ndim])
         return result
 
     def _log_prior_transform_nested(self, theta):
-        self.log.debug(
-            f'SUPERVERBOSE\tdoing '
-            f'_log_prior_transform_nested for {len(theta)} parameters'
-            f'\n\t\tooph, what a nasty function to do some transformations behind the scenes')
         result = [
             self.log_prior_transform_nested(
                 val,
@@ -142,8 +127,9 @@ class NestedSamplerStatModel(statistics.StatModel):
 
     def run_nestle(self):
         self.print_before_run()
-        assert self.config[
-            'sampler'] == 'nestle', f'Trying to run nestle but initialization requires {self.config["sampler"]}'
+        if self.config['sampler'] != 'nestle':
+            raise RuntimeError(f'Trying to run nestle but initialization '
+                               f'requires {self.config["sampler"]}')
 
         # Do the import of nestle inside the class such that the package can be
         # loaded without nestle
@@ -153,13 +139,11 @@ class NestedSamplerStatModel(statistics.StatModel):
             raise ModuleNotFoundError(
                 'package nestle not found. See README for installation')
 
-        self.log.info(
-            f'We made it to my core function, lets do that optimization')
+        self.log.debug(f'We made it to my core function, lets do that optimization')
         method = 'multi'  # use MutliNest algorithm
         ndim = len(self.config['fit_parameters'])
         tol = self.config['tol']  # the stopping criterion
-        self.log.info(
-            f'here we go! We are going to fit:\n\t{ndim} parameters\n')
+        self.log.info(f'here we go! We are going to fit: {ndim} parameters')
         assert_str = f"Unknown configuration of fit pars: {self.config['fit_parameters']}"
         assert self.config["fit_parameters"] == self.known_parameters[:ndim], assert_str
         try:
@@ -187,7 +171,7 @@ class NestedSamplerStatModel(statistics.StatModel):
                 f'run_nestle::\tfit_done in %i s (%.1f h)' %
                 (dt.seconds, dt.seconds / 3600.))
             self.log.debug(
-                f'SUPERVERBOSE\tWe are back!')
+                f'We are back!')
         except ValueError as e:
             self.log.error(
                 f'Nestle did not finish due to a ValueError. Was running with'
@@ -507,7 +491,6 @@ class CombinedInference(NestedSamplerStatModel):
         self.log.info(f'update config with {copy_of_config}')
         for c in self.sub_classes:
             c.config.update(copy_of_config)
-            c.read_priors_mean()
             self.log.debug(f'{c} with config {c.config}')
             c.eval_benchmark()
             c.set_models()
