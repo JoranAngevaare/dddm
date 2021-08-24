@@ -429,40 +429,11 @@ class DetectorSpectrum(GenSpectrum):
                 f"spectrum with detector resolution and implements the energy "
                 f"threshold for the detector")
 
-    @staticmethod
-    @numba.njit
-    def above_threshold(rates, e_bin_edges, e_thr):
+    def get_events(self):
         """
-        Apply threshold to the rates. We are right edge inclusive
-        bin edges : |bin0|bin1|bin2|
-        e_thr     :        |
-        bin0 -> 0
-        bin1 -> fraction of bin1 > e_thr
-        bin2 -> full content
-
-        :param rates: bins with the number of counts
-        :param e_bin_edges: 2d array of the left, right bins
-        :param e_thr: energy threshold
-        :return: rates with energy threshold applied
+        :return: Events (binned)
         """
-        for r_i, r in enumerate(rates):
-            left_edge, right_edge = e_bin_edges[r_i]
-            if left_edge >= e_thr:
-                # From now on all the bins will be above threshold we don't
-                # have to set to 0 anymore
-                break
-            if right_edge <= e_thr:
-                # this bin is fully below threshold
-                rates[r_i] = 0
-                continue
-            elif e_thr >= left_edge and e_thr <= right_edge:
-                fraction_above = (right_edge - e_thr) / (right_edge - left_edge)
-                rates[r_i] = r * fraction_above
-            else:
-                print(left_edge, right_edge, e_thr)
-                raise ValueError('How did this happen?')
-
-        return rates
+        return self.compute_detected_spectrum()
 
     def compute_detected_spectrum(self):
         """
@@ -497,8 +468,37 @@ class DetectorSpectrum(GenSpectrum):
         events = events * bin_width * self.config['exp_eff']
         return events
 
-    def get_events(self):
+    @staticmethod
+    @numba.njit
+    def above_threshold(rates, e_bin_edges, e_thr):
         """
-        :return: Events (binned)
+        Apply threshold to the rates. We are right edge inclusive
+        bin edges : |bin0|bin1|bin2|
+        e_thr     :        |
+        bin0 -> 0
+        bin1 -> fraction of bin1 > e_thr
+        bin2 -> full content
+
+        :param rates: bins with the number of counts
+        :param e_bin_edges: 2d array of the left, right bins
+        :param e_thr: energy threshold
+        :return: rates with energy threshold applied
         """
-        return self.compute_detected_spectrum()
+        for r_i, r in enumerate(rates):
+            left_edge, right_edge = e_bin_edges[r_i]
+            if left_edge >= e_thr:
+                # From now on all the bins will be above threshold we don't
+                # have to set to 0 anymore
+                break
+            if right_edge <= e_thr:
+                # this bin is fully below threshold
+                rates[r_i] = 0
+                continue
+            elif e_thr >= left_edge and e_thr <= right_edge:
+                fraction_above = (right_edge - e_thr) / (right_edge - left_edge)
+                rates[r_i] = r * fraction_above
+            else:
+                print(left_edge, right_edge, e_thr)
+                raise ValueError('How did this happen?')
+
+        return rates

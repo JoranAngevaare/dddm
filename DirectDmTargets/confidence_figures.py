@@ -61,6 +61,9 @@ class DDDMResult:
     def get_from_config(self, to_get: str):
         return self.result.get('config', {}).get(to_get)
 
+    def get_samples(self):
+        return self.result.get('weighted_samples').T[:2]
+
     @property
     def detector(self):
         return self.get_from_config('detector')
@@ -96,9 +99,6 @@ class DDDMResult:
             return None
 
         return len(param)
-
-    def get_samples(self):
-        return self.result.get('weighted_samples').T[:2]
 
 
 class SeabornPlot:

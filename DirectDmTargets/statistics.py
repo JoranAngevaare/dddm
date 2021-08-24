@@ -121,12 +121,16 @@ class StatModel:
                            prior=None,
                            mw=None,
                            sigma=None,
-                            halo_model=None,
+                           halo_model=None,
                            spectrum_class=None,
                            )
 
         self.log = self.get_logger(verbose)
         self.log.info(f"initialized for {detector_name} detector.")
+
+    def __str__(self):
+        return (f"StatModel::for {self.config['detector']} detector. "
+                f"For info see the config file:\n{self.config}")
 
     def get_logger(self, verbosity):
         if verbosity > 1:
@@ -141,45 +145,11 @@ class StatModel:
                                     f"log_{utils.now()}.log")
             self.config['logging'] = log_path
         else:
-            log_path=None
+            log_path = None
 
         log = utils.get_logger(self.__class__.__name__, level,
                                path=log_path)
         return log
-
-    def __str__(self):
-        return (f"StatModel::for {self.config['detector']} detector. "
-                f"For info see the config file:\n{self.config}")
-
-    def read_priors_mean(self, prior_name) -> ty.Union[int, float]:
-        self.log.debug(f'reading {prior_name}')
-        if self.config['prior'] is None:
-            raise ValueError(f'Prior not set!')
-        return self.config['prior'][prior_name]['mean']
-
-    @property
-    def v_0(self) -> ty.Union[int, float]:
-        return self.read_priors_mean('v_0')
-
-    @property
-    def v_esc(self) -> ty.Union[int, float]:
-        return self.read_priors_mean('v_esc')
-
-    @property
-    def density(self) -> ty.Union[int, float]:
-        return self.read_priors_mean('density')
-
-    @property
-    def log_mass(self):
-        return self.config['mw']
-
-    @property
-    def log_cross_section(self):
-        return self.config['sigma']
-
-    @property
-    def bench_is_set(self):
-        return self.benchmark_values is None
 
     def set_prior(self, priors_from):
         self.log.info(f'set_prior')
@@ -230,7 +200,8 @@ class StatModel:
                 v_esc=self.v_esc * nu.km / nu.s,
                 rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
 
-        self.config['spectrum_class'] = spectrum_class if spectrum_class != 'default' else detector.DetectorSpectrum
+        self.config[
+            'spectrum_class'] = spectrum_class if spectrum_class != 'default' else detector.DetectorSpectrum
 
         if halo_model != 'default' or spectrum_class != 'default':
             self.log.warning(f"re-evaluate benchmark")
@@ -257,7 +228,7 @@ class StatModel:
         This is a very important function as it makes sure all the
         classes are setup in the right order
         :param _do_evaluate_benchmark: Evaluate the benchmark
-        :return:
+        :return: None
         """
         no_prior_has_been_set = self.config['prior'] is None
         if no_prior_has_been_set:
@@ -282,6 +253,7 @@ class StatModel:
         self.log.info(f'evaluate benchmark\tall ready to go!')
 
     def check_spectrum(self):
+        """Lazy alias for eval_spectrum"""
         parameter_names = self._parameter_order[:2]
         parameter_values = [self.config['mw'], self.config['sigma'], ]
         return self.eval_spectrum(parameter_values, parameter_names)
@@ -478,12 +450,42 @@ class StatModel:
                                         'n_energy_bins',
                                         )
                            ):
-        """Set the config of the spectrum to have the same value as we do"""
+        """Set the config of the spectrum-class to have the same value as we do"""
         for to_copy in copy_fields:
             if to_copy in self.config:
                 self.log.info(f'set {to_copy} to {self.config[to_copy]}')
                 spectrum.set_config({to_copy: self.config[to_copy]})
         return spectrum
+
+    def read_priors_mean(self, prior_name) -> ty.Union[int, float]:
+        self.log.debug(f'reading {prior_name}')
+        if self.config['prior'] is None:
+            raise ValueError(f'Prior not set!')
+        return self.config['prior'][prior_name]['mean']
+
+    @property
+    def v_0(self) -> ty.Union[int, float]:
+        return self.read_priors_mean('v_0')
+
+    @property
+    def v_esc(self) -> ty.Union[int, float]:
+        return self.read_priors_mean('v_esc')
+
+    @property
+    def density(self) -> ty.Union[int, float]:
+        return self.read_priors_mean('density')
+
+    @property
+    def log_mass(self):
+        return self.config['mw']
+
+    @property
+    def log_cross_section(self):
+        return self.config['sigma']
+
+    @property
+    def bench_is_set(self):
+        return self.benchmark_values is None
 
 
 def log_likelihood_function(nb, nr):

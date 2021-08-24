@@ -306,7 +306,7 @@ def get_bins(a, b, n) -> np.ndarray:
     return np.transpose(result)
 
 
-def get_logger(name, level='INFO', path=None)->logging.Logger:
+def get_logger(name, level='INFO', path=None) -> logging.Logger:
     """
     Get logger with hander in nice format
     :param name: name of the logger

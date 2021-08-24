@@ -229,48 +229,6 @@ class GenSpectrum:
         self.config = det
         self.log = utils.get_logger(self.__class__.__name__)
 
-    @property
-    def E_min(self):
-        return self.config.get('E_min', 0)
-
-    @property
-    def E_max(self):
-        return self.config.get('E_max', 10)
-
-    @property
-    def n_bins(self):
-        return self.config.get('n_energy_bins', 50)
-
-    def set_config(self, update: dict, check_if_set: bool = True) -> None:
-        """
-        Update the config with the provided update
-        :param update: a dictionary of items to update
-        :param check_if_set: Check that a previous version is actually
-            set
-        :return: None
-        """
-        assert isinstance(update, dict)
-        for key in update.keys():
-            if check_if_set and key not in self.config:
-                message = f'{key} not in config of {str(self)}'
-                if update.get('type') == 'combined':
-                    update.log.debug(message)
-                else:
-                    raise ValueError(message)
-
-        self.config.update(update)
-
-    def _check_input_detector_config(self, det):
-        """Given the a detector config, check that all the required fields are available"""
-        if not isinstance(det, dict):
-            raise ValueError("Detector should be dict")
-        missing = []
-        for field in self.required_detector_fields:
-            if field not in det:
-                missing.append(field)
-        if missing:
-            raise ValueError(f'Missing {missing} fields in detector config')
-
     def __str__(self):
         """
         :return: sting of class info
@@ -278,12 +236,23 @@ class GenSpectrum:
         return f"spectrum_simple of a DM model ({self.dm_model}) in a " \
                f"{self.config['name']} detector"
 
-    def get_bin_centers(self) -> np.ndarray:
-        """Given Emin and Emax, get an array with bin centers """
-        return np.mean(self.get_bin_edges(), axis=1)
+    def get_data(self, poisson=True):
+        """
 
-    def get_bin_edges(self):
-        return utils.get_bins(self.E_min, self.E_max, self.n_bins)
+        :param poisson: type bool, add poisson True or False
+        :return: pd.DataFrame containing events binned in energy
+        """
+        result = pd.DataFrame()
+        if poisson:
+            result['counts'] = self.get_poisson_events()
+        else:
+            result['counts'] = self.get_events()
+        bins = utils.get_bins(self.E_min, self.E_max, self.n_bins)
+        result['bin_centers'] = np.mean(bins, axis=1)
+        result['bin_left'] = bins[:, 0]
+        result['bin_right'] = bins[:, 1]
+        result = self.set_negative_to_zero(result)
+        return result
 
     def spectrum_simple(self, benchmark):
         """
@@ -330,6 +299,40 @@ class GenSpectrum:
             raise NotImplementedError(f'Unknown {exp_type}-interaction')
         return rate
 
+    def set_config(self, update: dict, check_if_set: bool = True) -> None:
+        """
+        Update the config with the provided update
+        :param update: a dictionary of items to update
+        :param check_if_set: Check that a previous version is actually
+            set
+        :return: None
+        """
+        assert isinstance(update, dict)
+        for key in update.keys():
+            if check_if_set and key not in self.config:
+                message = f'{key} not in config of {str(self)}'
+                raise ValueError(message)
+
+        self.config.update(update)
+
+    def _check_input_detector_config(self, det):
+        """Given the a detector config, check that all the required fields are available"""
+        if not isinstance(det, dict):
+            raise ValueError("Detector should be dict")
+        missing = []
+        for field in self.required_detector_fields:
+            if field not in det:
+                missing.append(field)
+        if missing:
+            raise ValueError(f'Missing {missing} fields in detector config')
+
+    def get_bin_centers(self) -> np.ndarray:
+        """Given Emin and Emax, get an array with bin centers """
+        return np.mean(self.get_bin_edges(), axis=1)
+
+    def get_bin_edges(self):
+        return utils.get_bins(self.E_min, self.E_max, self.n_bins)
+
     def get_events(self):
         """
         :return: Events (binned)
@@ -348,24 +351,6 @@ class GenSpectrum:
         """
         return np.random.exponential(self.get_events()).astype(np.float)
 
-    def get_data(self, poisson=True):
-        """
-
-        :param poisson: type bool, add poisson True or False
-        :return: pd.DataFrame containing events binned in energy
-        """
-        result = pd.DataFrame()
-        if poisson:
-            result['counts'] = self.get_poisson_events()
-        else:
-            result['counts'] = self.get_events()
-        bins = utils.get_bins(self.E_min, self.E_max, self.n_bins)
-        result['bin_centers'] = np.mean(bins, axis=1)
-        result['bin_left'] = bins[:, 0]
-        result['bin_right'] = bins[:, 1]
-        result = self.set_negative_to_zero(result)
-        return result
-
     def set_negative_to_zero(self, result):
         mask = result['counts'] < 0
         if np.any(mask):
@@ -373,3 +358,15 @@ class GenSpectrum:
             result['counts'][mask] = 0
             return result
         return result
+
+    @property
+    def E_min(self):
+        return self.config.get('E_min', 0)
+
+    @property
+    def E_max(self):
+        return self.config.get('E_max', 10)
+
+    @property
+    def n_bins(self):
+        return self.config.get('n_energy_bins', 50)
