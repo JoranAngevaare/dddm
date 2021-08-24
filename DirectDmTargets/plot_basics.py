@@ -1,6 +1,6 @@
 """Some basic functions for plotting et cetera. Used to for instance check that
 the likelihood function is well behaved"""
-
+import pickle
 import colorsys
 import os
 
@@ -185,14 +185,41 @@ def get_color_from_range(val, _range=(0, 1), it=0):
     return [float(r) for r in res]
 
 
-def save_canvas(name, save_dir='./figures', tight_layout=False):
-    utils.check_folder_for_file(save_dir + '/.')
-    utils.check_folder_for_file(save_dir + '/pdf/.')
+def save_canvas(name,
+                save_dir='./figures',
+                dpi=200,
+                tight_layout=False,
+                pickle_dump=True):
+    """Wrapper for saving current figure"""
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir + '/.')
+    for sub_folder in 'pdf pkl svg'.split():
+        sub_dir = os.path.join(save_dir, sub_folder)
+        if not os.path.exists(sub_dir):
+            os.makedirs(sub_dir)
     if tight_layout:
         plt.tight_layout()
-    if os.path.exists(save_dir) and os.path.exists(save_dir + '/pdf'):
-        plt.savefig(f"{save_dir}/{name}.png", dpi=300, bbox_inches="tight")
-        plt.savefig(f"{save_dir}/pdf/{name}.pdf", dpi=300, bbox_inches="tight")
+    if pickle_dump:
+        pickle_dump_figure(os.path.join(save_dir, 'pkl', f'{name}.pkl'))
+    if os.path.exists(save_dir):
+        plt.savefig(f"{save_dir}/{name}.png", dpi=dpi, bbox_inches="tight")
+        for extension in 'pdf svg'.split():
+            plt.savefig(
+                os.path.join(
+                    save_dir,
+                    extension,
+                    f'{name}.{extension}'),
+                dpi=dpi,
+                bbox_inches="tight")
     else:
-        raise FileExistsError(
-            f'{save_dir} does not exist or does not have /pdf')
+        raise FileExistsError(f'{save_dir} does not exist or does not have /pdf')
+
+
+def pickle_dump_figure(name):
+    fig = plt.gcf()
+    pickle.dump(fig, open(name, 'wb'))
+
+
+def open_pickle_figure(name):
+    figx = pickle.load(open(name, 'rb'))
+    return figx

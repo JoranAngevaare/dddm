@@ -310,6 +310,7 @@ def one_confidence_plot(
 
 
 def _confidence_plot(item, X, Y, H, bin_range, text_box=False, nsigma=3,
+                     make_xticks=True,
                      cbar_note="", cmap=cm.inferno_r, alpha=1,
                      ):
     xmean, xerr = weighted_avg_and_std(X, np.mean(H, axis=0))
@@ -375,22 +376,23 @@ def _confidence_plot(item, X, Y, H, bin_range, text_box=False, nsigma=3,
     cbar.set_ticklabels(col_labels)
     cbar.set_label("Posterior probability" + cbar_note)
 
-    secax = ax.secondary_xaxis('top', functions=(pow10, np.log10))
+    if make_xticks:
+        secax = ax.secondary_xaxis('top', functions=(pow10, np.log10))
 
-    if 'migd' in results[item]['config']['detector']:
-        x_ticks = [0.01, 0.1, 0.5, 1, 5, 10, 50, 100]
-    else:
-        x_ticks = [15, 25, 50, 100, 250, 500, 1000]
-    for x_tick in x_ticks:
-        ax.axvline(np.log10(x_tick), alpha=0.1)
-    secax.set_ticks(x_ticks)
-    secax.set_xticklabels([str(x) for x in x_ticks])
-    secax.xaxis.set_tick_params(rotation=45)
-    plt.xlim(*bin_range[0])
-    plt.ylim(*bin_range[1])
-    plt.xlabel(r"$\log_{10}(M_{\chi}$ $[GeV/c^{2}]$)")
-    secax.set_xlabel(r"$M_{\chi}$ $[GeV/c^{2}]$")
-    plt.ylabel(r"$\log_{10}(\sigma_{S.I.}$ $[cm^{2}]$)")
+        if 'migd' in results[item]['config']['detector']:
+            x_ticks = [0.01, 0.1, 0.5, 1, 5, 10, 50, 100]
+        else:
+            x_ticks = [15, 25, 50, 100, 250, 500, 1000]
+        for x_tick in x_ticks:
+            ax.axvline(np.log10(x_tick), alpha=0.1)
+        secax.set_ticks(x_ticks)
+        secax.set_xticklabels([str(x) for x in x_ticks])
+        secax.xaxis.set_tick_params(rotation=45)
+        plt.xlim(*bin_range[0])
+        plt.ylim(*bin_range[1])
+        plt.xlabel(r"$\log_{10}(M_{\chi}$ $[GeV/c^{2}]$)")
+        secax.set_xlabel(r"$M_{\chi}$ $[GeV/c^{2}]$")
+        plt.ylabel(r"$\log_{10}(\sigma_{S.I.}$ $[cm^{2}]$)")
 
     if text_box:
         plt.text(0.05, 0.95, text_box, transform=ax.transAxes, alpha=0.5,
@@ -638,7 +640,8 @@ def combined_confidence_plot(items,
                 text_box=text_box,
                 nsigma=nsigma,
                 cbar_note=cbar_notes[k],
-                cmap=cmap if cmap else colormaps[k],
+                cmap=cmap[k] if cmap else colormaps[k],
+                make_xticks=False,
                 alpha=alpha /
                 len(items) if combine else alpha)
             _results.append(res)
@@ -852,6 +855,7 @@ def combine_sets(items,
                     notes, [0, sub_number, number_i])]
                 def_show_single(it, _name, name_base, **kwargs)
                 exec_show(show)
+
         if level > 0:
             f_print(f'at 1/{level}')
             for plot_times in range(2):
