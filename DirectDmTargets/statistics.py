@@ -86,6 +86,9 @@ def get_param_list():
 
 
 class StatModel:
+    # Keep these fit parameters in this order
+    _parameter_order = ('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k')
+
     def __init__(
             self,
             detector_name,
@@ -519,26 +522,20 @@ class StatModel:
         :param parameter_names: names of parameters
         :return: a spectrum as specified by the parameter_names
         """
-        self.log.info(
-            f'StatModel::\tevaluate spectrum for {len(values)} parameters')
+        self.log.debug(f'evaluate spectrum for {len(values)} parameters')
         if len(values) != len(parameter_names):
             raise ValueError(f'trying to fit {len(values)} parameters but '
                              f'{parameter_names} are given.')
-        default_order = [
-            'log_mass',
-            'log_cross_section',
-            'v_0',
-            'v_esc',
-            'density',
-            'k']
+
         if isinstance(parameter_names, str):
             raise NotImplementedError(
                 f"Trying to fit a single parameter ({parameter_names}), such a "
                 f"feature is not implemented.")
+
         checked_values = check_shape(values)
+
         if self.config['save_intermediate']:
-            self.log.info(
-                f"StatModel::\teval_spectrum\tload results from intermediate file")
+            self.log.info(f"load results from intermediate file")
 
             spec_class = self.config['halo_model']
 
@@ -559,29 +556,24 @@ class StatModel:
             )
             if interm_exists:
                 return interm_spec
-            self.log.info(
-                f"StatModel::\teval_spectrum\tNo file found, proceed and "
-                f"save intermediate result later")
+            self.log.info(f"No file found, save intermediate result later")
+
         if len(parameter_names) == 2:
-            x0, x1 = checked_values
             if parameter_names[0] == 'log_mass' and parameter_names[1] == 'log_cross_section':
                 # This is the right order
                 pass
-            elif parameter_names[1] == 'log_mass' and parameter_names[0] == 'log_cross_section':
-                x0, x1 = x1, x0
             else:
                 raise NotImplementedError(
                     f"Trying to fit two parameters ({parameter_names}), this is not implemented.")
-            self.log.info(
-                f"StatModel::\tevaluating {self.config['spectrum_class']} for mw = {10. ** x0}, "
-                f"sig = {10. ** x1}, halo model = {self.config['halo_model']} and "
+            self.log.debug(
+                f"evaluating {self.config['spectrum_class']} for mw = {10. ** checked_values[0]}, "
+                f"sig = {10. ** checked_values[1]}, halo model = {self.config['halo_model']} and "
                 f"detector = {self.config['detector_config']}")
             if self.config['earth_shielding']:
-                self.log.debug(
-                    f"StatModel::\tSetting spectrum to Verne in likelihood code")
+                self.log.debug(f"Setting spectrum to Verne in likelihood code")
                 fit_shm = halo.VerneSHM(
-                    log_mass=x0,  # self.config['mw'],
-                    log_cross_section=x1,  # self.config['sigma'],
+                    log_mass=checked_values[0],  # self.config['mw'],
+                    log_cross_section=checked_values[1],  # self.config['sigma'],
                     location=self.config['detector_config']['location'],
                     v_0=self.config['v_0'] * nu.km / nu.s,
                     v_esc=self.config['v_esc'] * nu.km / nu.s,
@@ -589,85 +581,32 @@ class StatModel:
             else:
                 fit_shm = self.config['halo_model']
 
-            spectrum = self.config['spectrum_class'](
-                10. ** x0,
-                10. ** x1,
-                fit_shm,
-                self.config['detector_config'])
-            spectrum = config_to_spectrum(spectrum)
-
-            self.log.debug(
-                f"StatModel::\tSUPERVERBOSE\tAlright spectrum set. Evaluate now!")
-            binned_spectrum = spectrum.get_data(poisson=False)
-            if self.config['save_intermediate']:
-                self.save_intermediate_result(binned_spectrum, interm_file)
-            return binned_spectrum
-        elif len(parameter_names) == 5 or len(parameter_names) == 6:
-            if parameter_names != default_order[:len(parameter_names)]:
+        elif len(parameter_names) == 5:
+            if parameter_names != self._parameter_order[:len(parameter_names)]:
                 raise NameError(
                     f"The parameters are not in correct order. Please insert"
-                    f"{default_order[:len(parameter_names)]} rather than "
+                    f"{self._parameter_order[:len(parameter_names)]} rather than "
                     f"{parameter_names}.")
 
-            checked_values = check_shape(values)
-            if len(parameter_names) == 5:
-                if self.config['earth_shielding']:
-                    self.log.debug(
-                        f"StatModel::\tSUPERVERBOSE\tSetting spectrum to Verne in likelihood code")
-                    fit_shm = halo.VerneSHM(
-                        log_mass=checked_values[0],  # 'mw
-                        log_cross_section=checked_values[1],  # 'sigma'
-                        location=self.config['detector_config']['location'],
-                        v_0=checked_values[2] * nu.km / nu.s,  # 'v_0'
-                        v_esc=checked_values[3] * nu.km / nu.s,  # 'v_esc'
-                        rho_dm=checked_values[
-                            4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)  # 'density'
-                else:
-                    self.log.debug(
-                        f"StatModel::\tSUPERVERBOSE\tUsing SHM in likelihood code")
-                    fit_shm = halo.SHM(
-                        v_0=checked_values[2] * nu.km / nu.s,
-                        v_esc=checked_values[3] * nu.km / nu.s,
-                        rho_dm=checked_values[4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
+            if self.config['earth_shielding']:
+                self.log.debug(
+                    f"Setting spectrum to Verne in likelihood code")
+                fit_shm = halo.VerneSHM(
+                    log_mass=checked_values[0],  # 'mw
+                    log_cross_section=checked_values[1],  # 'sigma'
+                    location=self.config['detector_config']['location'],
+                    v_0=checked_values[2] * nu.km / nu.s,  # 'v_0'
+                    v_esc=checked_values[3] * nu.km / nu.s,  # 'v_esc'
+                    rho_dm=checked_values[
+                        4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)  # 'density'
+            else:
+                self.log.debug(f"Using SHM in likelihood code")
+                fit_shm = halo.SHM(
+                    v_0=checked_values[2] * nu.km / nu.s,
+                    v_esc=checked_values[3] * nu.km / nu.s,
+                    rho_dm=checked_values[4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
 
-            if len(parameter_names) == 6:
-                raise NotImplementedError(
-                    f"Currently not yet ready to fit for {parameter_names}")
-
-            spectrum = self.config['spectrum_class'](
-                10. ** checked_values[0],
-                10. ** checked_values[1],
-                fit_shm,
-                self.config['detector_config'])
-            spectrum.n_bins = self.config['n_energy_bins']
-            if 'E_max' in self.config:
-                self.log.info(
-                    f'StatModel::\teval_spectrum\tset E_max to {self.config["E_max"]} for >2 params')
-                spectrum.E_max = self.config['E_max']
-            if 'E_min' in self.config:
-                self.log.info(
-                    f'StatModel::\teval_spectrum\tset E_max to {self.config["E_min"]} for >2 params')
-                spectrum.E_max = self.config['E_min']
-            binned_spectrum = spectrum.get_data(poisson=False)
-            self.log.debug(f"StatModel::\tSUPERVERBOSE\twe have results!")
-
-            if np.any(binned_spectrum['counts'] < 0):
-                error_message = (
-                    f"statistics.py::Finding negative rates. Presumably v_esc"
-                    f" is too small ({values[3]})\nFull dump of parameters:\n"
-                    f"{parameter_names} = {values}.\nIf this occurs, one or "
-                    f"more priors might not be constrained correctly.")
-                if 'migd' in self.config['detector']:
-                    binned_spectrum = spectrum.set_negative_to_zero(binned_spectrum)
-                    self.log.error(error_message)
-                else:
-                    raise ValueError(error_message)
-            self.log.debug(f"StatModel::\tSUPERVERBOSE\treturning results")
-            if self.config['save_intermediate']:
-                self.save_intermediate_result(binned_spectrum, interm_file)
-            return binned_spectrum
-        elif len(parameter_names) > 2 and not len(parameter_names) == 5 and not len(
-                parameter_names) == 6:
+        elif len(parameter_names) > 2 and not len(parameter_names) == 5:
             raise NotImplementedError(
                 f"Not so quickly cowboy, before you code fitting "
                 f"{len(parameter_names)} parameters or more, first code it! "
@@ -677,6 +616,33 @@ class StatModel:
             raise NotImplementedError(
                 f"Something strange went wrong here. Trying to fit for the"
                 f"parameter_names = {parameter_names}")
+
+        spectrum = self.config['spectrum_class'](
+            10. ** checked_values[0],
+            10. ** checked_values[1],
+            fit_shm,
+            self.config['detector_config'])
+
+        spectrum = self.config_to_spectrum(spectrum)
+        binned_spectrum = spectrum.get_data(poisson=False)
+        self.log.debug(f"we have results!")
+
+        if np.any(binned_spectrum['counts'] < 0):
+            error_message = (
+                f"Finding negative rates. Presumably v_esc is too small. "
+                f"Or one or more priors are not constrained correctly. "
+                f"dump of parameters:\n" f"{parameter_names} = {values}."
+            )
+            if 'migd' in self.config['detector']:
+                binned_spectrum = spectrum.set_negative_to_zero(binned_spectrum)
+                self.log.error(error_message)
+            else:
+                raise ValueError(error_message)
+        if self.config['save_intermediate']:
+            self.log.debug(f"saving results")
+            self.save_intermediate_result(binned_spectrum, interm_file)
+        self.log.debug(f"returning results")
+        return binned_spectrum
 
     def config_to_spectrum(self, spectrum,
                            copy_fields=('E_min',
