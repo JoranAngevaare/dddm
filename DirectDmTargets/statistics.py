@@ -692,7 +692,6 @@ class StatModel:
         return spectrum
 
 
-
 def log_likelihood_function(nb, nr):
     """
     return the ln(likelihood) for Nb expected events and Nr observed events

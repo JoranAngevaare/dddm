@@ -49,9 +49,9 @@ class SHM:
     def parameter_dict(self):
         """Return a dict of readable parameters of the current settings"""
         parameters = dict(
-            v_0 = self.v_0 / (nu.km / nu.s),
-            v_esc = self.v_esc / (nu.km / nu.s),
-            rho_dm = self.rho_dm / (nu.GeV / nu.c0 ** 2 / nu.cm ** 3),
+            v_0=self.v_0 / (nu.km / nu.s),
+            v_esc=self.v_esc / (nu.km / nu.s),
+            rho_dm=self.rho_dm / (nu.GeV / nu.c0 ** 2 / nu.cm ** 3),
         )
         return parameters
 
@@ -195,9 +195,9 @@ class VerneSHM:
     def parameter_dict(self):
         """Return a dict of readable parameters of the current settings"""
         parameters = dict(
-            v_0 = self.v_0_nodim,
-            v_esc = self.v_esc_nodim,
-            rho_dm = self.rho_dm_nodim,
+            v_0=self.v_0_nodim,
+            v_esc=self.v_esc_nodim,
+            rho_dm=self.rho_dm_nodim,
         )
         return parameters
 
@@ -236,7 +236,7 @@ class GenSpectrum:
     def n_bins(self):
         return self.config.get('n_energy_bins', 50)
 
-    def set_config(self, update: dict, check_if_set: bool=True) -> None:
+    def set_config(self, update: dict, check_if_set: bool = True) -> None:
         """
         Update the config with the provided update
         :param update: a dictionaty of items to update

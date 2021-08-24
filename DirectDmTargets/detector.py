@@ -520,7 +520,7 @@ class DetectorSpectrum(GenSpectrum):
             rates += self.config['bg_func'](self.E_min,
                                             self.E_max,
                                             self.n_bins) * (
-                             self.config['exp'] / self.config['exp_eff'])
+                self.config['exp'] / self.config['exp_eff'])
         e_bin_centers = self.get_bin_centers()
         e_bin_edges = np.array(self.get_bin_edges())
         bin_width = np.mean(np.diff(e_bin_centers))
