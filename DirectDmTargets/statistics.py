@@ -99,7 +99,7 @@ class StatModel:
             detector_name,
             verbose=False,
             detector_config=None,
-            do_init=True):
+    ):
         """
         Statistical model used for Bayesian interference of detection in multiple experiments.
         :param detector_name: name of the detector (e.g. Xe)
@@ -123,12 +123,6 @@ class StatModel:
         self.log = self.get_logger(verbose)
         self.set_prior("Pato_2010")
         self.log.info(f"initialized for {detector_name} detector.")
-        if do_init:
-            self.set_default()
-
-    @property
-    def bench_is_set(self):
-        return self.benchmark_values is None
 
     def get_logger(self, verbosity):
         if verbosity > 1:
@@ -177,11 +171,9 @@ class StatModel:
     def log_cross_section(self):
         return self.config['sigma']
 
-    def insert_prior_manually(self, input_priors):
-        self.log.warning(
-            f'Inserting {input_priors} as priors. For the right format check '
-            f'DirectDmTargets/statistics.py. I assume your format is right.')
-        self.config['prior'] = input_priors
+    @property
+    def bench_is_set(self):
+        return self.benchmark_values is None
 
     def set_prior(self, priors_from):
         self.log.info(f'set_prior')
@@ -203,11 +195,14 @@ class StatModel:
         if not ((mass == 50) and (log_cross_section == -45)):
             self.log.warning(f'taking log10 of mass of {mass}')
 
-    def set_models(self, halo_model='default', spec='default'):
+    def set_models(self,
+                   halo_model: ty.Union[halo.SHM, halo.VerneSHM] = 'default',
+                   spectrum_class: ty.Union[
+                       detector.DetectorSpectrum, halo.GenSpectrum] = 'default'):
         """
         Update the config with the required settings
         :param halo_model: The halo model used
-        :param spec: class used to generate the response of the spectrum in the
+        :param spectrum_class: class used to generate the response of the spectrum in the
         detector
         """
 
@@ -228,9 +223,10 @@ class StatModel:
                 v_esc=self.v_esc * nu.km / nu.s,
                 rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
 
-        self.config['spectrum_class'] = spec if spec != 'default' else detector.DetectorSpectrum
+        self.config[
+            'spectrum_class'] = spectrum_class if spectrum_class != 'default' else detector.DetectorSpectrum
 
-        if halo_model != 'default' or spec != 'default':
+        if halo_model != 'default' or spectrum_class != 'default':
             self.log.warning(f"re-evaluate benchmark")
 
     def set_fit_parameters(self, params):

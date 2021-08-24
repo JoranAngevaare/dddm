@@ -72,12 +72,10 @@ class MCMCStatModel(statistics.StatModel):
 
         for i, key in enumerate(keys):
             val = getattr(self, key)
+            self.log.warning(f'{key} is {val}')
             a, b = ranges[i]
-            if key in []:
-                start_at = np.random.uniform(a, b, (self.nwalkers, 1))
-            else:
-                start_at = val + 0.005 * val * \
-                           np.random.randn(self.nwalkers, 1)
+            start_at = val + 0.005 * val * np.random.randn(self.nwalkers, 1)
+
             start_at = np.clip(start_at, a, b)
             pos.append(start_at)
         pos = np.hstack(pos)

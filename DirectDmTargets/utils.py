@@ -137,7 +137,7 @@ def open_save_dir(save_as, base_dir=None, force_index=False, _hash=None):
     if force_index:
         results_path = os.path.join(base_dir, save_as + str(force_index))
     elif _hash is None:
-        if force_index is notFalse:
+        if force_index is not False:
             raise ValueError(
                 f'do not set _hash to {_hash} and force_index to '
                 f'{force_index} simultaneously'
