@@ -114,6 +114,7 @@ class NestedSamplerStatModel(statistics.StatModel):
         return np.array(result)
 
     def run_nestle(self):
+        self._fix_parameters()
         self.print_before_run()
         if self.config['sampler'] != 'nestle':
             raise RuntimeError(f'Trying to run nestle but initialization '
@@ -181,6 +182,7 @@ class NestedSamplerStatModel(statistics.StatModel):
         )
 
     def run_multinest(self):
+        self._fix_parameters()
         self.print_before_run()
         if self.config["sampler"] != 'multinest':
             raise ValueError(f'Wrong sampler {self.config["sampler"]}!')

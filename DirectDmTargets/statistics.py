@@ -118,10 +118,14 @@ class StatModel:
                            E_max=detector_config.get('E_max', 100),
                            notes='default',
                            start=datetime.now(),
+                           prior=None,
+                           mw=None,
+                           sigma=None,
+                            halo_model=None,
+                           spectrum_class=None,
                            )
 
         self.log = self.get_logger(verbose)
-        self.set_prior("Pato_2010")
         self.log.info(f"initialized for {detector_name} detector.")
 
     def get_logger(self, verbosity):
@@ -157,11 +161,11 @@ class StatModel:
 
     @property
     def v_esc(self) -> ty.Union[int, float]:
-        return self.read_priors_mean('v_0')
+        return self.read_priors_mean('v_esc')
 
     @property
     def density(self) -> ty.Union[int, float]:
-        return self.read_priors_mean('v_0')
+        return self.read_priors_mean('density')
 
     @property
     def log_mass(self):
@@ -196,9 +200,10 @@ class StatModel:
             self.log.warning(f'taking log10 of mass of {mass}')
 
     def set_models(self,
-                   halo_model: ty.Union[halo.SHM, halo.VerneSHM] = 'default',
-                   spectrum_class: ty.Union[
-                       detector.DetectorSpectrum, halo.GenSpectrum] = 'default'):
+                   halo_model: ty.Union[halo.SHM,
+                                        halo.VerneSHM] = 'default',
+                   spectrum_class: ty.Union[detector.DetectorSpectrum,
+                                            halo.GenSpectrum] = 'default'):
         """
         Update the config with the required settings
         :param halo_model: The halo model used
@@ -223,8 +228,7 @@ class StatModel:
                 v_esc=self.v_esc * nu.km / nu.s,
                 rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
 
-        self.config[
-            'spectrum_class'] = spectrum_class if spectrum_class != 'default' else detector.DetectorSpectrum
+        self.config['spectrum_class'] = spectrum_class if spectrum_class != 'default' else detector.DetectorSpectrum
 
         if halo_model != 'default' or spectrum_class != 'default':
             self.log.warning(f"re-evaluate benchmark")
@@ -246,14 +250,30 @@ class StatModel:
             raise NameError(err_message)
         self.config['fit_parameters'] = params
 
-    def set_default(self):
-        self.log.info(f'initializing')
-        self.set_benchmark()
-        self.log.info(f'set_benchmark\tdone')
+    def _fix_parameters(self):
+        """
+        This is a very important function as it makes sure all the
+        classes are setup in the right order
+        :return:
+        """
+        no_prior_has_been_set = self.config['prior'] is None
+        if no_prior_has_been_set:
+            self.log.warning(f'No prior was set so using Evans_2019')
+            self.set_prior('Evans_2019')
+        no_wimp_mass_set = self.config['mw'] is None
+        if no_wimp_mass_set:
+            self.log.warning(f'No WIMP mass was set so using 50 GeV')
+            # ok, just use some default one
+            self.set_benchmark()
+        elif self.config['sigma'] is None:
+            raise ValueError('Someone forgot to set sigma?!')
+
+        # Very important that this comes AFTER the prior setting as we depend on it
         self.set_models()
-        self.log.info(f'set_models\tdone')
+
+        # Finally, set the benchmark
         self.eval_benchmark()
-        self.log.info(f'evaluate benchmark\tdone\n\tall ready to go!')
+        self.log.info(f'evaluate benchmark\tall ready to go!')
 
     def check_spectrum(self):
         parameter_names = self._parameter_order[:2]

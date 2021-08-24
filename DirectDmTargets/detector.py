@@ -422,7 +422,7 @@ class DetectorSpectrum(GenSpectrum):
         if 'bg_func' in self.config:
             self.add_background = kwargs.get('add_background', True)
         else:
-            self.log.info(f'No bg_func in experiment config')
+            self.log.debug(f'No bg_func in experiment config')
 
     def __str__(self):
         return (f"DetectorSpectrum class inherited from GenSpectrum.\nSmears "

@@ -56,7 +56,7 @@ class MCMCStatModel(statistics.StatModel):
         ])
         return pos.T
 
-    def set_pos(self, use_pos=None):
+    def _set_pos(self, use_pos=None):
         """Set the starting position of the walkers"""
         self.log_dict['pos'] = True
         if use_pos is not None:
@@ -99,10 +99,12 @@ class MCMCStatModel(statistics.StatModel):
         self.log_dict['sampler'] = True
 
     def run_emcee(self):
+        self._fix_parameters()
+
         if not self.log_dict['sampler']:
             self.set_sampler()
         if not self.log_dict['pos']:
-            self.set_pos()
+            self._set_pos()
         start = datetime.datetime.now()
         try:
             self.sampler.run_mcmc(self.pos, self.nsteps, progress=False)
@@ -144,7 +146,7 @@ class MCMCStatModel(statistics.StatModel):
             thin=self.thin,
             flat=True
         )
-        truths = [self.config[prior_name] for prior_name in
+        truths = [getattr(self, prior_name) for prior_name in
                   statistics.get_prior_list()[:len(self.config['fit_parameters'])]]
 
         corner.corner(flat_samples, labels=self.config['fit_parameters'], truths=truths)
@@ -232,7 +234,7 @@ def load_chain_emcee(load_from=default_emcee_save_dir(),
 def emcee_plots(result, save=False, plot_walkers=True, show=False):
     if not isinstance(save, bool):
         assert os.path.exists(save), f"invalid path '{save}'"
-    info = r"$M_\chi}$=%.2f" % 10 ** np.float(result['config']['mw'])
+    info = r"$M_\chi}$=%.2f" % 10 ** np.float64(result['config']['mw'])
     for prior_key in result['config']['prior'].keys():
         try:
             mean = result['config']['prior'][prior_key]['mean']
@@ -248,13 +250,16 @@ def emcee_plots(result, save=False, plot_walkers=True, show=False):
             if str_inf == 'start':
                 info = info[:-7]
             if str_inf == 'fit_time':
-                info += 's (%.1f h)' % (result['config'][str_inf] / 3600.)
+                info += 's (%.1f h)' % (float(result['config'][str_inf]) / 3600.)
         except KeyError:
             pass
     info += "\nnwalkers = %s" % nwalkers
     info += "\nnsteps = %s" % nsteps
     labels = statistics.get_param_list()[:ndim]
-    truths = [result['config'][prior_name] for prior_name in
+    truths = [result['config'][prior_name]
+              if prior_name in result['config']
+              else result['config']['prior'][prior_name]['mean']
+              for prior_name in
               statistics.get_prior_list()[:ndim]]
     fig = corner.corner(
         result['flat_chain'],
