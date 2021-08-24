@@ -50,22 +50,22 @@ def _galactic_spectrum_inner(
 
 
 def test_detector_spectrum():
-    use_SHM=dddm.SHM()
+    use_SHM = dddm.SHM()
     _galactic_spectrum_inner(use_SHM)
 
 
 def test_detector_spectrum():
-    use_SHM=dddm.SHM()
+    use_SHM = dddm.SHM()
     _galactic_spectrum_inner(use_SHM, event_class=dddm.DetectorSpectrum)
 
 
 def test_shielded_detector_spectrum():
-    use_SHM=dddm.VerneSHM()
+    use_SHM = dddm.VerneSHM()
     _galactic_spectrum_inner(use_SHM)
 
 
 def test_detector_spectra():
-    use_SHM=dddm.SHM()
+    use_SHM = dddm.SHM()
     for det, det_properties in dddm.detector.experiment.items():
         if det_properties['type'] == 'combined':
             # This is not implemented as such
