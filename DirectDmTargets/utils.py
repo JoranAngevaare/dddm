@@ -298,3 +298,30 @@ def get_bins(a, b, n) -> np.ndarray:
     """
     result = np.vstack((bin_edges(a, b, n)[0:-1], bin_edges(a, b, n)[1:]))
     return np.transpose(result)
+
+
+def get_logger(name, level='INFO'):
+    level = level.upper()
+    new_log = logging.getLogger(name)
+    if not hasattr(logging, level):
+        raise ValueError(f'{level} is invalid for logging')
+    new_log.setLevel(getattr(logging, level))
+    new_log.handlers = [FormattedHandler()]
+    return new_log
+
+
+class FormattedHandler(logging.Handler):
+    def emit(self, record):
+        m = self.FormattedMessage(record)
+        # Strip \n
+        print(m[:-1])
+
+    def FormattedMessage(self, record):
+        func_line = f'{record.funcName} (L{record.lineno})'
+        date = datetime.datetime.fromtimestamp(record.created)
+        date.isoformat(sep=' ')
+        return (f"{date.isoformat(sep=' ')} |"
+                f" {record.levelname.upper():8} | "
+                f"{func_line:20} | "
+                f"{record.getMessage()}\n"
+                )
