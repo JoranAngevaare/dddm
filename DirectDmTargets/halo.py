@@ -19,9 +19,9 @@ from scipy.interpolate import interp1d
 class GenSpectrum:
 
     def __init__(self,
-                 wimp_mass: ty.Union[float, int],
-                 wimp_nucleon_cross_section: ty.Union[float, int],
-                 dark_matter_model: ty.Union[SHM, VerneSHM], det):
+                 wimp_mass : ty.Union[float, int],
+                 wimp_nucleon_cross_section : ty.Union[float, int],
+                 dark_matter_model : ty.Union[SHM, VerneSHM], det):
         """
         :param wimp_mass: wimp mass (not log)
         :param wimp_nucleon_cross_section: cross-section of the wimp nucleon interaction
@@ -243,6 +243,7 @@ class VerneSHM:
         )
 
         self.itp_func = None
+        utils.get_logger(self.__class__.__name__)
 
     def __str__(self):
         # The standard halo model observed at some location shielded from strongly
@@ -267,12 +268,12 @@ class VerneSHM:
         exist_csv = os.path.exists(file_name)
         assertion_string = f'abs file {temp_file_name} should be a string\n'
         assertion_string += f'exists csv {exist_csv} should be a bool'
-        log.info(f'load_f::\twrite to {file_name} ({not exist_csv}). '
+        self.log.info(f'load_f::\twrite to {file_name} ({not exist_csv}). '
                  f'Then copy to {temp_file_name}')
         assert (isinstance(temp_file_name, str) and
                 isinstance(exist_csv, bool)), assertion_string
         if not exist_csv:
-            log.info(f'Using {file_name} for the velocity distribution. '
+            self.log.info(f'Using {file_name} for the velocity distribution. '
                      f'Writing to {temp_file_name}')
             df = verne.CalcVelDist.avg_calcveldist(
                 m_x=10. ** self.log_mass,
@@ -284,15 +285,15 @@ class VerneSHM:
             )
 
             if not os.path.exists(file_name):
-                log.info(f'writing to {temp_file_name}')
+                self.log.info(f'writing to {temp_file_name}')
                 df.to_csv(temp_file_name, index=False)
                 if not os.path.exists(file_name):
-                    log.info(f'moving {temp_file_name} to {file_name}')
+                    self.log.info(f'moving {temp_file_name} to {file_name}')
                     shutil.move(temp_file_name, file_name)
             else:
-                log.warning(f'while writing {temp_file_name}, {file_name} was created')
+                self.log.warning(f'while writing {temp_file_name}, {file_name} was created')
         else:
-            log.info(f'Using {file_name} for the velocity distribution')
+            self.log.info(f'Using {file_name} for the velocity distribution')
             try:
                 df = pd.read_csv(file_name)
             except pd.io.common.EmptyDataError as pandas_error:
