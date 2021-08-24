@@ -4,12 +4,12 @@ import logging
 import os
 import time
 from sys import platform
-
 import numericalunits as nu
 import numpy as np
 import pandas as pd
 from DirectDmTargets import context, detector, halo, utils
 from scipy.special import loggamma
+import typing as ty
 
 # Set a lower bound to the log-likelihood (this becomes a problem due to
 # machine precision). Set to same number as multinest.
@@ -389,7 +389,11 @@ class StatModel:
             # While computing the spectrum another instance has saved a file
             # with the same name
 
-    def check_spectrum(self, poisson=None):
+    def check_spectrum(self):
+        parameter_names = self._parameter_order[:2]
+        parameter_values = [self.config['mw'], self.config['sigma'], ]
+        return self.eval_spectrum(parameter_values, parameter_names)
+
         self.log.info(
             f"StatModel::\tevaluating\n\t\t{self.config['spectrum_class']}"
             f"\n\tfor mw = {10. ** self.config['mw']}, "
@@ -410,7 +414,7 @@ class StatModel:
             10. ** self.config['sigma'],
             self.config['halo_model'],
             self.config['detector_config'])
-        spectrum.set_config(dict(n_bins=self.config['n_energy_bins']))
+        spectrum = self.config_to_spectrum(spectrum)
 
         for e_min_max in 'E_min E_max'.split():
             if e_min_max in self.config:
@@ -511,7 +515,10 @@ class StatModel:
                 f"unknown prior type '{self.config['prior'][variable_name]['prior_type']}',"
                 f" choose either gauss or flat")
 
-    def eval_spectrum(self, values, parameter_names):
+    def eval_spectrum(self,
+                      values: ty.Union[list, tuple, np.ndarray],
+                      parameter_names: ty.Union[ty.List[str], ty.Tuple[str]]
+                      ):
         """
         For given values and parameter names, return the spectrum one would have
         with these parameters. The values and parameter names should be array

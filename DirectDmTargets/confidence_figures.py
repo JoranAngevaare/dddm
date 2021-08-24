@@ -11,10 +11,14 @@ from tqdm import tqdm
 
 
 class DDDMResult:
-    """Class to parse results from fitting from nested sampling"""
+    """Parse results from fitting from nested sampling"""
     result: dict = None
 
     def __init__(self, path):
+        """
+        Open a class for organizing the results from running an optimization
+        :param path: Path to the base dir of the results to open
+        """
         assert os.path.exists(path)
         self.path = path
         self.setup()
@@ -177,12 +181,6 @@ class ResultsManager:
         return f'info for {len(self.result_cache)}'
 
     def _add_result(self, path: str, tolerant=False):
-        """
-
-        :param path:
-        :param tolerant:
-        :return:
-        """
         if self.result_cache is None:
             self.result_cache = []
         try:
