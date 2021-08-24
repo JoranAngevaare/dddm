@@ -223,7 +223,7 @@ class GenSpectrum:
         if not isinstance(det, dict):
             raise ValueError("Detector should be dict")
         missing = []
-        for field in 'name n_energy_bins material type exp_eff'.split():
+        for field in 'name material type exp_eff'.split():
             if field not in det:
                 missing.append(field)
         if missing:
