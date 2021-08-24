@@ -574,7 +574,7 @@ class StatModel:
                 raise NotImplementedError(
                     f"Trying to fit two parameters ({parameter_names}), this is not implemented.")
             self.log.info(
-                f"StatModel::\tevaluating{self.config['spectrum_class']} for mw = {10. ** x0}, "
+                f"StatModel::\tevaluating {self.config['spectrum_class']} for mw = {10. ** x0}, "
                 f"sig = {10. ** x1}, halo model = {self.config['halo_model']} and "
                 f"detector = {self.config['detector_config']}")
             if self.config['earth_shielding']:
