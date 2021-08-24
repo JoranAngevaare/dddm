@@ -33,13 +33,13 @@ class DDDMResult:
 
     def config_summary(self,
                        get_props=(
-                               'detector',
-                               'mass',
-                               'sigma',
-                               'nlive',
-                               'halo_model',
-                               'notes',
-                               'n_parameters',
+                           'detector',
+                           'mass',
+                           'sigma',
+                           'nlive',
+                           'halo_model',
+                           'notes',
+                           'n_parameters',
                        )
                        ) -> pd.DataFrame:
         df = {k: [getattr(self, k)] for k in get_props}
@@ -152,8 +152,7 @@ class SeabornPlot:
 
     def plot_sigma_contours(self, nsigma=2, **kwargs):
         kwargs.setdefault('bw_adjust', 0.25)
-        levels = (1 - np.array([0.6827, 0.9545, 0.9973][:nsigma]))
-        levels.sort()
+        levels = sorted((1 - np.array([0.6827, 0.9545, 0.9973][:nsigma])))
         kwargs.setdefault('levels', levels)
 
         df = self.samples_to_df()
