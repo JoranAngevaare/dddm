@@ -221,5 +221,5 @@ def pickle_dump_figure(name):
 
 
 def open_pickle_figure(name):
-    figx = pickle.load(open(name, 'rb'))
+    figx = pickle.load(open(name, 'rb'))  # nosec
     return figx
