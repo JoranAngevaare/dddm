@@ -306,24 +306,42 @@ def get_bins(a, b, n) -> np.ndarray:
     return np.transpose(result)
 
 
-def get_logger(name, level='INFO'):
+def get_logger(name, level='INFO', path=None)->logging.Logger:
+    """
+    Get logger with hander in nice format
+    :param name: name of the logger
+    :param level: logging level
+    :param path: where to save the log files
+    :return: logger
+    """
     level = level.upper()
     new_log = logging.getLogger(name)
     if not hasattr(logging, level):
         raise ValueError(f'{level} is invalid for logging')
     new_log.setLevel(getattr(logging, level))
-    new_log.handlers = [FormattedHandler()]
+    new_log.handlers = [FormattedHandler(path=path)]
     return new_log
 
 
 class FormattedHandler(logging.Handler):
+    def __init__(self, *args, path=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.path = path
+
     def emit(self, record):
-        m = self.FormattedMessage(record)
+        m = self.formatted_message(record)
+        self.write(m)
         # Strip \n
         print(m[:-1])
 
+    def write(self, m):
+        if self.path is None:
+            return
+        self.f = open(self.path, 'a')
+        self.f.write(m)
+
     @staticmethod
-    def FormattedMessage(record):
+    def formatted_message(record):
         func_line = f'{record.funcName} (L{record.lineno})'
         date = datetime.datetime.fromtimestamp(record.created)
         date.isoformat(sep=' ')

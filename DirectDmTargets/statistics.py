@@ -136,15 +136,15 @@ class StatModel:
         else:
             level = 'WARNING'
 
-        log = utils.get_logger(self.__class__.__name__, level)
-
         if 'win' not in platform:
-            self.config['logging'] = os.path.join(
-                context.context['tmp_folder'],
-                f"log_{utils.now()}.log")
-            print(f'Save log to {self.config["logging"]}')
-            log.addHandler(logging.StreamHandler())
+            log_path = os.path.join(context.context['tmp_folder'],
+                                    f"log_{utils.now()}.log")
+            self.config['logging'] = log_path
+        else:
+            log_path=None
 
+        log = utils.get_logger(self.__class__.__name__, level,
+                               path=log_path)
         return log
 
     def __str__(self):
