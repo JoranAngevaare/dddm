@@ -14,13 +14,12 @@ def test_nested_simple_multinest_earth_shielding():
     stats = dddm.CombinedInference(
         ('Xe', 'Ge'),
         'Combined',
-        do_init=False)
+    )
     update = {'prior': dddm.statistics.get_priors("Evans_2019"),
               'halo_model': dddm.SHM(),
               'type': 'SI'}
     stats.config.update(update)
     stats.copy_config(list(update.keys()))
-    stats.print_before_run()
     stats.config['tol'] = 0.1
     stats.config['nlive'] = 5
     print(f"Fitting for parameters:\n{stats.config['fit_parameters']}")

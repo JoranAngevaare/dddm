@@ -115,7 +115,7 @@ class NestedSamplerStatModel(statistics.StatModel):
 
     def run_nestle(self):
         self._fix_parameters()
-        self.print_before_run()
+        self._print_before_run()
         if self.config['sampler'] != 'nestle':
             raise RuntimeError(f'Trying to run nestle but initialization '
                                f'requires {self.config["sampler"]}')
@@ -162,7 +162,7 @@ class NestedSamplerStatModel(statistics.StatModel):
         self.log_dict['did_run'] = True
         self.log.info(f'Finished with running optimizer!')
 
-    def print_before_run(self):
+    def _print_before_run(self):
         self.log.warning(
             f"""
             --------------------------------------------------
@@ -183,7 +183,7 @@ class NestedSamplerStatModel(statistics.StatModel):
 
     def run_multinest(self):
         self._fix_parameters()
-        self.print_before_run()
+        self._print_before_run()
         if self.config["sampler"] != 'multinest':
             raise ValueError(f'Wrong sampler {self.config["sampler"]}!')
         # Do the import of multinest inside the class such that the package can be
@@ -421,11 +421,9 @@ class CombinedInference(NestedSamplerStatModel):
         copy_of_config = {k: self.config[k] for k in keys}
         self.log.info(f'update config with {copy_of_config}')
         for c in self.sub_classes:
-            c.config.update(copy_of_config)
             self.log.debug(f'{c} with config {c.config}')
-            c.eval_benchmark()
-            c.set_models()
-            c.print_before_run()
+            c._fix_parameters()
+            c._print_before_run()
 
     def save_sub_configs(self, force_index=False):
         save_dir = self.get_save_dir(force_index=force_index)
