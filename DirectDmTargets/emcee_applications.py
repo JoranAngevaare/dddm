@@ -203,7 +203,6 @@ def load_chain_emcee(load_from=default_emcee_save_dir(),
     files = os.listdir(base)
     if item == 'latest':
         try:
-            item = max([int(f.split(save)[-1]) for f in files if save in f])
             item = files[-1]
         except ValueError:
             log.warning(files)

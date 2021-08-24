@@ -67,7 +67,8 @@ def det_res_superCDMS110(E):
 
 def det_res_XENON1T(E):
     """
-    Detector resolution of XENON1T. See e.g. 1 of https://journals.aps.org/prd/pdf/10.1103/PhysRevD.102.072004
+    Detector resolution of XENON1T. See e.g. 1 of
+        https://journals.aps.org/prd/pdf/10.1103/PhysRevD.102.072004
     :param E: energy in keV
     :return: resolution at E
     """
@@ -184,7 +185,6 @@ def nr_background_superCDMS_Ge(e_min, e_max, nbins):
 
 def nr_background_superCDMS_Si(e_min, e_max, nbins):
     """
-    :param E: recoil energy (in keV)
     :return: background for Si iZIP/HV detector in events/keV/t/yr
     """
     # https://arxiv.org/abs/1610.00006

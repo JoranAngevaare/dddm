@@ -1,4 +1,7 @@
-"""Statistical model giving likelihoods for detecting a spectrum given a benchmark to compare it with."""
+"""
+Statistical model giving likelihoods for detecting a spectrum given a
+benchmark to compare it with.
+"""
 
 import logging
 import os
@@ -114,13 +117,12 @@ class StatModel:
                            earth_shielding=False,
                            E_max=detector_config.get('E_max', 100),
                            notes='default',
-                           start=datetime.datetime.now(),
+                           start=datetime.now(),
                            )
 
         self.log = self.get_logger(verbose)
         self.set_prior("Pato_2010")
-        self.log.info(
-            f"initialized for {detector_name} detector. See  print(stat_model) for default settings")
+        self.log.info(f"initialized for {detector_name} detector.")
         if do_init:
             self.set_default()
 
@@ -148,7 +150,8 @@ class StatModel:
         return log
 
     def __str__(self):
-        return f"StatModel::for {self.config['detector']} detector. For info see the config file:\n{self.config}"
+        return (f"StatModel::for {self.config['detector']} detector. "
+                f"For info see the config file:\n{self.config}")
 
     def read_priors_mean(self, prior_name) -> ty.Union[int, float]:
         self.log.debug(f'reading {prior_name}')
@@ -186,11 +189,13 @@ class StatModel:
 
     def set_benchmark(self, mass=50, log_cross_section=-45):
         """
-        Set up the benchmark used in this statistical model. Likelihood of
-        other models can be evaluated for this 'truth'
+        Set up the benchmark used in this statistical model. Likelihood
+        of other models can be evaluated for this 'truth'
 
-        :param mass: mass of benchmark wimp in GeV. log10(mass) will be saved to config
-        :param log_cross_section: cross-section of wimp in cm^2. log10(sigma) will be saved to config
+        :param mass: mass of benchmark wimp in GeV. log10(mass) will
+            be saved to config
+        :param log_cross_section: cross-section of wimp in cm^2.
+            log10(sigma) will be saved to config
         """
         self.log.debug(f'taking log10 of mass of {mass}')
         self.config['mw'] = np.log10(mass)

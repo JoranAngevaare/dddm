@@ -109,10 +109,8 @@ class NestedSamplerStatModel(statistics.StatModel):
 
     def _log_prior_transform_nested(self, theta):
         result = [
-            self.log_prior_transform_nested(
-                val,
-                self.known_parameters[i]) for i,
-                                              val in enumerate(theta)]
+            self.log_prior_transform_nested(val, self.known_parameters[i])
+            for i, val in enumerate(theta)]
         return np.array(result)
 
     def run_nestle(self):
@@ -184,8 +182,8 @@ class NestedSamplerStatModel(statistics.StatModel):
 
     def run_multinest(self):
         self.print_before_run()
-        assert self.config[
-                   "sampler"] == 'multinest', f'Trying to run multinest but initialization requires {self.config["sampler"]}'
+        if self.config["sampler"] != 'multinest':
+            raise ValueError(f'Wrong sampler {self.config["sampler"]}!')
         # Do the import of multinest inside the class such that the package can be
         # loaded without multinest
         try:
@@ -279,7 +277,7 @@ class NestedSamplerStatModel(statistics.StatModel):
             except ModuleNotFoundError:
                 raise ModuleNotFoundError(
                     'package nestle not found. See README for installation')
-            # taken from mattpitkin.github.io/samplers-demo/pages/samplers-samplers-everywhere/#Nestle
+            # taken from mattpitkin.github.io/samplers-demo/pages/samplers-samplers-everywhere/#Nestle  # noqa
             # estimate of the statistical uncertainty on logZ
             logZerrnestle = np.sqrt(self.result.h / self.config['nlive'])
             # re-scale weights to have a maximum of one
@@ -416,7 +414,8 @@ class CombinedInference(NestedSamplerStatModel):
         for k in keys:
             if k not in self.config:
                 raise ValueError(
-                    f'One or more of keys not in config: {np.setdiff1d(keys, list(self.config.keys()))}')
+                    f'One or more of keys not in config: '
+                    f'{np.setdiff1d(keys, list(self.config.keys()))}')
         copy_of_config = {k: self.config[k] for k in keys}
         self.log.info(f'update config with {copy_of_config}')
         for c in self.sub_classes:
@@ -612,13 +611,13 @@ def solve_multinest(LogLikelihood, Prior, n_dims, **kwargs):
 
     def SafeLoglikelihood(cube, ndim, nparams, lnew):
         a = np.array([cube[i] for i in range(n_dims)])
-        l = float(LogLikelihood(a))
-        if not np.isfinite(l):
-            warn('WARNING: loglikelihood not finite: %f\n' % (l))
+        likelihood = float(LogLikelihood(a))
+        if not np.isfinite(likelihood):
+            warn('WARNING: loglikelihood not finite: %f\n' % likelihood)
             warn('         for parameters: %s\n' % a)
             warn('         returned very low value instead\n')
             return -statistics.LL_LOW_BOUND
-        return l
+        return likelihood
 
     kwargs['LogLikelihood'] = SafeLoglikelihood
     kwargs['Prior'] = SafePrior
