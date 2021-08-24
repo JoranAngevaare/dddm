@@ -38,6 +38,9 @@ parser.add_argument(
 parser.add_argument('--conda', type=str,
                     default=default_conda,
                     help="the anaconda path to be used by the script")
+parser.add_argument('--base_dir', type=str,
+                    default=base_dir,
+                    help="Where to look for scripts")
 parser.add_argument('--environment', type=str,
                     default=default_envr,
                     help="the anaconda environment to be sourced")
@@ -55,10 +58,13 @@ parser.add_argument('--mem', type=int,
 
 args = parser.parse_args()
 
+base_dir = args.base_dir
 #
 # where to write
 #
 _scriptfile = '%s_%s.sh' % ('dddm', args.arguments.replace("-", "_"))
+_scriptfile = _scriptfile.replace(
+    '_context_from_json /project/xenon/jorana/software/dddm_paper/dddm_context.json', '')
 if 'multicore_hash' in args.arguments:
     print(f'write_script.py::\tChange scriptfile name')
     script_split = _scriptfile.strip('.sh').split('multicore_hash')

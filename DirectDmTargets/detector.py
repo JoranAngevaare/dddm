@@ -70,14 +70,13 @@ def det_res_superCDMS110(E):
 
 def det_res_XENON1T(E):
     """
-    Detector resolution of XENON1T. See caption figure 6 https://arxiv.org/abs/2003.03825
+    Detector resolution of XENON1T. See e.g. 1 of https://journals.aps.org/prd/pdf/10.1103/PhysRevD.102.072004
     :param E: energy in keV
     :return: resolution at E
     """
-    a = 31.71
-    b = 0.15
-    sigma_over_E_percent = b + a / np.sqrt(E)
-    return E * sigma_over_E_percent / 100
+    a = 0.310
+    b = 0.0037
+    return a * np.sqrt(E) + b * E
 
 
 def migdal_background_XENON1T(e_min, e_max, nbins):
@@ -150,7 +149,7 @@ def migdal_background_superCDMS_Ge_iZIP(e_min, e_max, nbins):
     """
     :return: background for Ge iZIP detector in events/keV/t/yr
     """
-    bg_rate = 370  # counts/kg/keV/year
+    bg_rate = 22  # counts/kg/keV/year see table V: https://arxiv.org/pdf/1610.00006.pdf
     conv_units = 1.0e3  # Tonne
     if not e_max < 20:  # 20 keV
         raise ValueError(

@@ -86,7 +86,7 @@ def set_config(model_simulator, args):
         'save_intermediate': args.save_intermediate,
         'fit_parameters': model_simulator.known_parameters[:args.nparams],
         'nlive': args.nlive,
-        'E_max': args.e_max,
+        #        'E_max': args.e_max,
         'tol': args.tol}
 
     model_simulator.set_prior(args.priors_from)
@@ -170,23 +170,23 @@ def parse_arguments():
         help="Set to 0 (no print statements), 1 (some print statements) "
              "or >1 (a lot of print statements). Set the level of print "
              "statements while fitting.")
-    parser.add_argument(
-        '-save_intermediate',
-        type=str,
-        default="no",
-        help="yes / no / default, override internal determination if "
-             "we need to take into account earth shielding.")
+#    parser.add_argument(
+#        '-save_intermediate',
+#        type=str,
+#        default="no",
+#        help="yes / no / default, override internal determination if "
+#             "we need to take into account earth shielding.")
     parser.add_argument(
         '-multicore_hash',
         type=str,
         default="",
         help="no / default, override internal determination if we need "
              "to take into account earth shielding.")
-    parser.add_argument(
-        '-e_max',
-        type=int,
-        default=10,
-        help="Max energy to consider [keV]")
+#    parser.add_argument(
+#        '-e_max',
+#        type=int,
+#        default=10,
+#        help="Max energy to consider [keV]")
     parser.add_argument(
         '-target',
         type=str,
