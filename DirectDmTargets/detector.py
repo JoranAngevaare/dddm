@@ -1,12 +1,9 @@
 """Introduce detector effects into the expected detection spectrum"""
 
 from warnings import warn
-
 import numba
 import numpy as np
-import pandas as pd
 from DirectDmTargets.halo import GenSpectrum
-from DirectDmTargets.utils import get_bins
 
 
 def det_res_Xe(E):
@@ -250,7 +247,7 @@ experiment = {
     # --- Ge iZIP bg --- #
     'Ge_iZIP_bg': {
         'material': 'Ge',
-        'type': 'SI_bg',
+        'type': 'SI',
         'exp': 56 * 1.e-3,  # Tonne year
         'cut_eff': 0.75,  # p. 11, right column
         'nr_eff': 0.85,  # p. 11, left column
@@ -263,7 +260,7 @@ experiment = {
     },
     'Ge_migd_iZIP_bg': {
         'material': 'Ge',
-        'type': 'migdal_bg',
+        'type': 'migdal',
         'exp': 56 * 1.e-3,  # Tonne year
         'cut_eff': 0.75,  # p. 11, right column
         'nr_eff': 0.5,  # p. 11, left column NOTE: migdal is ER type!
@@ -277,7 +274,7 @@ experiment = {
     # --- Si iZIP bg --- #
     'Ge_iZIP_Si_bg': {
         'material': 'Si',
-        'type': 'SI_bg',
+        'type': 'SI',
         'exp': 4.8 * 1.e-3,  # Tonne year
         'cut_eff': 0.75,  # p. 11, right column
         'nr_eff': 0.85,  # p. 11, left column
@@ -290,7 +287,7 @@ experiment = {
     },
     'Ge_migd_iZIP_Si_bg': {
         'material': 'Si',
-        'type': 'migdal_bg',
+        'type': 'migdal',
         'exp': 4.8 * 1.e-3,  # Tonne year
         'cut_eff': 0.75,  # p. 11, right column
         'nr_eff': 0.675,  # p. 11, left column NOTE: migdal is ER type!
@@ -304,7 +301,7 @@ experiment = {
     # --- Ge HV bg --- #
     'Ge_HV_bg': {
         'material': 'Ge',
-        'type': 'SI_bg',
+        'type': 'SI',
         'exp': 44 * 1.e-3,  # Tonne year
         'cut_eff': 0.85,  # p. 11, right column
         'nr_eff': 0.85,  # p. 11, left column NOTE: ER type!
@@ -317,7 +314,7 @@ experiment = {
     },
     'Ge_migd_HV_bg': {
         'material': 'Ge',
-        'type': 'migdal_bg',
+        'type': 'migdal',
         'exp': 44 * 1.e-3,  # Tonne year
         'cut_eff': 0.85,  # p. 11, right column
         'nr_eff': 0.5,  # p. 11, left column NOTE: migdal is ER type!
@@ -331,7 +328,7 @@ experiment = {
     # --- Si HV bg --- #
     'Ge_HV_Si_bg': {
         'material': 'Si',
-        'type': 'SI_bg',
+        'type': 'SI',
         'exp': 9.6 * 1.e-3,  # Tonne year
         # https://www.slac.stanford.edu/exp/cdms/ScienceResults/Publications/PhysRevD.95.082002.pdf
         'cut_eff': 0.85,  # p. 11, right column
@@ -345,7 +342,7 @@ experiment = {
     },
     'Ge_migd_HV_Si_bg': {
         'material': 'Si',
-        'type': 'migdal_bg',
+        'type': 'migdal',
         'exp': 9.6 * 1.e-3,  # Tonne year
         # https://www.slac.stanford.edu/exp/cdms/ScienceResults/Publications/PhysRevD.95.082002.pdf
         'cut_eff': 0.85,  # p. 11, right column
@@ -359,7 +356,7 @@ experiment = {
     },
     'Xe_migd_bg': {
         'material': 'Xe',
-        'type': 'migdal_bg',
+        'type': 'migdal',
         'exp': 20,  # https://arxiv.org/pdf/2007.08796.pdf
 
         # Combined cut & detection efficiency as in
@@ -376,7 +373,7 @@ experiment = {
     },
     'Xe_bg': {
         'material': 'Xe',
-        'type': 'SI_bg',
+        'type': 'SI',
         'exp': 20,  # https://arxiv.org/pdf/2007.08796.pdf
 
         # Combined cut & detection efficiency as in

@@ -67,7 +67,7 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
     assert vary in ['mass', 'sig'], "use sig or mass"
     use_SHM = halo.SHM()
     events = spec_clas(m, sig, use_SHM, detector.experiment[det])
-    events.n_bins = bins
+    events.experiment['n_bins'] = bins
     data = events.get_data(poisson=False)
     if vary == 'sig':
         plt.xlabel(r'$\sigma$ $[cm^2]$')
@@ -76,7 +76,7 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
 
         def model(x):
             res = spec_clas(m, x, use_SHM, detector.experiment[det])
-            res.n_bins = bins
+            res.experiment['n_bins'] = bins
             return res.get_data(poisson=False)['counts']
 
     elif vary == 'mass':
@@ -88,7 +88,7 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
 
         def model(x):
             res = spec_clas(x, sig, use_SHM, detector.experiment[det])
-            res.n_bins = bins
+            res.experiment['n_bins'] = bins
             return res.get_data(poisson=False)['counts']
     else:
         raise ValueError(f'Can not vary {vary}')

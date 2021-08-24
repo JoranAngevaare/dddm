@@ -94,7 +94,7 @@ class VerneSHM:
         )
 
         self.itp_func = None
-        utils.get_logger(self.__class__.__name__)
+        self.log = utils.get_logger(self.__class__.__name__)
 
     def __str__(self):
         # The standard halo model observed at some location shielded from strongly
