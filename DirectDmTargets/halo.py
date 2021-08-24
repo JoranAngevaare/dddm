@@ -10,81 +10,97 @@ import numpy as np
 import pandas as pd
 import verne
 import wimprates as wr
-from DirectDmTargets import utils
+from DirectDmTargets import utils, SHM, VerneSHM
+import typing as ty
 from DirectDmTargets.context import context
 from scipy.interpolate import interp1d
 
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
-
 
 class GenSpectrum:
-    def __init__(self, mw, sig, model, det):
+
+    def __init__(self,
+                 wimp_mass : ty.Union[float, int],
+                 wimp_nucleon_cross_section : ty.Union[float, int],
+                 dark_matter_model : ty.Union[SHM, VerneSHM], det):
         """
-        :param mw: wimp mass
-        :param sig: cross-section of the wimp nucleon interaction
-        :param model: the dark matter model
-        :param det: detector name
+        :param wimp_mass: wimp mass (not log)
+        :param wimp_nucleon_cross_section: cross-section of the wimp nucleon interaction
+            (not log)
+        :param dark_matter_model: the dark matter model
+        :param det: dictionary containing detector parameters
         """
-        assert isinstance(
-            det, dict), "Invalid detector type. Please provide dict."
-        self.mw = mw  # note that this is not in log scale!
-        self.sigma_nucleon = sig  # note that this is not in log scale!
-        self.dm_model = model
+        self._check_detector(det)
+
+        # note that this is not in log scale!
+        self.mw = wimp_mass
+        self.sigma_nucleon = wimp_nucleon_cross_section
+
+        self.dm_model = dark_matter_model
         self.experiment = det
+        self.log = utils.get_logger(self.__class__.__name__)
 
-        self.n_bins = 10
-        if self.experiment['type'] in ['SI', 'SI_bg']:
-            self.E_min = 0  # keV
-            self.E_max = 100  # keV
-        elif self.experiment['type'] in ['migdal', 'migdal_bg']:
-            self.E_min = 0  # keV
-            self.E_max = 10  # keV
-        else:
-            raise NotImplementedError(
-                f'Exp. type {self.experiment["type"]} is unknown')
+    @property
+    def E_min(self):
+        return self.experiment.get('E_min', 0)
 
-        if 'E_min' in self.experiment:
-            self.E_min = self.experiment['E_min']
-        if 'E_max' in self.experiment:
-            self.E_max = self.experiment['E_max']
+    @property
+    def E_max(self):
+        return self.experiment.get('E_max', 10)
+
+    @property
+    def n_bins(self):
+        return self.experiment.get('n_energy_bins', 50)
+
+    @staticmethod
+    def _check_detector(det):
+        if not isinstance(det, dict):
+            raise ValueError("Detector should be dict")
+        missing = []
+        for field in 'name n_energy_bins material type exp_eff'.split():
+            if field not in det:
+                missing.append(field)
+        if missing:
+            raise ValueError(f'Missing {missing} fields in detector config')
 
     def __str__(self):
         """
-        :return: info
+        :return: sting of class info
         """
         return f"spectrum_simple of a DM model ({self.dm_model}) in a " \
                f"{self.experiment['name']} detector"
 
-    def get_bin_centers(self):
+    def get_bin_centers(self) -> np.ndarray:
+        """Given Emin and Emax, get an array with bin centers """
         return np.mean(
-            utils.get_bins(
-                self.E_min,
-                self.E_max,
-                self.n_bins),
+            utils.get_bins(self.E_min, self.E_max, self.n_bins),
             axis=1)
 
     def spectrum_simple(self, benchmark):
         """
+        Compute the spectrum for a given mass and cross-section
         :param benchmark: insert the kind of DM to consider (should contain Mass
          and cross-section)
         :return: returns the rate
         """
         if not isinstance(benchmark, (dict, pd.DataFrame)):
-            benchmark = {'mw': benchmark[0], 'sigma_nucleon': benchmark[1]}
+            benchmark = {'mw': benchmark[0],
+                         'sigma_nucleon': benchmark[1]}
+        else:
+            assert 'mw' in benchmark and 'sigma_nucleon' in benchmark
 
-        try:
-            kwargs = {'material': self.experiment['material']}
-        except KeyError as e:
-            raise KeyError(f'Invalid experiment {self.experiment}') from e
-        if self.experiment['type'] in ['SI', 'SI_bg']:
+        material = self.experiment['material']
+        exp_type = self.experiment['type']
+
+        self.log.debug(f'Eval {benchmark} for {material}-{exp_type}')
+
+        if exp_type in ['SI']:
             rate = wr.rate_wimp_std(self.get_bin_centers(),
                                     benchmark["mw"],
                                     benchmark["sigma_nucleon"],
                                     halo_model=self.dm_model,
-                                    **kwargs
+                                    material=material
                                     )
-        elif self.experiment['type'] in ['migdal', 'migdal_bg']:
+        elif exp_type in ['migdal']:
             # This integration takes a long time, hence, we will lower the
             # default precision of the scipy dblquad integration
             migdal_integration_kwargs = dict(epsabs=1e-4,
@@ -97,12 +113,11 @@ class GenSpectrum:
                 # TODO should this be different for the different experiments?
                 q_nr=0.15,
                 halo_model=self.dm_model,
-                material=self.experiment['material'],
+                material=material,
                 **migdal_integration_kwargs
             )
         else:
-            raise NotImplementedError(
-                f'No type of matching {self.experiment["type"]} interactions.')
+            raise NotImplementedError(f'Unknown {exp_type}-interaction')
         return rate
 
     def get_events(self):
@@ -112,13 +127,8 @@ class GenSpectrum:
         assert self.experiment != {}, "First enter the parameters of the detector"
         rate = self.spectrum_simple([self.mw, self.sigma_nucleon])
         bin_width = np.diff(
-            utils.get_bins(
-                self.E_min,
-                self.E_max,
-                self.n_bins),
-            axis=1)[
-            :,
-            0]
+            utils.get_bins(self.E_min, self.E_max, self.n_bins),
+            axis=1)[:, 0]
         events = rate * bin_width * self.experiment['exp_eff']
         return events
 
@@ -146,12 +156,10 @@ class GenSpectrum:
         result = self.set_negative_to_zero(result)
         return result
 
-    @staticmethod
-    def set_negative_to_zero(result):
+    def set_negative_to_zero(self, result):
         mask = result['counts'] < 0
         if np.any(mask):
-            log.warning(
-                '\n\n----\nWARNING::\nfinding negative rates. Doing hard override!!\n----\n\n')
+            self.log.warning('Finding negative rates. Doing hard override!')
             result['counts'][mask] = 0
             return result
         return result

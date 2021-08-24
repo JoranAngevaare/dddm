@@ -289,7 +289,7 @@ def bin_edges(a, b, n):
     return edges
 
 
-def get_bins(a, b, n):
+def get_bins(a, b, n) -> np.ndarray:
     """
     :param a: lower limit
     :param b: upper limit
