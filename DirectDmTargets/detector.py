@@ -414,7 +414,7 @@ def smear_signal(rate, energy, sigma, bin_width):
 
 class DetectorSpectrum(GenSpectrum):
     add_background = False
-    required_detector_fields = super().required_detector_fields + 'exp exp_eff E_thr res'.split()
+    required_detector_fields = 'name material type exp_eff exp exp_eff E_thr res'.split()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

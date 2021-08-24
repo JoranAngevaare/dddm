@@ -256,8 +256,7 @@ class GenSpectrum:
 
         self.config.update(update)
 
-    @staticmethod
-    def _check_input_detector_config(det):
+    def _check_input_detector_config(self, det):
         """Given the a detector config, check that all the required fields are available"""
         if not isinstance(det, dict):
             raise ValueError("Detector should be dict")

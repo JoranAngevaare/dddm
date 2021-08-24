@@ -29,13 +29,6 @@ def default_emcee_save_dir():
 
 
 class MCMCStatModel(statistics.StatModel):
-    known_parameters = [
-        'log_mass',
-        'log_cross_section',
-        'v_0',
-        'v_esc',
-        'density']
-
     def __init__(self, *args):
         super().__init__(*args)
         self.nwalkers = 50
@@ -69,7 +62,7 @@ class MCMCStatModel(statistics.StatModel):
         """Set the starting position of the walkers"""
         self.log_dict['pos'] = True
         if use_pos is not None:
-            log.info("using specified start position")
+            self.log.info("using specified start position")
             self.pos = use_pos
             return
         nparameters = len(self.config['fit_parameters'])
@@ -114,10 +107,9 @@ class MCMCStatModel(statistics.StatModel):
             self.set_sampler()
         if not self.log_dict['pos']:
             self.set_pos()
+        start = datetime.datetime.now()
         try:
-            start = datetime.datetime.now()
             self.sampler.run_mcmc(self.pos, self.nsteps, progress=False)
-            end = datetime.datetime.now()
         except ValueError as e:
             raise ValueError(
                 f"MCMC did not finish due to a ValueError. Was running with\n"
@@ -125,14 +117,11 @@ class MCMCStatModel(statistics.StatModel):
                 f"{self.nwalkers}, ndim = "
                 f"{len(self.config['fit_parameters'])} for fit parameters "
                 f"{self.config['fit_parameters']}") from e
+        end = datetime.datetime.now()
         self.log_dict['did_run'] = True
-        try:
-            dt = end - start
-            log.info("run_emcee::\tfit_done in %i s (%.1f h)" % (
-                dt.seconds, dt.seconds / 3600.))
-            self.config['fit_time'] = dt.seconds
-        except NameError:
-            self.config['fit_time'] = -1
+        dt = (end - start).total_seconds()
+        self.log.info(f"fit_done in {dt} s ({dt/3600} h)")
+        self.config['fit_time'] = dt
 
     def show_walkers(self):
         if not self.log_dict['did_run']:
@@ -151,7 +140,7 @@ class MCMCStatModel(statistics.StatModel):
     def show_corner(self):
         if not self.log_dict['did_run']:
             self.run_emcee()
-        log.info(
+        self.log.info(
             f"Removing a fraction of {self.remove_frac} of the samples, total"
             f"number of removed samples = {self.nsteps * self.remove_frac}")
         flat_samples = self.sampler.get_chain(
@@ -198,7 +187,7 @@ class MCMCStatModel(statistics.StatModel):
                 thin=self.thin,
                 flat=True))
         self.config['save_dir'] = save_dir
-        log.info("save_results::\tdone_saving")
+        self.log.info("save_results::\tdone_saving")
 
     @property
     def mw(self):
