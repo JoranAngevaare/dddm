@@ -88,6 +88,7 @@ def get_param_list():
 class StatModel:
     # Keep these fit parameters in this order
     _parameter_order = ('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k')
+    known_parameters = tuple(get_param_list())
     benchmark_values = None
 
     def __init__(
@@ -140,7 +141,7 @@ class StatModel:
             self.config['logging'] = os.path.join(
                 context.context['tmp_folder'],
                 f"log_{utils.now()}.log")
-            print(f'StatModel::\tSave log to {self.config["logging"]}')
+            print(f'Save log to {self.config["logging"]}')
             log.addHandler(logging.StreamHandler())
 
         return log
@@ -182,20 +183,19 @@ class StatModel:
         self.log.info(f'set_prior')
         self.config['prior'] = get_priors(priors_from)
 
-    def set_benchmark(self, mw=50, sigma=-45):
+    def set_benchmark(self, mass=50, log_cross_section=-45):
         """
         Set up the benchmark used in this statistical model. Likelihood of
         other models can be evaluated for this 'truth'
 
-        :param mw: mass of benchmark wimp in GeV. log10(mass) will be saved to config
-        :param sigma: cross-section of wimp in cm^2. log10(sigma) will be saved to config
+        :param mass: mass of benchmark wimp in GeV. log10(mass) will be saved to config
+        :param log_cross_section: cross-section of wimp in cm^2. log10(sigma) will be saved to config
         """
-        self.log.info(f'taking log10 of mass of {mw}')
-        self.config['mw'] = np.log10(mw)
-        self.config['sigma'] = sigma
-        if not ((mw == 50) and (sigma == -45)):
-            self.log.warning(f'taking log10 of mass of {mw}')
-            self.eval_benchmark()
+        self.log.debug(f'taking log10 of mass of {mass}')
+        self.config['mw'] = np.log10(mass)
+        self.config['sigma'] = log_cross_section
+        if not ((mass == 50) and (log_cross_section == -45)):
+            self.log.warning(f'taking log10 of mass of {mass}')
 
     def set_models(self, halo_model='default', spec='default'):
         """
@@ -206,14 +206,6 @@ class StatModel:
         """
 
         if self.config['earth_shielding']:
-            self.log.info(
-                f'StatModel::\tsetting model to VERNE model. Using:'
-                f"\nlog_mass={self.config['mw']},"
-                f"\nlog_cross_section={self.config['sigma']},"
-                f"\nlocation={self.config['detector_config']['location']},"
-                f'\nv_0={self.config["v_0"]} * nu.km / nu.s,'
-                f'\nv_esc={self.config["v_esc"]} * nu.km / nu.s,'
-                f'\nrho_dm={self.config["density"]} * nu.GeV / nu.c0 ** 2 / nu.cm ** 3')
             model = halo.VerneSHM(
                 log_mass=self.config['mw'],
                 log_cross_section=self.config['sigma'],
@@ -223,38 +215,23 @@ class StatModel:
                 rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
 
             self.config['halo_model'] = halo_model if halo_model != 'default' else model
-            self.log.info(
-                f'StatModel::\tmodel is set to: {self.config["halo_model"]}')
+            self.log.info(f'model is set to: {self.config["halo_model"]}')
         else:
-            self.log.info(
-                f'StatModel::\tSetting model to SHM. Using:'
-                f'\nv_0={self.config["v_0"]} * nu.km / nu.s,'
-                f'\nv_esc={self.config["v_esc"]} * nu.km / nu.s,'
-                f'\nrho_dm={self.config["density"]} * nu.GeV / nu.c0 ** 2 / nu.cm ** 3')
             self.config['halo_model'] = halo_model if halo_model != 'default' else halo.SHM(
                 v_0=self.v_0 * nu.km / nu.s,
                 v_esc=self.v_esc * nu.km / nu.s,
                 rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
-        if self.config['earth_shielding']:
-            self.config['save_intermediate'] = True
-        else:
-            self.config['save_intermediate'] = False
-        self.log.info(
-            f'StatModel::\tsave_intermediate:\n\t\t{self.config["save_intermediate"]}')
+
+        self.log.info(f'save_intermediate:\t{self.config["save_intermediate"]}')
 
         self.config['spectrum_class'] = spec if spec != 'default' else detector.DetectorSpectrum
 
         if halo_model != 'default' or spec != 'default':
-            self.log.warning(f"StatModel::\tre-evaluate benchmark")
+            self.log.warning(f"re-evaluate benchmark")
             self.eval_benchmark()
 
-    def set_det_params(self):
-        self.log.info(f'StatModel::\treading detector parameters')
-        # This is a legacy statement
-        self.config['det_params'] = self.config['detector_config']
-
     def set_fit_parameters(self, params):
-        self.log.info(f'NestedSamplerStatModel::\tsetting fit'
+        self.log.info(f'NestedSamplersetting fit'
                       f' parameters to {params}')
         if not isinstance(params, (list, tuple)):
             raise TypeError("Set the parameter names in a list of strings")
@@ -270,16 +247,13 @@ class StatModel:
         self.config['fit_parameters'] = params
 
     def set_default(self):
-        self.log.info(f'StatModel::\tinitializing')
+        self.log.info(f'initializing')
         self.set_benchmark()
-        self.log.info(f'StatModel::\tset_benchmark\tdone')
+        self.log.info(f'set_benchmark\tdone')
         self.set_models()
-        self.log.info(f'StatModel::\tset_models\tdone')
-        self.set_det_params()
-        self.log.info(f'StatModel::\tset_det_params\tdone')
+        self.log.info(f'set_models\tdone')
         self.eval_benchmark()
-        self.log.info(
-            f'StatModel::\tevaluate benchmark\tdone\n\tall ready to go!')
+        self.log.info(f'evaluate benchmark\tdone\n\tall ready to go!')
 
     def find_intermediate_result(
             self,
@@ -343,29 +317,29 @@ class StatModel:
                 feb17_2020 = 1581932824.5842493
                 if write_time < feb17_2020:
                     self.log.error(
-                        f'StatModel::\tWARNING REMOVING {file_path}')
+                        f'WARNING REMOVING {file_path}')
                     os.remove(file_path)
                     data_at_path, file_path = utils.add_pid_to_csv_filename(
                         file_name)
                     self.log.warning(
-                        f'StatModel::\tRe-evatulate, now we have {file_path}. Is there data: {data_at_path}')
+                        f'Re-evatulate, now we have {file_path}. Is there data: {data_at_path}')
 
         if data_at_path:
             try:
                 binned_spectrum = pd.read_csv(file_path)
             except pd.errors.EmptyDataError:
                 self.log.error(
-                    "StatModel::\tdataframe empty, have to remake the data!")
+                    "dataframe empty, have to remake the data!")
                 os.remove(file_path)
                 binned_spectrum = None
                 data_at_path = False
         else:
             self.log.warning(
-                "StatModel::\tNo data at path. Will have to make it.")
+                "No data at path. Will have to make it.")
             binned_spectrum = None
             utils.check_folder_for_file(file_path)
 
-        self.log.info(f"StatModel::\tdata at {file_path} = {data_at_path}")
+        self.log.info(f"data at {file_path} = {data_at_path}")
         return data_at_path, file_path, binned_spectrum
 
     def save_intermediate_result(self, binned_spectrum, spectrum_file):
@@ -375,7 +349,7 @@ class StatModel:
         :param spectrum_file: name where to save the evaluated spectrum
         :return:
         """
-        self.log.info(f"StatModel::\tsaving spectrum at {spectrum_file}")
+        self.log.info(f"saving spectrum at {spectrum_file}")
         if os.path.exists(spectrum_file):
             # Do not try overwriting existing files.
             return
@@ -407,13 +381,13 @@ class StatModel:
         return self.eval_spectrum(parameter_values, parameter_names)
 
         self.log.info(
-            f"StatModel::\tevaluating\n\t\t{self.config['spectrum_class']}"
+            f"evaluating\n\t\t{self.config['spectrum_class']}"
             f"\n\tfor mw = {10. ** self.config['mw']}, "
             f"\n\tsig = {10. ** self.config['sigma']}, "
             f"\n\thalo model = \n\t\t{self.config['halo_model']} and "
             f"\n\tdetector = \n\t\t{self.config['detector_config']}")
         if self.config['save_intermediate']:
-            self.log.info(f"StatModel::\tlooking for intermediate results")
+            self.log.info(f"looking for intermediate results")
             interm_exists, interm_file, interm_spec = self.find_intermediate_result()
             if interm_exists:
                 return interm_spec
@@ -444,7 +418,7 @@ class StatModel:
 
     def eval_benchmark(self):
         self.log.info(
-            f'StatModel::\tpreparing for running, setting the benchmark')
+            f'preparing for running, setting the benchmark')
         df = self.check_spectrum()
         print(df)
         time.sleep(10)
@@ -455,7 +429,7 @@ class StatModel:
 
     def check_bench_set(self):
         if not self.bench_is_set:
-            self.log.info(f'StatModel::\tbenchmark not set->doing so now')
+            self.log.info(f'benchmark not set->doing so now')
             self.eval_benchmark()
 
     def log_probability(self, parameter_vals, parameter_names):
@@ -466,7 +440,7 @@ class StatModel:
         :return:
         """
         self.log.info(
-            f'StatModel::\tEngines running full! Lets get some probabilities')
+            f'Engines running full! Lets get some probabilities')
         self.check_bench_set()
 
         # single parameter to fit
@@ -490,7 +464,7 @@ class StatModel:
                 f"{parameter_vals, parameter_names}")
         if not np.isfinite(lp):
             return -np.inf
-        self.log.info(f'StatModel::\tloading rate for given parameters')
+        self.log.info(f'loading rate for given parameters')
         evaluated_rate = self.eval_spectrum(
             parameter_vals, parameter_names)['counts']
 
@@ -499,7 +473,7 @@ class StatModel:
         if np.isnan(lp + ll):
             raise ValueError(
                 f"Returned NaN from likelihood. lp = {lp}, ll = {ll}")
-        self.log.info(f'StatModel::\tlikelihood evaluated')
+        self.log.info(f'likelihood evaluated')
         return lp + ll
 
     def log_prior(self, value, variable_name):
@@ -514,7 +488,7 @@ class StatModel:
         # For each of the priors read from the config file how the prior looks
         # like. Get the boundaries (and mean (m) and width (s) for gaussian
         # distributions).
-        self.log.info(f'StatModel::\tevaluating priors for {variable_name}')
+        self.log.info(f'evaluating priors for {variable_name}')
         if self.config['prior'][variable_name]['prior_type'] == 'flat':
             a, b = self.config['prior'][variable_name]['param']
             return log_flat(a, b, value)

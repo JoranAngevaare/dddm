@@ -72,7 +72,7 @@ stats.config['notes'] = args.notes
 stats.config['n_energy_bins'] = args.bins
 stats.set_prior(args.priors_from)
 stats.fit_parameters = stats.known_parameters[:args.nparams]
-stats.set_benchmark(mw=args.mw, sigma=args.cross_section)
+stats.set_benchmark(mass=args.mw, log_cross_section=args.cross_section)
 stats.nwalkers = args.nwalkers
 stats.nsteps = args.nsteps
 stats.eval_benchmark()

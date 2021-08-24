@@ -30,7 +30,6 @@ def default_nested_save_dir():
 
 
 class NestedSamplerStatModel(statistics.StatModel):
-    known_parameters = statistics.get_param_list()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
