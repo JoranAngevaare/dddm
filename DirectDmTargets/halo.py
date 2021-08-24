@@ -77,7 +77,7 @@ class VerneSHM:
         self.v_0_nodim = 230 if v_0 is None else v_0 / (nu.km / nu.s)
         self.v_esc_nodim = 544 if v_esc is None else v_esc / (nu.km / nu.s)
         self.rho_dm_nodim = 0.3 if rho_dm is None else rho_dm / \
-            (nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
+                                                       (nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
 
         # Here we keep the units dimensionful as these parameters are requested
         # by wimprates and therefore must have dimensions
@@ -199,8 +199,8 @@ class VerneSHM:
             v_esc=self.v_esc_nodim,
             rho_dm=self.rho_dm_nodim,
             log_cross_section=self.log_cross_section,
-        log_mass=self.log_mass,
-        location=self.location,
+            log_mass=self.log_mass,
+            location=self.location,
         )
         return parameters
 

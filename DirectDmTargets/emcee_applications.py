@@ -39,8 +39,6 @@ class MCMCStatModel(statistics.StatModel):
         self.log_dict = {'sampler': False, 'did_run': False, 'pos': False}
         self.remove_frac = 0.2
         self.thin = 15
-        self.config['start'] = datetime.datetime.now()
-        self.config['notes'] = "default"
 
     def get_pos_full_prior(self, use_pos=None):
         """Get starting positions for the walker from the fill prior range"""
@@ -79,7 +77,7 @@ class MCMCStatModel(statistics.StatModel):
                 start_at = np.random.uniform(a, b, (self.nwalkers, 1))
             else:
                 start_at = val + 0.005 * val * \
-                    np.random.randn(self.nwalkers, 1)
+                           np.random.randn(self.nwalkers, 1)
             start_at = np.clip(start_at, a, b)
             pos.append(start_at)
         pos = np.hstack(pos)
@@ -120,7 +118,7 @@ class MCMCStatModel(statistics.StatModel):
         end = datetime.datetime.now()
         self.log_dict['did_run'] = True
         dt = (end - start).total_seconds()
-        self.log.info(f"fit_done in {dt} s ({dt/3600} h)")
+        self.log.info(f"fit_done in {dt} s ({dt / 3600} h)")
         self.config['fit_time'] = dt
 
     def show_walkers(self):
@@ -171,21 +169,16 @@ class MCMCStatModel(statistics.StatModel):
             json.dump(utils.convert_dic_to_savable(self.config), fp, indent=4)
         np.save(os.path.join(save_dir, 'config.npy'),
                 utils.convert_dic_to_savable(self.config))
-        np.save(
-            os.path.join(
-                save_dir,
-                'full_chain.npy'),
-            self.sampler.get_chain())
-        np.save(
-            os.path.join(
-                save_dir,
-                'flat_chain.npy'),
-            self.sampler.get_chain(
-                discard=int(
-                    self.nsteps *
-                    self.remove_frac),
-                thin=self.thin,
-                flat=True))
+
+        save_at = os.path.join(save_dir, 'full_chain.npy')
+        np.save(save_at, self.sampler.get_chain())
+
+        save_at = os.path.join(save_dir, 'flat_chain.npy')
+        flat_chain = self.sampler.get_chain(
+            discard=int(self.nsteps * self.remove_frac),
+            thin=self.thin, flat=True
+        )
+        np.save(save_at, flat_chain)
         self.config['save_dir'] = save_dir
         self.log.info("save_results::\tdone_saving")
 

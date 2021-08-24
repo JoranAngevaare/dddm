@@ -5,7 +5,7 @@ import os
 from sys import platform
 import numericalunits as nu
 import numpy as np
-import numba
+from datetime import datetime
 from DirectDmTargets import context, detector, halo, utils
 from scipy.special import loggamma
 import typing as ty
@@ -112,7 +112,9 @@ class StatModel:
                            # poisson=False,
                            n_energy_bins=detector_config.get('n_energy_bins', 10),
                            earth_shielding=False,
-                           E_max=detector_config.get('E_max', 100)
+                           E_max=detector_config.get('E_max', 100),
+                           notes='default',
+                           start=datetime.datetime.now(),
                            )
 
         self.log = self.get_logger(verbose)
@@ -399,7 +401,7 @@ class StatModel:
                     v_0=checked_values[2] * nu.km / nu.s,  # 'v_0'
                     v_esc=checked_values[3] * nu.km / nu.s,  # 'v_esc'
                     rho_dm=checked_values[
-                        4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)  # 'density'
+                               4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)  # 'density'
             else:
                 self.log.debug(f"Using SHM in likelihood code")
                 fit_shm = halo.SHM(

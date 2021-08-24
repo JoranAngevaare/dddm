@@ -1,7 +1,9 @@
-"""Do a likelihood fit. The class NestedSamplerStatModel is used for fitting applying the bayesian algorithm nestle"""
+"""
+Do a likelihood fit. The class NestedSamplerStatModel is used for fitting
+applying the bayesian algorithm nestle/multinest
+"""
 
 from __future__ import absolute_import, unicode_literals
-
 import datetime
 import json
 import logging
@@ -9,10 +11,8 @@ import os
 import shutil
 import tempfile
 from warnings import warn
-
 import corner
 import matplotlib.pyplot as plt
-import numericalunits as nu
 import numpy as np
 from DirectDmTargets import context, detector, statistics, utils
 from scipy import special as spsp
@@ -26,11 +26,9 @@ class NestedSamplerStatModel(statistics.StatModel):
         super().__init__(*args, **kwargs)
 
         self.config.update(
-            {'tol': 0.1,   # Tolerance for sampling
+            {'tol': 0.1,  # Tolerance for sampling
              'nlive': 1024,  # number of live points
              'sampler': 'multinest',
-             'start':  datetime.datetime.now(),
-             'notes': "default",
              })
         self.log_dict = {
             'did_run': False,
@@ -114,7 +112,7 @@ class NestedSamplerStatModel(statistics.StatModel):
             self.log_prior_transform_nested(
                 val,
                 self.known_parameters[i]) for i,
-            val in enumerate(theta)]
+                                              val in enumerate(theta)]
         return np.array(result)
 
     def run_nestle(self):
@@ -149,9 +147,7 @@ class NestedSamplerStatModel(statistics.StatModel):
                 ndim,
                 method=method,
                 npoints=self.config['nlive'],
-                maxiter=self.config.get(
-                    'max_iter',
-                    None),
+                maxiter=self.config.get('max_iter'),
                 dlogz=tol)
         except ValueError as e:
             self.config['fit_time'] = -1
@@ -162,7 +158,7 @@ class NestedSamplerStatModel(statistics.StatModel):
 
         end = datetime.datetime.now()
         dt = (end - start).total_seconds()
-        self.log.info(f'fit_done in {dt} s ({dt/3600} h)')
+        self.log.info(f'fit_done in {dt} s ({dt / 3600} h)')
         self.config['fit_time'] = dt
         self.log_dict['did_run'] = True
         self.log.info(f'Finished with running optimizer!')
@@ -198,7 +194,6 @@ class NestedSamplerStatModel(statistics.StatModel):
             raise ModuleNotFoundError(
                 'package pymultinest not found. See README for installation')
 
-
         n_dims = len(self.config["fit_parameters"])
         tol = self.config['tol']  # the stopping criterion
         save_at = self.get_save_dir()
@@ -233,7 +228,7 @@ class NestedSamplerStatModel(statistics.StatModel):
         utils.check_folder_for_file(save_at)
         end = datetime.datetime.now()
         dt = (end - start).total_seconds()
-        self.log.info(f'fit_done in {dt} s ({dt/3600} h)')
+        self.log.info(f'fit_done in {dt} s ({dt / 3600} h)')
         self.log_dict['did_run'] = True
         self.config['fit_time'] = dt
 
@@ -266,7 +261,7 @@ class NestedSamplerStatModel(statistics.StatModel):
                 self.log.info(
                     '%15s : %.3f +- %.3f' %
                     (name, col.mean(), col.std()))
-                resdict[name +'_fit_res'] = (
+                resdict[name + '_fit_res'] = (
                     '{0:5.2f} +/- {1:5.2f}'.format(col.mean(), col.std()))
                 if 'log_' in name:
                     resdict[name[4:] + '_fit_res'] = '%.3g +/- %.2g' % (
@@ -362,19 +357,19 @@ class NestedSamplerStatModel(statistics.StatModel):
                     # in contrast to nestle, multinest returns the weighted
                     # samples.
                     store_at = os.path.join(save_dir,
-                                             f'{pid_id}weighted_samples.npy')
+                                            f'{pid_id}weighted_samples.npy')
                     np.save(store_at, self.result[col])
                 else:
-                    store_at =                        os.path.join(
-                            save_dir,
-                            pid_id + col + '.npy')
+                    store_at = os.path.join(
+                        save_dir,
+                        pid_id + col + '.npy')
                     np.save(store_at, self.result[col])
             else:
                 np.save(os.path.join(save_dir, pid_id + col + '.npy'),
                         convert_dic_to_savable(self.result[col]))
         if 'logging' in self.config:
-            store_at =                 os.path.join(save_dir,
-                             self.config['logging'].split('/')[-1])
+            store_at = os.path.join(save_dir,
+                                    self.config['logging'].split('/')[-1])
             shutil.copy(self.config['logging'], store_at)
         self.log.info(f'save_results::\tdone_saving')
 
