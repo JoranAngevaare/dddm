@@ -1,8 +1,6 @@
 name: Automatic PEP8
 on:
-  push:
-    branches:
-      - master
+  pull_request
 jobs:
   autopep8:
     # Check if the PR is not from a fork

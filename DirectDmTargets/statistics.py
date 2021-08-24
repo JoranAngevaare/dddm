@@ -400,7 +400,7 @@ class StatModel:
                     v_0=checked_values[2] * nu.km / nu.s,  # 'v_0'
                     v_esc=checked_values[3] * nu.km / nu.s,  # 'v_esc'
                     rho_dm=checked_values[
-                               4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)  # 'density'
+                        4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)  # 'density'
             else:
                 self.log.debug(f"Using SHM in likelihood code")
                 fit_shm = halo.SHM(

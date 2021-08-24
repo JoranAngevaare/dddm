@@ -13,8 +13,8 @@ known_priors = 'Pato_2010 Evans_2019 migdal_wide'.split()
 @settings(deadline=None, max_examples=10)
 @given(strategies.floats(0.1, 50),
        strategies.integers(-47, -43),
-       strategies.integers(0, len(known_detectors)-1),
-       strategies.integers(0, len(known_priors)-1),
+       strategies.integers(0, len(known_detectors) - 1),
+       strategies.integers(0, len(known_priors) - 1),
        )
 def test_likelihood_converges(mass, sigma, detector_i, prior_i):
     """Test that a 1D likelihood scan actually returns the maximum at the set value"""

@@ -37,13 +37,13 @@ class DDDMResult:
 
     def config_summary(self,
                        get_props=(
-                               'detector',
-                               'mass',
-                               'sigma',
-                               'nlive',
-                               'halo_model',
-                               'notes',
-                               'n_parameters',
+                           'detector',
+                           'mass',
+                           'sigma',
+                           'nlive',
+                           'halo_model',
+                           'notes',
+                           'n_parameters',
                        )
                        ) -> pd.DataFrame:
         df = {k: [getattr(self, k)] for k in get_props}
