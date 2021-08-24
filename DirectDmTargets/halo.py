@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import verne
 import wimprates as wr
-from DirectDmTargets import utils, SHM, VerneSHM
+from DirectDmTargets import utils
 import typing as ty
 from DirectDmTargets.context import context
 from scipy.interpolate import interp1d
