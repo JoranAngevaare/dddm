@@ -151,7 +151,7 @@ class StatModel:
     def read_priors_mean(self, prior_name) -> ty.Union[int, float]:
         self.log.debug(f'reading {prior_name}')
         return self.config['prior'][prior_name]['mean']
-    
+
     @property
     def v_0(self) -> ty.Union[int, float]:
         return self.read_priors_mean('v_0')
