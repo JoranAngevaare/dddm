@@ -20,19 +20,11 @@ from scipy import special as spsp
 log = logging.getLogger()
 
 
-
-def default_nested_save_dir():
-    """The name of folders where to save results from the NestedSamplerStatModel"""
-    log.warning('Deprecated, please use something else')
-    return 'nested'
-
-
 class NestedSamplerStatModel(statistics.StatModel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        
         self.config.update(
             {'tol': 0.1,   # Tolerance for sampling
              'nlive': 1024,  # number of live points
@@ -147,9 +139,7 @@ class NestedSamplerStatModel(statistics.StatModel):
         assert_str = f"Unknown configuration of fit pars: {self.config['fit_parameters']}"
         assert self.config["fit_parameters"] == self.known_parameters[:ndim], assert_str
         try:
-            self.log.warning(
-                f'run_nestle::\tstart_fit for %i parameters' %
-                ndim)
+            self.log.warning(f'run_nestle::\tstart_fit for {ndim} parameters')
             self.log.info(
                 f'beyond this point, there is nothing '
                 f"I can say, you'll have to wait for my lower level "
@@ -166,13 +156,12 @@ class NestedSamplerStatModel(statistics.StatModel):
                     None),
                 dlogz=tol)
             end = datetime.datetime.now()
-            dt = end - start
-            self.log.info(
-                f'run_nestle::\tfit_done in %i s (%.1f h)' %
-                (dt.seconds, dt.seconds / 3600.))
-            self.log.debug(
-                f'We are back!')
+            dt = (end - start).total_seconds
+            self.log.info(f'fit_done in {dt} s ({dt/3600} h)')
+            self.log.debug(f'We are back!')
+            self.config['fit_time'] = dt
         except ValueError as e:
+            self.config['fit_time'] = -1
             self.log.error(
                 f'Nestle did not finish due to a ValueError. Was running with'
                 f'\n{len(self.config["fit_parameters"])} for fit '
@@ -180,30 +169,26 @@ class NestedSamplerStatModel(statistics.StatModel):
                 f'{self.config["fit_parameters"]}')
             raise e
         self.log_dict['did_run'] = True
-        try:
-            self.config['fit_time'] = dt.seconds
-        except NameError:
-            self.config['fit_time'] = -1
-        self.log.info(
-            f'Finished with running optimizer!')
+        self.log.info(f'Finished with running optimizer!')
 
     def print_before_run(self):
-        self.log.warning(f"""--------------------------------------------------
-        {utils.now()}\n\tFinal print of all of the set options:
-        self.config['tol'] = {self.config['tol']}
-        self.config['nlive'] = {self.config['nlive']}
-        self.config["sampler"] = {self.config["sampler"]}
-        self.log = {self.log}
-        self.result = {self.result}
-        self.config["fit_parameters"] = {self.config["fit_parameters"]}
-        halo_model = {self.config['halo_model']} with:
-            v_0 = {self.config['halo_model'].v_0 / (nu.km / nu.s)}
-            v_esc = {self.config['halo_model'].v_esc / (nu.km / nu.s)}
-            rho_dm = {self.config['halo_model'].rho_dm / (nu.GeV / nu.c0 ** 2 / nu.cm ** 3)}
-        self.benchmark_values = {np.array(self.benchmark_values)}
-        self.config = {self.config}
-        --------------------------------------------------
-        """)
+        self.log.warning(
+            f"""
+            --------------------------------------------------
+            {utils.now()}\n\tFinal print of all of the set options:
+            self.config['tol'] = {self.config['tol']}
+            self.config['nlive'] = {self.config['nlive']}
+            self.config["sampler"] = {self.config["sampler"]}
+            self.log = {self.log}
+            self.result = {self.result}
+            self.config["fit_parameters"] = {self.config["fit_parameters"]}
+            halo_model = {self.config['halo_model']} with:
+                v_0 = {self.config['halo_model'].parameter_dict()}
+            self.benchmark_values = {np.array(self.benchmark_values)}
+            self.config = {self.config}
+            --------------------------------------------------
+            """
+        )
 
     def run_multinest(self):
         self.print_before_run()
@@ -527,7 +512,7 @@ def convert_dic_to_savable(config):
 
 
 def load_nestle_samples(
-        load_from=default_nested_save_dir(),
+        load_from='nested',
         base=utils.get_result_folder(),
         item='latest'):
     save = load_from
@@ -596,7 +581,7 @@ def do_strip_from_pid(string):
     return new_key
 
 
-def load_multinest_samples(load_from=default_nested_save_dir(), item='latest'):
+def load_multinest_samples(load_from='nested', item='latest'):
     base = utils.get_result_folder()
     save = load_from
     files = os.listdir(base)

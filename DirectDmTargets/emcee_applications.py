@@ -77,7 +77,7 @@ class MCMCStatModel(statistics.StatModel):
         pos = []
 
         for i, key in enumerate(keys):
-            val = self.config.get(key)
+            val = getattr(self, key)
             a, b = ranges[i]
             if key in []:
                 start_at = np.random.uniform(a, b, (self.nwalkers, 1))
