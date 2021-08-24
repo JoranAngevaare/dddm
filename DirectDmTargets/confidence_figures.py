@@ -192,10 +192,9 @@ class ResultsManager:
         except Exception as e:
             if not tolerant:
                 raise e
-            else:
-                self.log.debug(e)
-                self.log.warning(f'loading {path} lead to {str(e)}')
-                return
+            self.log.debug(e)
+            self.log.warning(f'loading {path} lead to {str(e)}')
+            return
         self.result_cache.append(result)
 
     def add_result(self, path: str):
