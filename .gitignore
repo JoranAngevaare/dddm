@@ -4,6 +4,7 @@ DirectDmTargets/__pycache__/*
 2019*
 notebooks/old/*
 DirectDmTargets/__*
+DirectDmTargets/DD_DM_targets_data
 backups/*
 # submit_to_stoomboot*
 build/
