@@ -408,10 +408,16 @@ class CombinedInference(NestedSamplerStatModel):
         ]
         self.log.debug(f'Sub detectors are set: {self.sub_classes}')
 
+    def _print_before_run(self):
+        for c in self.sub_classes:
+            self.log.debug(f'Printing det config for {c}')
+            c._print_before_run()
+
     def _fix_parameters(self):
         """Fix the parameters of the sub classes"""
+        self.copy_config('mw prior sigma halo_model spectrum_class'.split())
         for c in self.sub_classes:
-            self.log.debug(f'Fixing parameters for{c}')
+            self.log.debug(f'Fixing parameters for {c}')
             c._fix_parameters()
 
     def _log_probability_nested(self, theta):
@@ -428,8 +434,7 @@ class CombinedInference(NestedSamplerStatModel):
         self.log.info(f'update config with {copy_of_config}')
         for c in self.sub_classes:
             self.log.debug(f'{c} with config {c.config}')
-            c._fix_parameters()
-            c._print_before_run()
+            c.config.update(copy_of_config)
 
     def save_sub_configs(self, force_index=False):
         save_dir = self.get_save_dir(force_index=force_index)
