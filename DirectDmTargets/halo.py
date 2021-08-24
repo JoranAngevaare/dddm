@@ -244,7 +244,7 @@ class GenSpectrum:
     def set_config(self, update: dict, check_if_set: bool = True) -> None:
         """
         Update the config with the provided update
-        :param update: a dictionaty of items to update
+        :param update: a dictionary of items to update
         :param check_if_set: Check that a previous version is actually
             set
         :return: None
@@ -252,7 +252,11 @@ class GenSpectrum:
         assert isinstance(update, dict)
         for key in update.keys():
             if check_if_set and key not in self.config:
-                raise ValueError(f'{key} not in config of {str(self)}')
+                message = f'{key} not in config of {str(self)}'
+                if update.get('type') == 'combined':
+                    update.log.debug(message)
+                else:
+                    raise ValueError(message)
 
         self.config.update(update)
 

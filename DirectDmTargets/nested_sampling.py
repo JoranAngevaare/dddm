@@ -408,6 +408,12 @@ class CombinedInference(NestedSamplerStatModel):
         ]
         self.log.debug(f'Sub detectors are set: {self.sub_classes}')
 
+    def _fix_parameters(self):
+        """Fix the parameters of the sub classes"""
+        for c in self.sub_classes:
+            self.log.debug(f'Fixing parameters for{c}')
+            c._fix_parameters()
+
     def _log_probability_nested(self, theta):
         return np.sum([c._log_probability_nested(theta)
                        for c in self.sub_classes])
@@ -555,7 +561,7 @@ def _get_info(result, _result_key):
             if str_inf == 'start':
                 info = info[:-7]
             if str_inf == 'fit_time':
-                info += 's (%.1f h)' % (result['config'][str_inf] / 3600.)
+                info += 's (%.1f h)' % (float(result['config'][str_inf]) / 3600.)
     return info, ndim
 
 
