@@ -257,13 +257,9 @@ class StatModel:
         return self.eval_spectrum(parameter_values, parameter_names)
 
     def eval_benchmark(self):
-        self.log.info(
-            f'preparing for running, setting the benchmark')
+        self.log.info(f'preparing for running, setting the benchmark')
         df = self.check_spectrum()
-        print(df)
-        time.sleep(10)
         self.benchmark_values = df['counts']
-        self.bench_is_set = True
         # Save a copy of the benchmark in the config file
         self.config['benchmark_values'] = list(self.benchmark_values)
 
