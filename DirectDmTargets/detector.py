@@ -149,7 +149,7 @@ def migdal_background_superCDMS_Ge_iZIP(e_min, e_max, nbins):
     """
     :return: background for Ge iZIP detector in events/keV/t/yr
     """
-    bg_rate = 370  # counts/kg/keV/year
+    bg_rate = 22  # counts/kg/keV/year see table V: https://arxiv.org/pdf/1610.00006.pdf
     conv_units = 1.0e3  # Tonne
     if not e_max < 20:  # 20 keV
         raise ValueError(
