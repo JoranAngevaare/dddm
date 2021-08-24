@@ -433,7 +433,7 @@ class StatModel:
     def eval_benchmark(self):
         self.log.info(
             f'StatModel::\tpreparing for running, setting the benchmark')
-        df = self.check_spectrum(poisson=False)
+        df = self.check_spectrum()
         print(df)
         time.sleep(10)
         self.benchmark_values = df['counts']
