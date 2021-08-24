@@ -239,11 +239,11 @@ benchmark = {'mw': 50., 'sigma_nucleon': 1e-45}
 
 experiment = {
     'Xe': {'material': 'Xe', 'type': 'SI', 'exp': 5., 'cut_eff': 0.8, 'nr_eff': 0.5, 'E_thr': 10.,
-           'location': "XENON", 'res': det_res_Xe, 'n_energy_bins': 10, },
+           'location': "XENON", 'res': det_res_Xe, 'n_energy_bins': 10, 'E_max': 100},
     'Ge': {'material': 'Ge', 'type': 'SI', 'exp': 3., 'cut_eff': 0.8, 'nr_eff': 0.9, 'E_thr': 10.,
-           'location': "SUF", 'res': det_res_Ge, 'n_energy_bins': 10, },
+           'location': "SUF", 'res': det_res_Ge, 'n_energy_bins': 10, 'E_max': 100},
     'Ar': {'material': 'Ar', 'type': 'SI', 'exp': 10., 'cut_eff': 0.8, 'nr_eff': 0.8, 'E_thr': 30.,
-           'location': "XENON", 'res': det_res_Ar, 'n_energy_bins': 10, },
+           'location': "XENON", 'res': det_res_Ar, 'n_energy_bins': 10, 'E_max': 100},
     # --- Ge iZIP bg --- #
     'Ge_iZIP_bg': {
         'material': 'Ge',
@@ -395,6 +395,8 @@ for name in experiment.keys():
                                    experiment[name]['cut_eff'] *
                                    experiment[name]['nr_eff'])
     experiment[name]['name'] = name
+    if 'E_min' not in experiment[name]:
+        experiment[name]['E_min'] = 0
 
 # Make a new experiment that is a placeholder for the CombinedInference class.
 experiment['Combined'] = {'type': 'combined'}

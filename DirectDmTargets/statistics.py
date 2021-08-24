@@ -228,7 +228,6 @@ class StatModel:
 
         if halo_model != 'default' or spec != 'default':
             self.log.warning(f"re-evaluate benchmark")
-            self.eval_benchmark()
 
     def set_fit_parameters(self, params):
         self.log.info(f'NestedSamplersetting fit'
@@ -255,166 +254,10 @@ class StatModel:
         self.eval_benchmark()
         self.log.info(f'evaluate benchmark\tdone\n\tall ready to go!')
 
-    def find_intermediate_result(
-            self,
-            nbin=None,
-            model=None,
-            mw=None,
-            sigma=None,
-            rho=None,
-            v_0=None,
-            v_esc=None,
-            poisson=None,
-            det_conf=None):
-        """
-        :return: exists (bool), the name, and if exists the spectrum
-        """
-        self.log.warning(
-            'Saving intermediate results. Computational gain may be limited')
-        if 'DetectorSpectrum' not in str(self.config['spectrum_class']):
-            raise ValueError("Input detector spectrum")
-        # Name the file according to the main parameters. Note that for each of
-        # the main parameters
-        file_name = os.path.join(
-            context.context['spectra_files'],
-            'nbin-%i' %
-            (self.config['n_energy_bins'] if nbin is None else nbin),
-            'model-%s' %
-            (str(
-                self.config['halo_model']) if model is None else str(model)),
-            'mw-%.2f' %
-            (10. ** self.config['mw'] if mw is None else 10. ** mw),
-            'log_s-%.2f' %
-            (self.config['sigma'] if sigma is None else sigma),
-            'rho-%.2f' %
-            (self.density if rho is None else rho),
-            'v_0-%.1f' %
-            (self.v_0 if v_0 is None else v_0),
-            'v_esc-%i' %
-            (self.v_esc if v_esc is None else v_esc),
-            'poisson_%i' %
-            (int(
-                self.config['poisson'] if poisson is None else poisson)),
-            'spectrum')
-        print(file_name)
-        # Add all other parameters that are in the detector config
-        if det_conf is None:
-            det_conf = self.config['detector_config']
-        for key in det_conf.keys():
-            if callable(self.config['detector_config'][key]):
-                continue
-            file_name = file_name + '_' + \
-                str(self.config['detector_config'][key])
-        file_name = file_name.replace(' ', '_')
-        file_name = file_name + '.csv'
-        data_at_path, file_path = utils.add_pid_to_csv_filename(file_name)
-
-        # There have been some issues with mixed results for these two
-        # densities. Remove those files.
-        if rho == 0.55 or rho == 0.4:
-            if data_at_path:
-                write_time = os.path.getmtime(file_path)
-                feb17_2020 = 1581932824.5842493
-                if write_time < feb17_2020:
-                    self.log.error(
-                        f'WARNING REMOVING {file_path}')
-                    os.remove(file_path)
-                    data_at_path, file_path = utils.add_pid_to_csv_filename(
-                        file_name)
-                    self.log.warning(
-                        f'Re-evatulate, now we have {file_path}. Is there data: {data_at_path}')
-
-        if data_at_path:
-            try:
-                binned_spectrum = pd.read_csv(file_path)
-            except pd.errors.EmptyDataError:
-                self.log.error(
-                    "dataframe empty, have to remake the data!")
-                os.remove(file_path)
-                binned_spectrum = None
-                data_at_path = False
-        else:
-            self.log.warning(
-                "No data at path. Will have to make it.")
-            binned_spectrum = None
-            utils.check_folder_for_file(file_path)
-
-        self.log.info(f"data at {file_path} = {data_at_path}")
-        return data_at_path, file_path, binned_spectrum
-
-    def save_intermediate_result(self, binned_spectrum, spectrum_file):
-        """
-        Save evaluated binned spectrum according to naming convention
-        :param binned_spectrum: evaluated spectrum
-        :param spectrum_file: name where to save the evaluated spectrum
-        :return:
-        """
-        self.log.info(f"saving spectrum at {spectrum_file}")
-        if os.path.exists(spectrum_file):
-            # Do not try overwriting existing files.
-            return
-        try:
-            # rename the file to also reflect the hosts name such that we don't make two
-            # copies at the same place with from two different hosts
-            if context.host not in spectrum_file:
-                spectrum_file = spectrum_file.replace(
-                    '.csv', context.host + '.csv')
-            try:
-                binned_spectrum.to_csv(spectrum_file, index=False)
-            except Exception as e:
-                self.log.error(
-                    f"Error while saving {spectrum_file}. Sleep 5 sec and "
-                    f"retry. The error was:\n{e} ignoring that for now.")
-                time.sleep(5)
-                if os.path.exists(spectrum_file):
-                    os.remove(spectrum_file)
-                    time.sleep(5)
-                    binned_spectrum.to_csv(spectrum_file, index=False)
-        except PermissionError as e:
-            self.log.warning(f'{e} occurred, ignoring that for now.')
-            # While computing the spectrum another instance has saved a file
-            # with the same name
-
     def check_spectrum(self):
         parameter_names = self._parameter_order[:2]
         parameter_values = [self.config['mw'], self.config['sigma'], ]
         return self.eval_spectrum(parameter_values, parameter_names)
-
-        self.log.info(
-            f"evaluating\n\t\t{self.config['spectrum_class']}"
-            f"\n\tfor mw = {10. ** self.config['mw']}, "
-            f"\n\tsig = {10. ** self.config['sigma']}, "
-            f"\n\thalo model = \n\t\t{self.config['halo_model']} and "
-            f"\n\tdetector = \n\t\t{self.config['detector_config']}")
-        if self.config['save_intermediate']:
-            self.log.info(f"looking for intermediate results")
-            interm_exists, interm_file, interm_spec = self.find_intermediate_result()
-            if interm_exists:
-                return interm_spec
-
-        # Initialize the spectrum class if:
-        # A) we are not saving intermediate results
-        # B) we haven't yet computed the desired intermediate spectrum
-        spectrum = self.config['spectrum_class'](
-            10. ** self.config['mw'],
-            10. ** self.config['sigma'],
-            self.config['halo_model'],
-            self.config['detector_config'])
-        spectrum = self.config_to_spectrum(spectrum)
-
-        for e_min_max in 'E_min E_max'.split():
-            if e_min_max in self.config:
-                self.log.info(f'set {e_min_max} to {self.config[e_min_max]}')
-                spectrum.set_config(dict(e_min_max=self.config[e_min_max]))
-
-        binned_spectrum = spectrum.get_data(
-            poisson=self.config['poisson'] if poisson is None else poisson
-        )
-        self.log.warning(f'Check spectrum, {spectrum.E_max} keV E_max')
-
-        if self.config['save_intermediate']:
-            self.save_intermediate_result(binned_spectrum, interm_file)
-        return binned_spectrum
 
     def eval_benchmark(self):
         self.log.info(
