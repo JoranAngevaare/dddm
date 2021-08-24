@@ -579,10 +579,13 @@ def multinest_corner(
     labels = statistics.get_param_list()[:ndim]
     truths = []
     for prior_name in statistics.get_prior_list()[:ndim]:
-        if prior_name != "rho_0":
+        if prior_name == "rho_0":
+            prior_name = 'density'
+        if prior_name in result['config']:
             truths.append(result['config'][prior_name])
         else:
-            truths.append(result['config']['density'])
+            truths.append(result['config']['prior'][prior_name]['mean'])
+
     weight_kwargs = dict(weights=result['weights']) if _weights else {}
     fig = corner.corner(
         result[_result_key],
