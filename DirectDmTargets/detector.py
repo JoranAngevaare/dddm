@@ -106,21 +106,6 @@ def nr_background_xe(e_min, e_max, nbins):
     return np.full(nbins, bg_rate)
 
 
-@numba.jit(nopython=True)
-def migdal_background_CDMS(e_min, e_max, nbins):
-    """
-    :return: background for Ge detector in events/keV/t/yr
-    """
-    bins = np.linspace(e_min, e_max, nbins)
-    res = []
-    conv_units = 1.0e-3 * (1 / 365.25)
-    for i in range(nbins):
-        res.append(
-            CDMS_background_functions(bins[i]) * conv_units)
-
-    return np.array(res)
-
-
 def migdal_background_superCDMS_Ge_HV(e_min, e_max, nbins):
     """
     :return: background for Ge HV detector in events/keV/t/yr
@@ -213,23 +198,6 @@ def nr_background_superCDMS_Si(e_min, e_max, nbins):
     res[energies < 20] = bg_rate * conv_units
     return res
 
-
-@numba.jit(nopython=True)
-def CDMS_background_functions(E):
-    # background in XENON1T
-    # p. 140 https://pure.uva.nl/ws/files/31193425/Thesis.pdf
-    if E < 3:  # keV
-        return 0.9  # kg day / keV
-    if E < 5:
-        return 0.1
-    if E < 8:
-        return 0.01
-    return 0.01
-
-
-# Set the default benchmark for a 50 GeV WIMP with a cross-section of
-# 1e-45 cm^2
-benchmark = {'mw': 50., 'sigma_nucleon': 1e-45}
 
 # Set up a dictionary of the different detectors
 # Each experiment below lists:
@@ -446,7 +414,7 @@ def smear_signal(rate, energy, sigma, bin_width):
 
 class DetectorSpectrum(GenSpectrum):
     add_background = False
-    required_config_fields = 'exp exp_eff E_thr res'
+    required_detector_fields = super().required_detector_fields + 'exp exp_eff E_thr res'.split()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -534,22 +502,3 @@ class DetectorSpectrum(GenSpectrum):
         :return: Events (binned)
         """
         return self.compute_detected_spectrum()
-
-    # def get_data(self, poisson=True):
-    #     """
-    #
-    #     :param poisson: type bool, add poisson True or False
-    #     :return: pd.DataFrame containing events binned in energy
-    #     """
-    #     result = pd.DataFrame()
-    #     if poisson:
-    #         result['counts'] = self.get_poisson_events()
-    #     else:
-    #         result['counts'] = self.get_events()
-    #     bins = get_bins(self.E_min, self.E_max, self.n_bins)
-    #     result['bin_centers'] = np.mean(bins, axis=1)
-    #     result['bin_left'] = bins[:, 0]
-    #     result['bin_right'] = bins[:, 1]
-    #     result = self.set_negative_to_zero(result)
-    #
-    #     return result

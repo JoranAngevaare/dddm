@@ -198,11 +198,16 @@ class VerneSHM:
             v_0=self.v_0_nodim,
             v_esc=self.v_esc_nodim,
             rho_dm=self.rho_dm_nodim,
+            log_cross_section=self.log_cross_section,
+        log_mass=self.log_mass,
+        location=self.location,
         )
         return parameters
 
 
 class GenSpectrum:
+    required_detector_fields = 'name material type exp_eff'.split()
+
     def __init__(self,
                  wimp_mass: ty.Union[float, int],
                  wimp_nucleon_cross_section: ty.Union[float, int],
@@ -214,7 +219,7 @@ class GenSpectrum:
         :param dark_matter_model: the dark matter model
         :param det: dictionary containing detector parameters
         """
-        self._check_detector(det)
+        self._check_input_detector_config(det)
 
         # note that this is not in log scale!
         self.mw = wimp_mass
@@ -252,11 +257,12 @@ class GenSpectrum:
         self.config.update(update)
 
     @staticmethod
-    def _check_detector(det):
+    def _check_input_detector_config(det):
+        """Given the a detector config, check that all the required fields are available"""
         if not isinstance(det, dict):
             raise ValueError("Detector should be dict")
         missing = []
-        for field in 'name material type exp_eff'.split():
+        for field in self.required_detector_fields:
             if field not in det:
                 missing.append(field)
         if missing:
@@ -350,8 +356,8 @@ class GenSpectrum:
             result['counts'] = self.get_poisson_events()
         else:
             result['counts'] = self.get_events()
-        result['bin_centers'] = self.get_bin_centers()
         bins = utils.get_bins(self.E_min, self.E_max, self.n_bins)
+        result['bin_centers'] = np.mean(bins, axis=1)
         result['bin_left'] = bins[:, 0]
         result['bin_right'] = bins[:, 1]
         result = self.set_negative_to_zero(result)

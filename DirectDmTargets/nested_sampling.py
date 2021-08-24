@@ -338,16 +338,12 @@ class NestedSamplerStatModel(statistics.StatModel):
         return self.log_dict['tmp_dir']
 
     def save_results(self, force_index=False):
-        self.log.info(
-            f'Almost there! We are about to save the '
-            f'results. But first do some checks, did we actually run?')
+        self.log.info('Saving results after checking we did run')
         # save fit parameters to config
         self.check_did_run()
         save_dir = self.get_save_dir(force_index=force_index)
         fit_summary = self.get_summary()
-        self.log.info(
-            f'Alright all set, let put all that info'
-            f' in {save_dir} and be done with it')
+        self.log.info(f'storing in {save_dir}')
         # save the config, chain and flattened chain
         pid_id = 'pid' + str(os.getpid()) + '_'
         with open(os.path.join(save_dir, f'{pid_id}config.json'), 'w') as file:
@@ -359,34 +355,30 @@ class NestedSamplerStatModel(statistics.StatModel):
             convert_dic_to_savable(self.config))
         np.save(os.path.join(save_dir, f'{pid_id}res_dict.npy'),
                 convert_dic_to_savable(fit_summary))
+
         for col in self.result.keys():
             if col == 'samples' or not isinstance(col, dict):
                 if self.config["sampler"] == 'multinest' and col == 'samples':
                     # in contrast to nestle, multinest returns the weighted
                     # samples.
-                    np.save(os.path.join(save_dir, f'{pid_id}weighted_samples.npy'),
-                            self.result[col])
+                    store_at = os.path.join(save_dir,
+                                             f'{pid_id}weighted_samples.npy')
+                    np.save(store_at, self.result[col])
                 else:
-                    np.save(
-                        os.path.join(
+                    store_at =                        os.path.join(
                             save_dir,
-                            pid_id + col + '.npy'),
-                        self.result[col])
+                            pid_id + col + '.npy')
+                    np.save(store_at, self.result[col])
             else:
                 np.save(os.path.join(save_dir, pid_id + col + '.npy'),
                         convert_dic_to_savable(self.result[col]))
         if 'logging' in self.config:
-            shutil.copy(
-                self.config['logging'],
-                os.path.join(save_dir,
-                             self.config['logging'].split('/')[-1]))
+            store_at =                 os.path.join(save_dir,
+                             self.config['logging'].split('/')[-1])
+            shutil.copy(self.config['logging'], store_at)
         self.log.info(f'save_results::\tdone_saving')
 
     def show_corner(self):
-        self.log.info(
-            f"{utils.now(self.config['start'])}"
-            f"\n\tLet's do some graphics, I'll make you a "
-            f"nice corner plot just now")
         self.check_did_save()
         save_dir = self.log_dict['saved_in']
 
@@ -399,9 +391,7 @@ class NestedSamplerStatModel(statistics.StatModel):
         else:
             # This cannot happen
             raise ValueError(f"Impossible, sampler was {self.config['sampler']}")
-        self.log.info(
-            f'Enjoy the plot. Maybe you do want to'
-            f' save it too?')
+        self.log.info(f'Enjoy the plot. Maybe you do want to save it too?')
 
 
 class CombinedInference(NestedSamplerStatModel):

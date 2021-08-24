@@ -1,4 +1,5 @@
-"""Do a likelihood fit. The class MCMCStatModel is used for fitting applying
+"""
+Do a likelihood fit. The class MCMCStatModel is used for fitting applying
 the MCMC algorithm emcee.
 
 MCMC is:
@@ -6,14 +7,14 @@ MCMC is:
     harder to use since one has to choose the 'right' initial parameters
 
 Nevertheless, the walkers give great insight in how the likelihood-function is
-felt by the steps that the walkers make"""
+felt by the steps that the walkers make
+"""
 
 import datetime
 import json
 import logging
 import multiprocessing
 import os
-
 import corner
 import matplotlib.pyplot as plt
 import numpy as np
@@ -48,12 +49,8 @@ class MCMCStatModel(statistics.StatModel):
         self.config['start'] = datetime.datetime.now()
         self.config['notes'] = "default"
 
-    @property
-    def mw(self):
-        """Lazy alias"""
-        return self.log_mass
-
     def get_pos_full_prior(self, use_pos=None):
+        """Get starting positions for the walker from the fill prior range"""
         self.log_dict['pos'] = True
         if use_pos is not None:
             self.pos = use_pos
@@ -69,6 +66,7 @@ class MCMCStatModel(statistics.StatModel):
         return pos.T
 
     def set_pos(self, use_pos=None):
+        """Set the starting position of the walkers"""
         self.log_dict['pos'] = True
         if use_pos is not None:
             log.info("using specified start position")
@@ -95,6 +93,7 @@ class MCMCStatModel(statistics.StatModel):
         self.pos = pos
 
     def set_sampler(self, mult=True):
+        """init the MCMC sampler"""
         # Do the import of emcee inside the class such that the package can be
         # loaded without emcee
         try:
@@ -175,7 +174,7 @@ class MCMCStatModel(statistics.StatModel):
             self.run_emcee()
         # open a folder where to save to results
         save_dir = utils.open_save_dir(
-            'emcee',
+            default_emcee_save_dir(),
             base_dir=save_to_dir,
             force_index=force_index)
         # save the config, chain and flattened chain
@@ -200,6 +199,16 @@ class MCMCStatModel(statistics.StatModel):
                 flat=True))
         self.config['save_dir'] = save_dir
         log.info("save_results::\tdone_saving")
+
+    @property
+    def mw(self):
+        """Lazy alias"""
+        return self.log_mass
+
+    @property
+    def sigma(self):
+        """Lazy alias"""
+        return self.log_cross_section
 
 
 def load_chain_emcee(load_from=default_emcee_save_dir(),
@@ -253,21 +262,14 @@ def emcee_plots(result, save=False, plot_walkers=True, show=False):
             pass
     nsteps, nwalkers, ndim = np.shape(result['full_chain'])
 
-    for str_inf in [
-        'notes',
-        'start',
-        'fit_time',
-        'poisson',
-        'nwalkers',
-        'nsteps',
-            'n_energy_bins']:
+    for str_inf in ['notes', 'start', 'fit_time', 'poisson',
+                    'nwalkers', 'nsteps', 'n_energy_bins']:
         try:
             info += f"\n{str_inf} = %s" % result['config'][str_inf]
             if str_inf == 'start':
                 info = info[:-7]
             if str_inf == 'fit_time':
                 info += 's (%.1f h)' % (result['config'][str_inf] / 3600.)
-
         except KeyError:
             pass
     info += "\nnwalkers = %s" % nwalkers
