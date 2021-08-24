@@ -36,7 +36,10 @@ def test_nested_simple_multinest_earth_shielding():
     results.apply_mask(results.df['nlive'] > 1)
     assert results.result_cache is not None and len(results.result_cache) > 0
 
-    for res in tqdm(results.result_cache, desc = 'opening results folder'):
+    if len(results.result_cache) > 30:
+        raise RuntimeError(f'Too many matches for {result_path}')
+
+    for res in tqdm(results.result_cache, desc='opening results folder'):
         plot = dddm.SeabornPlot(res)
         plot.plot_kde(bw_adjust=0.75, alpha=0.7)
         plot.plot_sigma_contours(nsigma=3,

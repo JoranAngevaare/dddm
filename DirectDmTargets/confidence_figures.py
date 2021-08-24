@@ -76,9 +76,6 @@ class DDDMResult:
     @property
     def mass(self):
         log_mass = self.get_from_config('mw')
-        self.log.error(f'mass is {log_mass}, {self.result.get("config")}')
-        import pprint
-        pprint.pprint(self.result.get("config"))
         if log_mass is None:
             self.log.warning(f'{self.path} has no mw?')
             return -1
