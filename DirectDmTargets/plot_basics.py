@@ -72,7 +72,7 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
     if vary == 'sig':
         plt.xlabel(r'$\sigma$ $[cm^2]$')
         plt.axvline(sig, alpha=0.5, color='red', label='truth')
-        var = np.linspace(0.1 * 1e-45, 10 * 1e-45, 30)
+        var = np.linspace(0.1 * sig, 10 * sig, 30)
 
         def model(x):
             res = spec_clas(m, x, use_SHM, detector.experiment[det])
