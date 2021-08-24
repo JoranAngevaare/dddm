@@ -14,7 +14,7 @@ pytest==6.2.4
 pytest-runner==5.3.1
 scipy==1.7.1
 seaborn==0.11.2
-tqdm==4.62.1
+tqdm==4.62.2
 
 # These two packages require metadata not shipped via pip+git
 git+https://github.com/jorana/wimprates
