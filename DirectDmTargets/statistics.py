@@ -418,6 +418,7 @@ class StatModel:
         binned_spectrum = spectrum.get_data(
             poisson=self.config['poisson'] if poisson is None else poisson
         )
+        self.log.warning(f'Check spectrum, {spectrum.E_max} keV E_max')
 
         if self.config['save_intermediate']:
             self.save_intermediate_result(binned_spectrum, interm_file)
@@ -426,7 +427,10 @@ class StatModel:
     def eval_benchmark(self):
         self.log.info(
             f'StatModel::\tpreparing for running, setting the benchmark')
-        self.benchmark_values = self.check_spectrum(poisson=False)['counts']
+        df = self.check_spectrum(poisson=False)
+        print(df)
+        time.sleep(10)
+        self.benchmark_values = df['counts']
         self.bench_is_set = True
         # Save a copy of the benchmark in the config file
         self.config['benchmark_values'] = list(self.benchmark_values)

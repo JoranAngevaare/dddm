@@ -70,30 +70,42 @@ def det_res_superCDMS110(E):
 
 def det_res_XENON1T(E):
     """
-    Detector resolution of XENON1T. See caption figure 6 https://arxiv.org/abs/2003.03825
+    Detector resolution of XENON1T. See e.g. 1 of https://journals.aps.org/prd/pdf/10.1103/PhysRevD.102.072004
     :param E: energy in keV
     :return: resolution at E
     """
-    a = 31.71
-    b = 0.15
-    sigma_over_E_percent = b + a / np.sqrt(E)
-    return E * sigma_over_E_percent / 100
+    a = 0.310
+    b = 0.0037
+    return a * np.sqrt(E) + b * E
 
 
-def migdal_background_XENON1T(e_min, e_max, nbins):
+def er_background_xe(e_min, e_max, nbins):
     """
-    :return: background for Xe detector in events/keV/t/yr
+    :return: ER background for Xe detector in events/keV/t/yr
     """
-    # Assume that:
-    #   A) The BG is 10x lower than in https://www.nature.com/articles/s41586-019-1124-4
-    #   B) The BG is flat
-    bg_rate = 80 / 10  # 1/(keV * t * yr)
+    # From https://arxiv.org/pdf/2007.08796.pdf
+    bg_rate = 12.3  # 1/(keV * t * yr)
+
     # Assume flat background over entire energy range
     # True to first order below 200 keV
-
     if e_min > e_max or e_max > 200:
-        raise ValueError(
-            f'Assume flat background only below 200 keV ({e_min}, {e_max})')
+        mes = f'Assume flat background only below 200 keV ({e_min}, {e_max})'
+        raise ValueError(mes)
+    return np.full(nbins, bg_rate)
+
+
+def nr_background_xe(e_min, e_max, nbins):
+    """
+    :return: NR background for Xe detector in events/keV/t/yr
+    """
+    # From https://arxiv.org/pdf/2007.08796.pdf
+    bg_rate = 2.2e-3  # 1/(keV * t * yr)
+
+    # Assume flat background over entire energy range
+    # True to first order below 200 keV
+    if e_min > e_max or e_max > 200:
+        mes = f'Assume flat background only below 200 keV ({e_min}, {e_max})'
+        raise ValueError(mes)
     return np.full(nbins, bg_rate)
 
 
@@ -150,7 +162,7 @@ def migdal_background_superCDMS_Ge_iZIP(e_min, e_max, nbins):
     """
     :return: background for Ge iZIP detector in events/keV/t/yr
     """
-    bg_rate = 370  # counts/kg/keV/year
+    bg_rate = 22  # counts/kg/keV/year see table V: https://arxiv.org/pdf/1610.00006.pdf
     conv_units = 1.0e3  # Tonne
     if not e_max < 20:  # 20 keV
         raise ValueError(
@@ -246,7 +258,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS100,  # table I
         'bg_func': nr_background_superCDMS_Ge,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     'Ge_migd_iZIP_bg': {
@@ -259,7 +271,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS50,  # table I
         'bg_func': migdal_background_superCDMS_Ge_iZIP,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     # --- Si iZIP bg --- #
@@ -273,7 +285,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS110,  # table I
         'bg_func': nr_background_superCDMS_Si,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     'Ge_migd_iZIP_Si_bg': {
@@ -286,7 +298,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS25,  # table I
         'bg_func': migdal_background_superCDMS_Si_iZIP,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     # --- Ge HV bg --- #
@@ -300,7 +312,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS10,  # table I
         'bg_func': migdal_background_superCDMS_Ge_HV,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     'Ge_migd_HV_bg': {
@@ -313,7 +325,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS10,  # table I
         'bg_func': migdal_background_superCDMS_Ge_HV,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     # --- Si HV bg --- #
@@ -328,7 +340,7 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS5,  # table I
         'bg_func': migdal_background_superCDMS_Si_HV,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     'Ge_migd_HV_Si_bg': {
@@ -342,32 +354,40 @@ experiment = {
         "location": "SNOLAB",
         'res': det_res_superCDMS5,  # table I
         'bg_func': migdal_background_superCDMS_Si_HV,
-        'E_max': 2,
+        'E_max': 5,
         'n_energy_bins': 50,
     },
     'Xe_migd_bg': {
         'material': 'Xe',
         'type': 'migdal_bg',
-        'exp': 5 * 5,  # aim for 2025 (5 yr * 5 ton)
-        'cut_eff': 0.8,
-        'nr_eff': 0.90,
-        'E_thr': 1.0,  # assume slightly lower than https://arxiv.org/abs/1907.12771
+        'exp': 20,  # https://arxiv.org/pdf/2007.08796.pdf
+
+        # Combined cut & detection efficiency as in
+        # https://arxiv.org/pdf/2007.08796.pdf
+        'cut_eff': 0.82,
+        'nr_eff': 1,
+
+        'E_thr': 1.0,  # assume https://arxiv.org/abs/2006.09721
         'location': "XENON",
         'res': det_res_XENON1T,  # table I
-        'bg_func': migdal_background_XENON1T,
+        'bg_func': er_background_xe,
         'E_max': 5,
         'n_energy_bins': 50,
     },
     'Xe_bg': {
         'material': 'Xe',
         'type': 'SI_bg',
-        'exp': 5 * 5,  # aim for 2025 (5 yr * 5 ton)
-        'cut_eff': 0.8,
-        'nr_eff': 0.5,
-        'E_thr': 1.0,  # assume slightly lower than https://arxiv.org/abs/1907.12771
+        'exp': 20,  # https://arxiv.org/pdf/2007.08796.pdf
+
+        # Combined cut & detection efficiency as in
+        # https://arxiv.org/pdf/2007.08796.pdf
+        'cut_eff': 0.82,
+        'nr_eff': 1,
+
+        'E_thr': 1.0,  # assume https://arxiv.org/abs/2006.09721
         'location': "XENON",
         'res': det_res_XENON1T,  # table I
-        'bg_func': migdal_background_XENON1T,
+        'bg_func': nr_background_xe,
         'E_max': 5,
         'n_energy_bins': 50,
     },
