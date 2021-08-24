@@ -80,20 +80,33 @@ def det_res_XENON1T(E):
     return E * sigma_over_E_percent / 100
 
 
-def migdal_background_XENON1T(e_min, e_max, nbins):
+def er_background_xe(e_min, e_max, nbins):
     """
-    :return: background for Xe detector in events/keV/t/yr
+    :return: ER background for Xe detector in events/keV/t/yr
     """
-    # Assume that:
-    #   A) The BG is 10x lower than in https://www.nature.com/articles/s41586-019-1124-4
-    #   B) The BG is flat
-    bg_rate = 80 / 10  # 1/(keV * t * yr)
+    # From https://arxiv.org/pdf/2007.08796.pdf
+    bg_rate = 12.3  # 1/(keV * t * yr)
+
     # Assume flat background over entire energy range
     # True to first order below 200 keV
-
     if e_min > e_max or e_max > 200:
-        raise ValueError(
-            f'Assume flat background only below 200 keV ({e_min}, {e_max})')
+        mes = f'Assume flat background only below 200 keV ({e_min}, {e_max})'
+        raise ValueError(mes)
+    return np.full(nbins, bg_rate)
+
+
+def nr_background_xe(e_min, e_max, nbins):
+    """
+    :return: NR background for Xe detector in events/keV/t/yr
+    """
+    # From https://arxiv.org/pdf/2007.08796.pdf
+    bg_rate = 2.2e-3  # 1/(keV * t * yr)
+
+    # Assume flat background over entire energy range
+    # True to first order below 200 keV
+    if e_min > e_max or e_max > 200:
+        mes = f'Assume flat background only below 200 keV ({e_min}, {e_max})'
+        raise ValueError(mes)
     return np.full(nbins, bg_rate)
 
 
@@ -348,26 +361,34 @@ experiment = {
     'Xe_migd_bg': {
         'material': 'Xe',
         'type': 'migdal_bg',
-        'exp': 5 * 5,  # aim for 2025 (5 yr * 5 ton)
-        'cut_eff': 0.8,
-        'nr_eff': 0.90,
-        'E_thr': 1.0,  # assume slightly lower than https://arxiv.org/abs/1907.12771
+        'exp': 20,  # https://arxiv.org/pdf/2007.08796.pdf
+
+        # Combined cut & detection efficiency as in
+        # https://arxiv.org/pdf/2007.08796.pdf
+        'cut_eff': 0.82,
+        'nr_eff': 1,
+
+        'E_thr': 1.0,  # assume https://arxiv.org/abs/2006.09721
         'location': "XENON",
         'res': det_res_XENON1T,  # table I
-        'bg_func': migdal_background_XENON1T,
+        'bg_func': er_background_xe,
         'E_max': 5,
         'n_energy_bins': 50,
     },
     'Xe_bg': {
         'material': 'Xe',
         'type': 'SI_bg',
-        'exp': 5 * 5,  # aim for 2025 (5 yr * 5 ton)
-        'cut_eff': 0.8,
-        'nr_eff': 0.5,
-        'E_thr': 1.0,  # assume slightly lower than https://arxiv.org/abs/1907.12771
+        'exp': 20,  # https://arxiv.org/pdf/2007.08796.pdf
+
+        # Combined cut & detection efficiency as in
+        # https://arxiv.org/pdf/2007.08796.pdf
+        'cut_eff': 0.82,
+        'nr_eff': 1,
+
+        'E_thr': 1.0,  # assume https://arxiv.org/abs/2006.09721
         'location': "XENON",
         'res': det_res_XENON1T,  # table I
-        'bg_func': migdal_background_XENON1T,
+        'bg_func': nr_background_xe,
         'E_max': 5,
         'n_energy_bins': 50,
     },
