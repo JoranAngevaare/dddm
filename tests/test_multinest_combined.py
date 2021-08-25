@@ -13,7 +13,7 @@ def test_nested_simple_multinest_earth_shielding():
         return
     dddm.experiment['Combined'] = {'type': 'combined'}
     stats = dddm.CombinedInference(
-        ('Xe', 'Ge'),
+        ('Xe_simple', 'Ge_simple'),
         'Combined',
     )
     update = {'prior': dddm.statistics.get_priors("Evans_2019"),
