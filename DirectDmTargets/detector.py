@@ -207,11 +207,11 @@ def nr_background_superCDMS_Si(e_min, e_max, nbins):
 
 experiment = {
     'Xe_simple': {'material': 'Xe', 'type': 'SI', 'exp': 5., 'cut_eff': 0.8, 'nr_eff': 0.5, 'E_thr': 10.,
-           'location': "XENON", 'res': det_res_Xe, 'n_energy_bins': 10, 'E_max': 100},
+                  'location': "XENON", 'res': det_res_Xe, 'n_energy_bins': 10, 'E_max': 100},
     'Ge_simple': {'material': 'Ge', 'type': 'SI', 'exp': 3., 'cut_eff': 0.8, 'nr_eff': 0.9, 'E_thr': 10.,
-           'location': "SUF", 'res': det_res_Ge, 'n_energy_bins': 10, 'E_max': 100},
+                  'location': "SUF", 'res': det_res_Ge, 'n_energy_bins': 10, 'E_max': 100},
     'Ar_simple': {'material': 'Ar', 'type': 'SI', 'exp': 10., 'cut_eff': 0.8, 'nr_eff': 0.8, 'E_thr': 30.,
-           'location': "XENON", 'res': det_res_Ar, 'n_energy_bins': 10, 'E_max': 100},
+                  'location': "XENON", 'res': det_res_Ar, 'n_energy_bins': 10, 'E_max': 100},
     # --- Ge iZIP --- #
     'Ge_iZIP': {
         'material': 'Ge',
