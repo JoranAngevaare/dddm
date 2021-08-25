@@ -345,8 +345,9 @@ class FormattedHandler(logging.Handler):
         func_line = f'{record.funcName} (L{record.lineno})'
         date = datetime.datetime.fromtimestamp(record.created)
         date.isoformat(sep=' ')
-        return (f"{date.isoformat(sep=' ')} |"
-                f" {record.levelname.upper():8} | "
+        return (f"{date.isoformat(sep=' ')} | "
+                f"{record.name[:8]} |"
+                f"{record.levelname.upper():8} | "
                 f"{func_line:20} | "
                 f"{record.getMessage()}\n"
                 )

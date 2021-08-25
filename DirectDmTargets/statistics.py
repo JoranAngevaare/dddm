@@ -165,6 +165,7 @@ class StatModel:
         :param log_cross_section: cross-section of wimp in cm^2.
             log10(sigma) will be saved to config
         """
+        mass, log_cross_section = float(mass), float(log_cross_section)
         self.log.debug(f'taking log10 of mass of {mass}')
         self.config['mw'] = np.log10(mass)
         self.config['sigma'] = log_cross_section

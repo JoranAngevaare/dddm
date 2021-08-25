@@ -58,39 +58,38 @@ class DDDMResult:
                           self.result_summary()],
                          axis=1)
 
-    def get_from_config(self, to_get: str):
-        return self.result.get('config', {}).get(to_get)
+    def get_from_config(self, to_get: str, if_not_available=None):
+        return self.result.get('config', {}).get(to_get, if_not_available)
 
     def get_samples(self):
         return self.result.get('weighted_samples').T[:2]
 
     @property
     def detector(self):
-        return self.get_from_config('detector')
+        return str(self.get_from_config('detector'))
 
     @property
     def nlive(self):
-        return self.get_from_config('nlive')
+        return int(self.get_from_config('nlive', -1))
 
     @property
     def sigma(self):
-        return self.get_from_config('sigma')
+        return float(self.get_from_config('sigma', 0))
 
     @property
     def mass(self):
-        log_mass = self.get_from_config('mw')
+        log_mass = self.get_from_config('mw', None)
         if log_mass is None:
-            self.log.warning(f'{self.path} has no mw?')
             return -1
         return round(np.power(10, log_mass), 3)
 
     @property
     def halo_model(self):
-        return self.get_from_config('halo_model')
+        return str(self.get_from_config('halo_model'))
 
     @property
     def notes(self):
-        return self.get_from_config('notes')
+        return str(self.get_from_config('notes'))
 
     @property
     def n_parameters(self):

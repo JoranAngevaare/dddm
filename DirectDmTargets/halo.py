@@ -324,7 +324,7 @@ class GenSpectrum:
             if field not in det:
                 missing.append(field)
         if missing:
-            raise ValueError(f'Missing {missing} fields in detector config')
+            raise ValueError(f'Missing {missing} fields in detector config, got {det}')
 
     def get_bin_centers(self) -> np.ndarray:
         """Given Emin and Emax, get an array with bin centers """

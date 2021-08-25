@@ -391,7 +391,7 @@ class NestedSamplerStatModel(statistics.StatModel):
 
 class CombinedInference(NestedSamplerStatModel):
     def __init__(self, targets, *args, **kwargs):
-        NestedSamplerStatModel.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if not np.all([t in detector.experiment for t in targets]):
             raise NotImplementedError(

@@ -206,14 +206,14 @@ def nr_background_superCDMS_Si(e_min, e_max, nbins):
 # resolution function (res)
 
 experiment = {
-    'Xe': {'material': 'Xe', 'type': 'SI', 'exp': 5., 'cut_eff': 0.8, 'nr_eff': 0.5, 'E_thr': 10.,
-           'location': "XENON", 'res': det_res_Xe, 'n_energy_bins': 10, 'E_max': 100},
-    'Ge': {'material': 'Ge', 'type': 'SI', 'exp': 3., 'cut_eff': 0.8, 'nr_eff': 0.9, 'E_thr': 10.,
-           'location': "SUF", 'res': det_res_Ge, 'n_energy_bins': 10, 'E_max': 100},
-    'Ar': {'material': 'Ar', 'type': 'SI', 'exp': 10., 'cut_eff': 0.8, 'nr_eff': 0.8, 'E_thr': 30.,
-           'location': "XENON", 'res': det_res_Ar, 'n_energy_bins': 10, 'E_max': 100},
-    # --- Ge iZIP bg --- #
-    'Ge_iZIP_bg': {
+    'Xe_simple': {'material': 'Xe', 'type': 'SI', 'exp': 5., 'cut_eff': 0.8, 'nr_eff': 0.5, 'E_thr': 10.,
+                  'location': "XENON", 'res': det_res_Xe, 'n_energy_bins': 10, 'E_max': 100},
+    'Ge_simple': {'material': 'Ge', 'type': 'SI', 'exp': 3., 'cut_eff': 0.8, 'nr_eff': 0.9, 'E_thr': 10.,
+                  'location': "SUF", 'res': det_res_Ge, 'n_energy_bins': 10, 'E_max': 100},
+    'Ar_simple': {'material': 'Ar', 'type': 'SI', 'exp': 10., 'cut_eff': 0.8, 'nr_eff': 0.8, 'E_thr': 30.,
+                  'location': "XENON", 'res': det_res_Ar, 'n_energy_bins': 10, 'E_max': 100},
+    # --- Ge iZIP --- #
+    'Ge_iZIP': {
         'material': 'Ge',
         'type': 'SI',
         'exp': 56 * 1.e-3,  # Tonne year
@@ -226,7 +226,7 @@ experiment = {
         'E_max': 5,
         'n_energy_bins': 50,
     },
-    'Ge_migd_iZIP_bg': {
+    'Ge_migd_iZIP': {
         'material': 'Ge',
         'type': 'migdal',
         'exp': 56 * 1.e-3,  # Tonne year
@@ -240,7 +240,7 @@ experiment = {
         'n_energy_bins': 50,
     },
     # --- Si iZIP bg --- #
-    'Ge_iZIP_Si_bg': {
+    'Ge_iZIP_Si': {
         'material': 'Si',
         'type': 'SI',
         'exp': 4.8 * 1.e-3,  # Tonne year
@@ -253,7 +253,7 @@ experiment = {
         'E_max': 5,
         'n_energy_bins': 50,
     },
-    'Ge_migd_iZIP_Si_bg': {
+    'Ge_migd_iZIP_Si': {
         'material': 'Si',
         'type': 'migdal',
         'exp': 4.8 * 1.e-3,  # Tonne year
@@ -267,7 +267,7 @@ experiment = {
         'n_energy_bins': 50,
     },
     # --- Ge HV bg --- #
-    'Ge_HV_bg': {
+    'Ge_HV': {
         'material': 'Ge',
         'type': 'SI',
         'exp': 44 * 1.e-3,  # Tonne year
@@ -280,7 +280,7 @@ experiment = {
         'E_max': 5,
         'n_energy_bins': 50,
     },
-    'Ge_migd_HV_bg': {
+    'Ge_migd_HV': {
         'material': 'Ge',
         'type': 'migdal',
         'exp': 44 * 1.e-3,  # Tonne year
@@ -294,7 +294,7 @@ experiment = {
         'n_energy_bins': 50,
     },
     # --- Si HV bg --- #
-    'Ge_HV_Si_bg': {
+    'Ge_HV_Si': {
         'material': 'Si',
         'type': 'SI',
         'exp': 9.6 * 1.e-3,  # Tonne year
@@ -308,7 +308,7 @@ experiment = {
         'E_max': 5,
         'n_energy_bins': 50,
     },
-    'Ge_migd_HV_Si_bg': {
+    'Ge_migd_HV_Si': {
         'material': 'Si',
         'type': 'migdal',
         'exp': 9.6 * 1.e-3,  # Tonne year
@@ -322,7 +322,7 @@ experiment = {
         'E_max': 5,
         'n_energy_bins': 50,
     },
-    'Xe_migd_bg': {
+    'Xe_migd': {
         'material': 'Xe',
         'type': 'migdal',
         'exp': 20,  # https://arxiv.org/pdf/2007.08796.pdf
@@ -339,7 +339,7 @@ experiment = {
         'E_max': 5,
         'n_energy_bins': 50,
     },
-    'Xe_bg': {
+    'Xe': {
         'material': 'Xe',
         'type': 'SI',
         'exp': 20,  # https://arxiv.org/pdf/2007.08796.pdf
