@@ -72,4 +72,3 @@ def test_combined_multinest(targets=('Xe_simple', 'Ge_simple'),):
 
 def test_combined_multinest_single_target():
     test_combined_multinest(targets=('Xe',))
-
