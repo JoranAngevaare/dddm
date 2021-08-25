@@ -8,12 +8,12 @@ from tqdm import tqdm
 log = logging.getLogger()
 
 
-def test_nested_simple_multinest_earth_shielding():
+def test_combined_multinest(targets=('Xe_simple', 'Ge_simple'),):
     if _is_windows():
         return
     dddm.experiment['Combined'] = {'type': 'combined'}
     stats = dddm.CombinedInference(
-        ('Xe_simple', 'Ge_simple'),
+        targets,
         'Combined',
     )
     update = {'prior': dddm.statistics.get_priors("Evans_2019"),
@@ -68,3 +68,7 @@ def test_nested_simple_multinest_earth_shielding():
         plt.grid()
         plt.clf()
         plt.close()
+
+
+def test_combined_multinest_single_target():
+    test_combined_multinest(target=('Xe',))
