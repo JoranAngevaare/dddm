@@ -59,7 +59,7 @@ class DDDMResult:
                          axis=1)
 
     def get_from_config(self, to_get: str, if_not_available = None):
-        return self.result.get('config', {}).get(to_get)
+        return self.result.get('config', {}).get(to_get, if_not_available)
 
     def get_samples(self):
         return self.result.get('weighted_samples').T[:2]
