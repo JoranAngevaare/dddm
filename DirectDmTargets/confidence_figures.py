@@ -58,7 +58,7 @@ class DDDMResult:
                           self.result_summary()],
                          axis=1)
 
-    def get_from_config(self, to_get: str, if_not_available=None):
+    def get_from_config(self, to_get: str, if_not_available = None):
         return self.result.get('config', {}).get(to_get)
 
     def get_samples(self):
@@ -70,11 +70,11 @@ class DDDMResult:
 
     @property
     def nlive(self):
-        return int(self.get_from_config('nlive'), -1)
+        return int(self.get_from_config('nlive', -1))
 
     @property
     def sigma(self):
-        return float(self.get_from_config('sigma'), 0)
+        return float(self.get_from_config('sigma', 0))
 
     @property
     def mass(self):
