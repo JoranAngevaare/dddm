@@ -1,5 +1,26 @@
 .. :changelog:
 
+2.0.0 / 2021-08-25
+------------------
+major:
+ - Fix galactic and det spectrum (#87, #90)
+
+minor:
+ - Don't use save-intermediate or emax for run_combined_multinest (#51)
+ -  Use 1T low-er resolution (#52)
+ - Fix Ge-iZIP background rate (#53)
+ - Make 5 keV consistently emax (#56)
+ - Fix #54 - Update XENONnT (#84)
+ - Sdd result plotting (#83)
+
+patch:
+ - Make requirements file pinned (#57)
+ - Add a logger with nice formatting (#85)
+ - Save canvas to pickle (#50)
+ - Restore autopep8 (#88)
+ - remove old notebooks (#91, 794adfb )
+
+
 1.0.0 / 2021-06-22
 ------------------
 major:
