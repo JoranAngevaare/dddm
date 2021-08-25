@@ -27,12 +27,9 @@ def main():
     stats = dddm.CombinedInference(
         tuple(args.sub_experiments),
         args.target,
-        args.verbose,
-        do_init=False)
+        args.verbose)
 
     stats = set_config(stats, args)
-    stats.print_before_run()
-
     log = stats.log
 
     if args.multicore_hash != "":
