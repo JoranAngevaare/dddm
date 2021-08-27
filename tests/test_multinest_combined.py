@@ -21,8 +21,8 @@ def test_combined_multinest(targets=('Xe_simple', 'Ge_simple'),):
               'type': 'SI'}
     stats.config.update(update)
     stats.copy_config(list(update.keys()))
-    stats.config['tol'] = 0.1
-    stats.config['nlive'] = 30
+    stats.config['tol'] = 0.5
+    stats.config['nlive'] = 100
     print(f"Fitting for parameters:\n{stats.config['fit_parameters']}")
     stats.run_multinest()
     stats.save_results()
