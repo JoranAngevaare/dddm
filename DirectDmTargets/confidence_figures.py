@@ -113,7 +113,7 @@ class SeabornPlot:
         kwargs.setdefault('facecolor', 'gray')
         kwargs.setdefault('alpha', 0.2)
         self.log.debug(f'setting kwargs to {kwargs}')
-        plt.scatter(*self.samples, s=1, facecolor='gray', alpha=0.1)
+        plt.scatter(*self.samples, **kwargs)
 
     def plot_bench(self, c='cyan', **kwargs):
         plt.scatter(self.result.get_from_config('mw'),
