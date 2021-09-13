@@ -1,7 +1,7 @@
 corner==2.2.1
 coveralls==3.2.0
 emcee==3.1.1
-hypothesis==6.20.1
+hypothesis==6.21.1
 matplotlib==3.4.3
 multihist==0.6.4
 nestle==0.2.0
