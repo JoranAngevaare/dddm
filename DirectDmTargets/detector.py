@@ -457,16 +457,16 @@ class DetectorSpectrum(GenSpectrum):
         e_bin_centers = np.mean(e_bin_edges, axis=1)
         bin_width = np.mean(np.diff(e_bin_centers))
 
+        # Smear the rates with the detector resolution
+        sigma = self.config['res'](e_bin_centers)
+        rates = np.array(smear_signal(rates, e_bin_centers, sigma, bin_width))
+
         # Set the rate to zero for energies smaller than the threshold
         rates = self.above_threshold(rates, e_bin_edges, self.config['E_thr'])
-        sigma = self.config['res'](e_bin_centers)
-
-        # Smear the rates with the detector resolution
-        events = np.array(smear_signal(rates, e_bin_centers, sigma, bin_width))
 
         # Calculate the total number of events per bin
-        events = events * bin_width * self.config['exp_eff']
-        return events
+        rates = rates * bin_width * self.config['exp_eff']
+        return rates
 
     @staticmethod
     @numba.njit

@@ -16,8 +16,8 @@ def test_nested_simple_multinest():
     if _is_windows():
         return
     fit_class = dddm.NestedSamplerStatModel('Xe')
-    fit_class.config['tol'] = 0.1
-    fit_class.config['nlive'] = 10
+    fit_class.config['tol'] = 0.5
+    fit_class.config['nlive'] = 100
     fit_class.set_benchmark(mass=49)
     print(f"Fitting for parameters:\n{fit_class.config['fit_parameters']}")
     fit_class.run_multinest()
@@ -29,7 +29,7 @@ def test_nested_astrophysics_multinest():
         return
     fit_unconstrained = dddm.NestedSamplerStatModel('Xe')
     fit_unconstrained.config['tol'] = 0.1
-    fit_unconstrained.config['nlive'] = 10
+    fit_unconstrained.config['nlive'] = 30
     fit_unconstrained.set_fit_parameters(fit_unconstrained.known_parameters)
     print(f"Fitting for parameters:"
           f"\n{fit_unconstrained.config['fit_parameters']}")
@@ -57,7 +57,7 @@ def test_nested_astrophysics_nestle():
     fit_unconstrained = dddm.NestedSamplerStatModel('Xe')
     fit_unconstrained.config['sampler'] = 'nestle'
     fit_unconstrained.config['tol'] = 0.1
-    fit_unconstrained.config['nlive'] = 10
+    fit_unconstrained.config['nlive'] = 30
     fit_unconstrained.config['max_iter'] = 2
     fit_unconstrained.set_fit_parameters(fit_unconstrained.known_parameters)
     print(f"Fitting for parameters:"
