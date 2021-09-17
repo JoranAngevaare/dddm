@@ -2,6 +2,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/jorana/directdmtargets/badge)](https://www.codefactor.io/repository/github/jorana/directdmtargets)
 [![Pytest](https://github.com/jorana/DirectDmTargets/workflows/Pytest/badge.svg)](https://github.com/jorana/DirectDmTargets/actions?query=workflow%3APytest)
 [![Coverage Status](https://coveralls.io/repos/github/jorana/DirectDmTargets/badge.svg?branch=master)](https://coveralls.io/github/jorana/DirectDmTargets?branch=master)
+[![DOI](https://zenodo.org/badge/214990710.svg)](https://zenodo.org/badge/latestdoi/214990710)
 
 Probing the complementarity of several in Direct Detection Dark Matter Experiments to reconstruct Dark Matter models
 
