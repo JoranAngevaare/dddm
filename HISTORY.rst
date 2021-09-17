@@ -1,5 +1,11 @@
 .. :changelog:
 
+2.0.1 / 2021-09-17
+------------------
+patch:
+ - First apply smearing, then the threshold (#92)
+ - Fix kwargs setting for scatter plots (#107)
+
 2.0.0 / 2021-08-25
 ------------------
 major:
