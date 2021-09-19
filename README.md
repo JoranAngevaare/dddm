@@ -14,8 +14,8 @@ Please follow the installation script [here](https://github.com/JoranAngevaare/d
 Joran Angevaare <j.angevaare@nikhef.nl>
 
 # Requirements
- - [`wimprates`](https://github.com/jorana/wimprates).
- - [`verne`](https://github.com/jorana/verne)
+ - [`wimprates`](https://github.com/joranangevaare/wimprates).
+ - [`verne`](https://github.com/joranangevaare/verne)
  - Optimizer:
     - [`multinest`](https://github.com/JohannesBuchner/PyMultiNest)
     - [`emcee`](https://emcee.readthedocs.io/en/stable/)
