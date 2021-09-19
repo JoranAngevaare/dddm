@@ -48,12 +48,12 @@ jobs:
           ls
           echo "ls /home/runner/work/dddm/"
           ls /home/runner/work/dddm/
-          echo "ls /home/runner/work/dddm/DirectDmTargets/"
-          ls /home/runner/work/dddm/DirectDmTargets/
-          echo "ls /home/runner/work/dddm/DirectDmTargets/MultiNest"
-          ls /home/runner/work/dddm/DirectDmTargets/MultiNest
-          echo "ls /home/runner/work/dddm/DirectDmTargets/MultiNest/lib"
-          ls /home/runner/work/dddm/DirectDmTargets/MultiNest/lib
+          echo "ls /home/runner/work/dddm/dddm/"
+          ls /home/runner/work/dddm/dddm/
+          echo "ls /home/runner/work/dddm/dddm/MultiNest"
+          ls /home/runner/work/dddm/dddm/MultiNest
+          echo "ls /home/runner/work/dddm/dddm/MultiNest/lib"
+          ls /home/runner/work/dddm/dddm/MultiNest/lib
 
 #       - name: Make installation windows
 #         if: matrix.os == 'windows-latest'
