@@ -61,7 +61,7 @@ jobs:
       - name: Test package (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'pytest'
         run: |
-          export LD_LIBRARY_PATH=/home/runner/work/DirectDmTargets/DirectDmTargets/MultiNest/lib
+          export LD_LIBRARY_PATH=/home/runner/work/dddm/DirectDmTargets/MultiNest/lib
           pytest --verbose
       - name: Coveralls
         if: matrix.test == 'coveralls'
@@ -69,7 +69,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NUMBA_DISABLE_JIT: 1
         run: |
-          export LD_LIBRARY_PATH=/home/runner/work/DirectDmTargets/DirectDmTargets/MultiNest/lib
+          export LD_LIBRARY_PATH=/home/runner/work/dddm/DirectDmTargets/MultiNest/lib
           coverage run --source=DirectDmTargets setup.py test -v
           coveralls --service=github
       - name: goodbye
