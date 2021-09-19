@@ -1,7 +1,7 @@
 # DirectDetectionDarkMatter-experiments
-[![CodeFactor](https://www.codefactor.io/repository/github/jorana/directdmtargets/badge)](https://www.codefactor.io/repository/github/jorana/directdmtargets)
-[![Pytest](https://github.com/jorana/DirectDmTargets/workflows/Pytest/badge.svg)](https://github.com/jorana/DirectDmTargets/actions?query=workflow%3APytest)
-[![Coverage Status](https://coveralls.io/repos/github/jorana/DirectDmTargets/badge.svg?branch=master)](https://coveralls.io/github/jorana/DirectDmTargets?branch=master)
+[![CodeFactor](https://www.codefactor.io/repository/github/joranangevaare/dddm/badge)](https://www.codefactor.io/repository/github/joranangevaare/dddm)
+[![Pytest](https://github.com/joranangevaare/dddm/workflows/Pytest/badge.svg)](https://github.com/joranangevaare/dddm/actions?query=workflow%3APytest)
+[![Coverage Status](https://coveralls.io/repos/joranangevaare/jorana/dddm/badge.svg?branch=master)](https://coveralls.io/github/joranangevaare/dddm?branch=master)
 [![DOI](https://zenodo.org/badge/214990710.svg)](https://zenodo.org/badge/latestdoi/214990710)
 
 Probing the complementarity of several in Direct Detection Dark Matter Experiments to reconstruct Dark Matter models
