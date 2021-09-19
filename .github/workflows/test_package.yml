@@ -42,8 +42,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           bash .github/scripts/install_on_linux.sh
-      - name:
-        run: | ls
+      - name: ls
+        run: | 
           echo "ls"
           ls
           echo "ls /home/runner/work/dddm/
