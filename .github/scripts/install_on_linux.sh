@@ -21,6 +21,6 @@ echo "go back to installation; ls ; pwd "
 cd DirectDmTargets
 echo "Doing other conda and pip:"
 # We need the data files from this
-git clone https://github.com/jorana/verne ../verne
+git clone https://github.com/joranangevaare/verne ../verne
 pip install -e ../verne
 echo "done"
