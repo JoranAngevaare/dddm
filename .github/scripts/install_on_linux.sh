@@ -18,7 +18,7 @@ echo "in that folder is:"
 ls $LD_LIBRARY_PATH ; echo $LD_LIBRARY_PATH
 echo "go back to installation; ls ; pwd "
 
-cd DirectDmTargets
+cd dddm
 echo "Doing other conda and pip:"
 # We need the data files from this
 git clone https://github.com/jorana/verne ../verne
