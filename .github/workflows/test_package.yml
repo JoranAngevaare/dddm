@@ -42,48 +42,35 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           bash .github/scripts/install_on_linux.sh
-      - name: ls
-        run: | 
-          echo "ls"
-          ls
-          echo "ls /home/runner/work/dddm/"
-          ls /home/runner/work/dddm/
-          echo "ls /home/runner/work/dddm/dddm/"
-          ls /home/runner/work/dddm/dddm/
-          echo "ls /home/runner/work/dddm/dddm/MultiNest"
-          ls /home/runner/work/dddm/dddm/MultiNest
-          echo "ls /home/runner/work/dddm/dddm/MultiNest/lib"
-          ls /home/runner/work/dddm/dddm/MultiNest/lib
-
-#       - name: Make installation windows
-#         if: matrix.os == 'windows-latest'
-#         run: |
-#           pip install emcee
-#           pip install git+https://github.com/jorana/wimprates
-#           git clone https://github.com/jorana/verne
-#           pip install -e verne
-#           pip install git+https://github.com/JohannesBuchner/PyMultiNest
-#       - name: Install other stuff
-#         run: |
-#           pip install -r extra_requirements/requirements-tests.txt
-#           python setup.py develop
-#       - name: Test package (windows)
-#         if: matrix.os == 'windows-latest' && matrix.test == 'pytest'
-#         run: |
-#             pytest --verbose
-#       - name: Test package (linux)
-#         if: matrix.os == 'ubuntu-latest' && matrix.test == 'pytest'
-#         run: |
-#           export LD_LIBRARY_PATH=/home/runner/work/dddm/DirectDmTargets/MultiNest/lib
-#           pytest --verbose
-#       - name: Coveralls
-#         if: matrix.test == 'coveralls'
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#           NUMBA_DISABLE_JIT: 1
-#         run: |
-#           export LD_LIBRARY_PATH=/home/runner/work/dddm/DirectDmTargets/MultiNest/lib
-#           coverage run --source=DirectDmTargets setup.py test -v
-#           coveralls --service=github
+      - name: Make installation windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          pip install emcee
+          pip install git+https://github.com/jorana/wimprates
+          git clone https://github.com/jorana/verne
+          pip install -e verne
+          pip install git+https://github.com/JohannesBuchner/PyMultiNest
+      - name: Install other stuff
+        run: |
+          pip install -r extra_requirements/requirements-tests.txt
+          python setup.py develop
+      - name: Test package (windows)
+        if: matrix.os == 'windows-latest' && matrix.test == 'pytest'
+        run: |
+            pytest --verbose
+      - name: Test package (linux)
+        if: matrix.os == 'ubuntu-latest' && matrix.test == 'pytest'
+        run: |
+          export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
+          pytest --verbose
+      - name: Coveralls
+        if: matrix.test == 'coveralls'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBA_DISABLE_JIT: 1
+        run: |
+          export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
+          coverage run --source=DirectDmTargets setup.py test -v
+          coveralls --service=github
       - name: goodbye
         run: echo goodbye
