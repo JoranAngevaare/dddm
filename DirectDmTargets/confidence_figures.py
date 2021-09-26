@@ -255,8 +255,8 @@ def set_xticks_top(only_lines=False):
 
 
 def x_label():
-    plt.xlabel(r"$\log_{10}(M_{\chi}$ $[GeV/c^{2}]$)")
+    plt.xlabel(r"$\log_{10}(M_{\chi}$/$[GeV/c^{2}]$)")
 
 
 def y_label():
-    plt.ylabel(r"$\log_{10}(\sigma_{S.I.}$ $[cm^{2}]$)")
+    plt.ylabel(r"$\log_{10}(\sigma_{S.I.}$/$[cm^{2}]$)")
