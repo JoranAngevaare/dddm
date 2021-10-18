@@ -7,7 +7,7 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           token: ${{ secrets.PEP8_REPO_ACCESS_TOKEN }}
           ref: ${{ github.head_ref }}
