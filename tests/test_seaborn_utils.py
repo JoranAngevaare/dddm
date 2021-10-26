@@ -11,17 +11,16 @@ class TestSeabornExtractor(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @settings(max_examples=10)
-    @given(strategies.floats(1e-3, 1),
-           strategies.floats(1.1, 10),
-           strategies.integers(1, 100),
-           strategies.floats(0.1, 0.9),
-           strategies.integers(2, 10_000),
-           )
-    def test_get_xy(self, min, max, n, var, size):
-        sigmas = np.linspace(min, max, n)
-        errs = np.array([dddm.one_sigma_area(*self.get_xy(s, var=var, size=size))[0]
-                         for s in sigmas])
+    # @settings(max_examples=10)
+    # @given(strategies.floats(1e-3, 1),
+    #        strategies.floats(1.1,10),
+    #        strategies.integers(1,100),
+    #        strategies.floats(0.1, 0.9),
+    #        strategies.integers(2, 10_000),
+    #        )
+    def test_get_xy(self, min=0.01, max=10, n=10, var=0.5, size=300):
+        sigmas = np.linspace(min,max,n)
+        errs = np.array([dddm.one_sigma_area(*self.get_xy(s, var=var, size=size))[0] for s in sigmas])
         # Very approximate, make sure we are less than a factor of 2
         # wrong for the 1 sigma calculation
         assert np.all(np.array(errs) / sigmas < 2)
