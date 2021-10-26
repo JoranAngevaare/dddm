@@ -18,8 +18,8 @@ class TestSeabornExtractor(unittest.TestCase):
     #        strategies.floats(0.1, 0.9),
     #        strategies.integers(2, 10_000),
     #        )
-    def test_get_xy(self, min=0.01, max=10, n=10, var=0.5, size=300):
-        sigmas = np.linspace(min, max, n)
+    def test_get_xy(self, _min=0.01, _max=10, n=10, var=0.5, size=300):
+        sigmas = np.linspace(_min, _max, n)
         errs = np.array([dddm.one_sigma_area(*self.get_xy(s, var=var, size=size))[0]
                          for s in sigmas])
         # Very approximate, make sure we are less than a factor of 2
