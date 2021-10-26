@@ -17,11 +17,11 @@ class TestMongoDownloader(unittest.TestCase):
         errs = np.array([dddm.one_sigma_area(*self.get_xy(s))[0] for s in sigmas])
         # Very approximate, make sure we are less than a factor of 2
         # wrong for the 1 sigma calculation
-        assert np.all(np.array(errs)/sigmas < 2)
+        assert np.all(np.array(errs) / sigmas < 2)
         assert np.all(np.array(errs) / sigmas > 0.5)
 
     @staticmethod
-    def get_xy(sigma, mean = (0, 2), var=0., size=300):
+    def get_xy(sigma, mean=(0, 2), var=0., size=300):
         """
         Get a simple gaussian smeared distribution based on a covariance matrix
         :param sigma: The amplitude of the blob
@@ -29,7 +29,7 @@ class TestMongoDownloader(unittest.TestCase):
         :return: Random samples of size <size>
         """
 
-        cov = [(sigma / np.pi,          var * sigma / np.pi),
-               (var * sigma / np.pi,    sigma / np.pi)]
+        cov = [(sigma / np.pi, var * sigma / np.pi),
+               (var * sigma / np.pi, sigma / np.pi)]
         x, y = np.random.multivariate_normal(mean, cov, size=int(size)).T
         return x, y
