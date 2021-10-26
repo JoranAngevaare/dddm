@@ -24,132 +24,18 @@ def _default_color(*args, **kwargs):
 
 
 @_deprecate_positional_args
-def kdeplot(
-        x=None,  # Allow positional x, because behavior will not change with reorg
-        *,
-        y=None,
-        shade=None,  # Note "soft" deprecation, explained below
-        vertical=False,  # Deprecated
-        kernel=None,  # Deprecated
-        bw=None,  # Deprecated
-        gridsize=200,  # TODO maybe depend on uni/bivariate?
-        cut=3, clip=None, legend=True, cumulative=False,
-        shade_lowest=None,  # Deprecated, controlled with levels now
-        cbar=False, cbar_ax=None, cbar_kws=None,
-        ax=None,
-
-        # New params
-        weights=None,  # TODO note that weights is grouped with semantics
-        hue=None,
-        palette=None,
-        hue_order=None,
-        hue_norm=None,
-        multiple="layer",
-        common_norm=True,
-        common_grid=False,
-        levels=10,
-        thresh=.05,
-        bw_method="scott",
-        bw_adjust=1,
-        log_scale=None,
-        color=None,
-        fill=None,
-
-        # Renamed params
-        data=None,
-        data2=None,
-
-        # New in v0.12
-        warn_singular=True,
-
-        **kwargs,
-):
-    # Handle deprecation of `data2` as name for y variable
-    if data2 is not None:
-
-        y = data2
-
-        # If `data2` is present, we need to check for the `data` kwarg being
-        # used to pass a vector for `x`. We'll reassign the vectors and warn.
-        # We need this check because just passing a vector to `data` is now
-        # technically valid.
-
-        x_passed_as_data = (
-            x is None
-            and data is not None
-            and np.ndim(data) == 1
-        )
-
-        if x_passed_as_data:
-            msg = "Use `x` and `y` rather than `data` `and `data2`"
-            x = data
-        else:
-            msg = "The `data2` param is now named `y`; please update your code"
-
-        warnings.warn(msg, FutureWarning)
-
-    # Handle deprecation of `vertical`
-    if vertical:
-        msg = (
-            "The `vertical` parameter is deprecated and will be removed in a "
-            "future version. Assign the data to the `y` variable instead."
-        )
-        warnings.warn(msg, FutureWarning)
-        x, y = y, x
-
-    # Handle deprecation of `bw`
-    if bw is not None:
-        msg = (
-            "The `bw` parameter is deprecated in favor of `bw_method` and "
-            f"`bw_adjust`. Using {bw} for `bw_method`, but please "
-            "see the docs for the new parameters and update your code."
-        )
-        warnings.warn(msg, FutureWarning)
-        bw_method = bw
-
-    # Handle deprecation of `kernel`
-    if kernel is not None:
-        msg = (
-            "Support for alternate kernels has been removed. "
-            "Using Gaussian kernel."
-        )
-        warnings.warn(msg, UserWarning)
-
-    # Handle deprecation of shade_lowest
-    if shade_lowest is not None:
-        if shade_lowest:
-            thresh = 0
-        msg = (
-            "`shade_lowest` is now deprecated in favor of `thresh`. "
-            f"Setting `thresh={thresh}`, but please update your code."
-        )
-        warnings.warn(msg, UserWarning)
-
-    # Handle `n_levels`
-    # This was never in the formal API but it was processed, and appeared in an
-    # example. We can treat as an alias for `levels` now and deprecate later.
+def kdeplot(x=None, *, y=None, shade=None, vertical=False, kernel=None, bw=None, gridsize=200,
+            cut=3, clip=None, legend=True, cumulative=False, shade_lowest=None, cbar=False,
+            cbar_ax=None, cbar_kws=None, ax=None, weights=None, hue=None, palette=None,
+            hue_order=None, hue_norm=None, multiple="layer", common_norm=True, common_grid=False,
+            levels=10, thresh=.05, bw_method="scott", bw_adjust=1, log_scale=None, color=None,
+            fill=None, data=None, data2=None, warn_singular=True, **kwargs, ):
     levels = kwargs.pop("n_levels", levels)
-
-    # Handle "soft" deprecation of shade `shade` is not really the right
-    # terminology here, but unlike some of the other deprecated parameters it
-    # is probably very commonly used and much hard to remove. This is therefore
-    # going to be a longer process where, first, `fill` will be introduced and
-    # be used throughout the documentation. In 0.12, when kwarg-only
-    # enforcement hits, we can remove the shade/shade_lowest out of the
-    # function signature all together and pull them out of the kwargs. Then we
-    # can actually fire a FutureWarning, and eventually remove.
-    if shade is not None:
-        fill = shade
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-
     p = _DistributionPlotter(
         data=data,
         variables=_DistributionPlotter.get_semantics(locals()),
     )
-
     p.map_hue(palette=palette, order=hue_order, norm=hue_norm)
-
     if ax is None:
         ax = plt.gca()
 
@@ -158,81 +44,22 @@ def kdeplot(
     method = ax.fill_between if fill else ax.plot
     color = _default_color(method, hue, color, kwargs)
 
-    if not p.has_xy_data:
-        return ax
-
     # Pack the kwargs for statistics.KDE
-    estimate_kws = dict(
-        bw_method=bw_method,
-        bw_adjust=bw_adjust,
-        gridsize=gridsize,
-        cut=cut,
-        clip=clip,
-        cumulative=cumulative,
-    )
+    estimate_kws = dict(bw_method=bw_method, bw_adjust=bw_adjust, gridsize=gridsize, cut=cut,
+                        clip=clip, cumulative=cumulative, )
 
-    if p.univariate:
-        raise NotImplementedError
-        plot_kws = kwargs.copy()
-
-        p.plot_univariate_density(
-            multiple=multiple,
-            common_norm=common_norm,
-            common_grid=common_grid,
-            fill=fill,
-            color=color,
-            legend=legend,
-            warn_singular=warn_singular,
-            estimate_kws=estimate_kws,
-            **plot_kws,
-        )
-
-    else:
-
-        p.plot_bivariate_density(
-            common_norm=common_norm,
-            fill=fill,
-            levels=levels,
-            thresh=thresh,
-            legend=legend,
-            color=color,
-            warn_singular=warn_singular,
-            cbar=cbar,
-            cbar_ax=cbar_ax,
-            cbar_kws=cbar_kws,
-            estimate_kws=estimate_kws,
-            **kwargs,
-        )
-    kwargs = dict(
-        common_norm=common_norm,
-        fill=fill,
-        levels=levels,
-        thresh=thresh,
-        legend=legend,
-        color=color,
-        warn_singular=warn_singular,
-        cbar=cbar,
-        cbar_ax=cbar_ax,
-        cbar_kws=cbar_kws,
-        estimate_kws=estimate_kws,
-        **kwargs,
-    )
+    p.plot_bivariate_density(common_norm=common_norm, fill=fill, levels=levels, thresh=thresh,
+                             legend=legend, color=color, warn_singular=warn_singular, cbar=cbar,
+                             cbar_ax=cbar_ax, cbar_kws=cbar_kws, estimate_kws=estimate_kws,
+                             **kwargs, )
+    kwargs = dict(common_norm=common_norm, fill=fill, levels=levels, thresh=thresh, legend=legend,
+                  color=color, warn_singular=warn_singular, cbar=cbar, cbar_ax=cbar_ax,
+                  cbar_kws=cbar_kws, estimate_kws=estimate_kws, **kwargs, )
     return p, kwargs
 
 
-def get_bivariate(self,
-                  common_norm,
-                  fill,
-                  levels,
-                  thresh,
-                  color,
-                  legend,
-                  cbar,
-                  warn_singular,
-                  cbar_ax,
-                  cbar_kws,
-                  estimate_kws,
-                  **contour_kws, ):
+def get_bivariate(self, common_norm, fill, levels, thresh, color, warn_singular,
+                  estimate_kws, **contour_kws, ):
     contour_kws = contour_kws.copy()
 
     estimator = KDE(**estimate_kws)
@@ -336,8 +163,6 @@ def get_bivariate(self,
 
         # Use our internal colormap lookup
         cmap = contour_kws.pop("cmap", None)
-        if isinstance(cmap, str):
-            cmap = color_palette(cmap, as_cmap=True)
         if cmap is not None:
             contour_kws["cmap"] = cmap
 
@@ -350,30 +175,11 @@ def get_bivariate(self,
                 contour_kws["cmap"] = self._cmap_from_color(color)
             else:
                 contour_kws["colors"] = [color]
-
-        ax = self._get_axes(sub_vars)
-
-        # Choose the function to plot with
-        # TODO could add a pcolormesh based option as well
-        # Which would look something like element="raster"
-        if fill:
-            contour_func = ax.contourf
-        else:
-            contour_func = ax.contour
-
         key = tuple(sub_vars.items())
         if key not in densities:
             continue
         density = densities[key]
         xx, yy = supports[key]
-
-        label = contour_kws.pop("label", None)
-
-        cset = contour_func(
-            xx, yy, density,
-            levels=draw_levels[key],
-            **contour_kws,
-        )
         return xx, yy, density, draw_levels, key
 
 
