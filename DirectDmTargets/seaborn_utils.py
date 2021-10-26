@@ -66,9 +66,9 @@ def kdeplot(
         # technically valid.
 
         x_passed_as_data = (
-                x is None
-                and data is not None
-                and np.ndim(data) == 1
+            x is None
+            and data is not None
+            and np.ndim(data) == 1
         )
 
         if x_passed_as_data:
