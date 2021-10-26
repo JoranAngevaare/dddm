@@ -1,4 +1,13 @@
-""""Small script to extract the results from seaborn to calculate confidence intervals"""
+""""
+Small script to extract the results from seaborn to calculate confidence intervals
+
+I'm sorry for this script, I wanted to have something robust but I couldn't find it anyware.
+Seaborn is doing a great job, so let's use it's functionality.
+
+This work is mostly based on:
+https://github.com/mwaskom/seaborn/blob/ff0fc76b4b65c7bcc1d2be2244e4ca1a92e4e740/seaborn/distributions.py
+
+"""
 from seaborn.distributions import _DistributionPlotter, KDE
 from seaborn._decorators import _deprecate_positional_args
 
