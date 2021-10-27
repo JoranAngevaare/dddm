@@ -9,6 +9,7 @@ from . import nested_sampling
 from . import plot_basics
 from . import statistics
 from . import utils
+from . import seaborn_utils
 
 from .detector import *
 from .emcee_applications import *
@@ -18,3 +19,4 @@ from .plot_basics import *
 from .statistics import *
 from .utils import *
 from .confidence_figures import *
+from .seaborn_utils import *

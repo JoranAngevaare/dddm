@@ -8,7 +8,7 @@ emcee
 corner
 numericalunits
 multihist
-seaborn
+seaborn~=0.11.2
 coveralls
 hypothesis
 pytest
