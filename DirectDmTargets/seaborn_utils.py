@@ -61,7 +61,6 @@ def kdeplot(x=None, *, y=None, shade=None, vertical=False, kernel=None, bw=None,
 def get_bivariate(self, common_norm, fill, levels, thresh, color, warn_singular,
                   estimate_kws, **contour_kws, ):
     contour_kws = contour_kws.copy()
-
     estimator = KDE(**estimate_kws)
 
     if not set(self.variables) - {"x", "y"}:
@@ -135,36 +134,6 @@ def get_bivariate(self, common_norm, fill, levels, thresh, color, warn_singular,
             k: self._quantile_to_level(d, levels)
             for k, d in densities.items()
         }
-
-    # Get a default single color from the attribute cycle
-    if self.ax is None:
-        default_color = "C0" if color is None else color
-    else:
-        scout, = self.ax.plot([], color=color)
-        default_color = scout.get_color()
-        scout.remove()
-
-    # Define the coloring of the contours
-    if "hue" in self.variables:
-        for param in ["cmap", "colors"]:
-            if param in contour_kws:
-                msg = f"{param} parameter ignored when using hue mapping."
-                warnings.warn(msg, UserWarning)
-                contour_kws.pop(param)
-    else:
-
-        # Work out a default coloring of the contours
-        coloring_given = set(contour_kws) & {"cmap", "colors"}
-        if fill and not coloring_given:
-            cmap = self._cmap_from_color(default_color)
-            contour_kws["cmap"] = cmap
-        if not fill and not coloring_given:
-            contour_kws["colors"] = [default_color]
-
-        # Use our internal colormap lookup
-        cmap = contour_kws.pop("cmap", None)
-        if cmap is not None:
-            contour_kws["cmap"] = cmap
 
     # Loop through the subsets again and plot the data
     for sub_vars, _ in self.iter_data("hue"):
