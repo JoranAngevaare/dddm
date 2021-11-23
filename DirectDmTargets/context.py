@@ -16,29 +16,35 @@ _naive_tmp = '/tmp/'
 _host = getfqdn()
 
 
+def get_temp():
+    if 'TMPDIR' in os.environ and os.access(os.environ['TMPDIR'], os.W_OK):
+        tmp_folder = os.environ['TMPDIR']
+    elif 'TMP' in os.environ and os.access(os.environ['TMP'], os.W_OK):
+        tmp_folder = os.environ['TMP']
+    elif os.path.exists(_naive_tmp) and os.access(_naive_tmp, os.W_OK):
+        tmp_folder = _naive_tmp
+    else:
+        raise FileNotFoundError('No temp folder available')
+    return tmp_folder
+
+
 def get_default_context():
     log.info(f'Host: {_host}')
 
     # Generally people will end up here
     log.info(f'context.py::\tunknown host {_host} be careful here')
     installation_folder = DirectDmTargets.__path__[0]
-    vene_folder = os.path.join(os.path.split(verne.__path__[0])[0], 'results')
+    verne_folder = os.path.join(os.path.split(verne.__path__[0])[0], 'results')
     default_context = {
         'software_dir': installation_folder,
         'results_dir': os.path.join(installation_folder, 'DD_DM_targets_data'),
         'spectra_files': os.path.join(installation_folder, 'DD_DM_targets_spectra'),
-        'verne_folder': vene_folder, 'verne_files': vene_folder,
+        'verne_folder': verne_folder,
+        'verne_files': verne_folder,
     }
 
-    if 'TMPDIR' in os.environ:
-        tmp_folder = os.environ['TMPDIR']
-    elif 'TMP' in os.environ:
-        tmp_folder = os.environ['TMP']
-    elif os.path.exists(_naive_tmp):
-        tmp_folder = _naive_tmp
-    else:
-        raise FileNotFoundError('No temp folder available')
-    log.debug(f"Setting tmp folder to {_naive_tmp}")
+    tmp_folder=get_temp()
+    log.debug(f"Setting tmp folder to {tmp_folder}")
     assert os.path.exists(tmp_folder), f"No tmp folder at {tmp_folder}"
     default_context['tmp_folder'] = tmp_folder
     for name in ['results_dir', 'spectra_files']:
@@ -61,7 +67,6 @@ def get_stbc_context(check=True):
     UserWarning('Hardcoding context is deprecated and will be removed soon')
     log = logging.getLogger()
     log.info(f'Host: {_host}')
-    _naive_tmp = '/tmp/'
 
     stbc_context = {
         'software_dir': '/project/xenon/jorana/software/DD_DM_targets/',
@@ -69,16 +74,8 @@ def get_stbc_context(check=True):
         'spectra_files': '/dcache/xenon/jorana/dddm/spectra/',
         'verne_folder': '/project/xenon/jorana/software/verne/',
         'verne_files': '/dcache/xenon/jorana/dddm/verne/'}
-    if 'TMPDIR' in os.environ.keys():
-        tmp_folder = os.environ['TMPDIR']
-        log.debug(f'found TMPDIR! on {_host}')
-    elif os.path.exists(_naive_tmp):
-        log.debug("Setting tmp folder to /tmp/")
-        tmp_folder = _naive_tmp
-    else:
-        if check:
-            raise FileNotFoundError('No temp folder!')
-        tmp_folder = '.'
+
+    tmp_folder = get_temp()
     if not os.path.exists(tmp_folder) and check:
         raise FileNotFoundError(f"Cannot find tmp folder at {tmp_folder}")
     stbc_context['tmp_folder'] = tmp_folder
