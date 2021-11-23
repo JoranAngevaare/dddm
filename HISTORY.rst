@@ -3,12 +3,12 @@
 2.1.0 / 2021-11-23
 ------------------
 minor:
-- Fix name change of package (#109)
-- Add seaborn copies for extracting confidence regions (#119, #130)
+ - Fix name change of package (#109)
+ - Add seaborn copies for extracting confidence regions (#119, #130)
 
-patch:
+patch: 
  - Readme updates (000057cb1e90bd77a5a733eb134ac36641173ef9, 0776ec9d6f35c87c5ae755d8c080a5c6675bb95f, e366fabba589eb7779a65adc73bd657ec55ef102, a9623b8092c0d800e21066c0c3207fb6927fde7e)
-- add fixed priors (#129)
+ - add fixed priors (#129)
 
 
 2.0.1 / 2021-09-17
