@@ -37,5 +37,6 @@ notebooks/.ipynb_checkpoints*
 .eggs/*
 DirectDmTargets.egg-info/*
 DirectDmTargets/archive.py
-
+*.png
+.hypothesis
 .coverage
