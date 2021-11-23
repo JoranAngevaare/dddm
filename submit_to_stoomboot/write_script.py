@@ -72,6 +72,8 @@ if 'multicore_hash' in args.arguments:
 _scriptfile = _scriptfile.replace(" ", "").replace("__", "_")
 if _scriptfile[-1] == "_":
     _scriptfile = _scriptfile[:-1]
+if len(_scriptfile) > 80:
+    _scriptfile = _scriptfile[:80] + '_cropped.sh'
 log_file = 'log_%s_' % _scriptfile
 prof_file = prof_dir + _scriptfile.replace('.sh', '.prof')
 log_done = 'done_%s' % log_file
