@@ -9,7 +9,7 @@ class TestAddPid(TestCase):
             dddm.utils.add_pid_to_csv_filename('bla')
 
     def test_add_tmp(self):
-        dddm.utils.add_pid_to_csv_filename('/tmp/bla.csv')
+        dddm.utils.add_pid_to_csv_filename(os.path.join(dddm.context._naive_tmp, 'bla.csv'))
 
     def test_add_no_dir(self):
         dddm.utils.add_pid_to_csv_filename('bla.csv')

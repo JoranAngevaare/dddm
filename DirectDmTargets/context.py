@@ -65,7 +65,6 @@ def get_default_context():
 
 def get_stbc_context(check=True):
     UserWarning('Hardcoding context is deprecated and will be removed soon')
-    log = logging.getLogger()
     log.info(f'Host: {_host}')
 
     stbc_context = {
