@@ -15,7 +15,7 @@ requirements = open_requirements('requirements.txt')
 
 setuptools.setup(
     name='DirectDmTargets',
-    version='2.0.1',
+    version='2.1.0',
     description='Probing the complementarity of several targets used in '
                 'Direct Detection Experiments for Dark Matter',
     long_description=readme + '\n\n' + history,
