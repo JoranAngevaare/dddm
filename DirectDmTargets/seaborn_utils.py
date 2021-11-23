@@ -86,13 +86,9 @@ def get_bivariate(self, common_norm, fill, levels, thresh, color, warn_singular,
         # Check that KDE will not error out
         variance = observations[["x", "y"]].var()
         if any(math.isclose(x, 0) for x in variance) or variance.isna().any():
-            msg = (
+            raise ValueError(
                 "Dataset has 0 variance; skipping density estimate. "
-                "Pass `warn_singular=False` to disable this warning."
             )
-            if warn_singular:
-                warnings.warn(msg, UserWarning)
-            continue
 
         # Estimate the density of observations at this level
         observations = observations["x"], observations["y"]
@@ -117,32 +113,17 @@ def get_bivariate(self, common_norm, fill, levels, thresh, color, warn_singular,
     # Define a grid of iso-proportion levels
     if thresh is None:
         thresh = 0
-    if isinstance(levels, Number):
-        levels = np.linspace(thresh, 1, levels)
-    else:
-        if min(levels) < 0 or max(levels) > 1:
-            raise ValueError("levels must be in [0, 1]")
+    assert isinstance(levels, Number)
+    levels = np.linspace(thresh, 1, levels)
 
     # Transform from iso-proportions to iso-densities
-    if common_norm:
-        common_levels = self._quantile_to_level(
-            list(densities.values()), levels,
-        )
-        draw_levels = {k: common_levels for k in densities}
-    else:
-        draw_levels = {
-            k: self._quantile_to_level(d, levels)
-            for k, d in densities.items()
-        }
+    draw_levels = {
+        k: self._quantile_to_level(d, levels)
+        for k, d in densities.items()
+    }
 
     # Loop through the subsets again and plot the data
     for sub_vars, _ in self.iter_data("hue"):
-        if "hue" in sub_vars:
-            color = self._hue_map(sub_vars["hue"])
-            if fill:
-                contour_kws["cmap"] = self._cmap_from_color(color)
-            else:
-                contour_kws["colors"] = [color]
         key = tuple(sub_vars.items())
         if key not in densities:
             continue
@@ -157,7 +138,9 @@ def extract_data(x, y, **kwargs):
     return x, y, H, levels, levels_keys
 
 
-def one_sigma_area(x, y, **kwargs):
+def one_sigma_area(x, y, clf=True, **kwargs):
     x, y, H, levels, levels_keys = extract_data(x, y, **kwargs)
+    if clf:
+        plt.clf()
     bin_area = np.diff(x[:2]) * np.diff(y[:2])
-    return bin_area * np.sum(H > list(levels.values())[0][1])
+    return (bin_area * np.sum(H > list(levels.values())[0][1]))[0]
