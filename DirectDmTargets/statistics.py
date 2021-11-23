@@ -56,6 +56,15 @@ def get_priors(priors_from="Evans_2019"):
                   'v_0': {'range': [133, 333], 'prior_type': 'gauss', 'mean': 233, 'std': 20},
                   'v_esc': {'range': [405.5, 650.5], 'prior_type': 'gauss', 'mean': 528,
                             'std': 24.5}}
+    elif priors_from == "low_mass_fixed":
+        priors = {'log_mass': {'range': [-2, 2], 'prior_type': 'flat'},
+                  'log_cross_section': {'range': [-53, -27], 'prior_type': 'flat'},
+                  # see Evans_2019_constraint
+                  'density': {'range': [0.0001, 1], 'prior_type': 'gauss', 'mean': 0.55,
+                              'std': 0.17},
+                  'v_0': {'range': [133, 333], 'prior_type': 'gauss', 'mean': 233, 'std': 20},
+                  'v_esc': {'range': [405.5, 650.5], 'prior_type': 'gauss', 'mean': 528,
+                            'std': 24.5}}
     elif priors_from == "migdal_extremely_wide":
         priors = {'log_mass': {'range': [-2, 3], 'prior_type': 'flat'},
                   'log_cross_section': {'range': [-50, -30], 'prior_type': 'flat'},
