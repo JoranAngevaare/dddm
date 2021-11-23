@@ -43,7 +43,7 @@ def get_default_context():
         'verne_files': verne_folder,
     }
 
-    tmp_folder=get_temp()
+    tmp_folder = get_temp()
     log.debug(f"Setting tmp folder to {tmp_folder}")
     assert os.path.exists(tmp_folder), f"No tmp folder at {tmp_folder}"
     default_context['tmp_folder'] = tmp_folder
