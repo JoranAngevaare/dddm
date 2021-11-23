@@ -137,7 +137,6 @@ def get_bivariate(self, common_norm, fill, levels, thresh, color, warn_singular,
 
     # Loop through the subsets again and plot the data
     for sub_vars, _ in self.iter_data("hue"):
-
         if "hue" in sub_vars:
             color = self._hue_map(sub_vars["hue"])
             if fill:
@@ -160,6 +159,5 @@ def extract_data(x, y, **kwargs):
 
 def one_sigma_area(x, y, **kwargs):
     x, y, H, levels, levels_keys = extract_data(x, y, **kwargs)
-    plt.imshow(H > list(levels.values())[0][1], extent=[x[0], x[-1], y[0], y[-1]])
     bin_area = np.diff(x[:2]) * np.diff(y[:2])
     return bin_area * np.sum(H > list(levels.values())[0][1])
