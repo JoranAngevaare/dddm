@@ -72,11 +72,11 @@ def test_combined_multinest(targets=('Xe_simple', 'Ge_simple'),):
         plt.close()
     try:
         results.add_result('no_such_file')
-    except FileNotFoundError:
+    except AssertionError:
         pass
     else:
         raise RuntimeError('No error raised')
-    results._add_result('no_such_file', Tolerant=True)
+    results._add_result('no_such_file', tolerant=True)
 
 
 def test_combined_multinest_single_target():
