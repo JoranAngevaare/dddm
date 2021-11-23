@@ -1,5 +1,6 @@
 import DirectDmTargets as dddm
 from unittest import TestCase
+import os
 
 
 class TestAddPid(TestCase):
@@ -28,5 +29,10 @@ class TestContext(TestCase):
         dddm.context.get_stbc_context(check=False)
 
     def test_load_with_check(self):
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises((FileNotFoundError, ValueError)):
+            dddm.context.get_stbc_context(check=True)
+
+        os.environ.update({'TMPDIR': '.'})
+
+        with self.assertRaises((FileNotFoundError, ValueError)):
             dddm.context.get_stbc_context(check=True)

@@ -75,13 +75,6 @@ def get_stbc_context(check=True):
     elif os.path.exists(_naive_tmp):
         log.debug("Setting tmp folder to /tmp/")
         tmp_folder = _naive_tmp
-        if _host == 'stbc-i1.nikhef.nl' or _host == 'stbc-i2.nikhef.nl':
-            # Fine, we can use the /tmp/ folder
-            pass
-        else:
-            # Not fine, we cannot use the /tmp/ folder on the stoomboot nodes
-            raise ValueError(f'No tmp folder found on {_host}. '
-                             f'Environment vars:\n{os.environ}')
     else:
         if check:
             raise FileNotFoundError('No temp folder!')
@@ -96,7 +89,7 @@ def get_stbc_context(check=True):
 
 
 def set_context(config: ty.Union[dict, immutabledict]):
-    DirectDmTargets.context.update(config)
+    context.update(config)
 
 
 if 'stbc' in _host or 'nikhef' in _host:
