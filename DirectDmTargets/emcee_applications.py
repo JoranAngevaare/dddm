@@ -40,22 +40,6 @@ class MCMCStatModel(statistics.StatModel):
         self.remove_frac = 0.2
         self.thin = 15
 
-    def get_pos_full_prior(self, use_pos=None):
-        """Get starting positions for the walker from the fill prior range"""
-        self.log_dict['pos'] = True
-        if use_pos is not None:
-            self.pos = use_pos
-            return
-        pos = np.hstack([
-            [[np.clip(self.config['prior'][param]['dist'](
-                self.config['prior'][param]['param']),
-                1.25 * self.config['prior'][param]['range'][0],
-                0.75 * self.config['prior'][param]['range'][-1]
-            ) for _ in range(self.nwalkers)]
-                for param in self.config['fit_parameters']]
-        ])
-        return pos.T
-
     def _set_pos(self, use_pos=None):
         """Set the starting position of the walkers"""
         self.log_dict['pos'] = True
