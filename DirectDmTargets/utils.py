@@ -201,7 +201,7 @@ def add_pid_to_csv_filename(name):
     # What can we see
     if not os.path.exists(requested_folder):
         exist_csv = False
-        if context.host not in name:
+        if context._host not in name:
             abs_file_name = add_host_and_pid_to_csv_filename(name)
         else:
             abs_file_name = name
@@ -224,7 +224,7 @@ def add_pid_to_csv_filename(name):
     else:
         log.info("VerneSHM::\tNo file found")
         exist_csv = False
-        if context.host not in name:
+        if context._host not in name:
             abs_file_name = add_host_and_pid_to_csv_filename(name)
         else:
             abs_file_name = name
@@ -234,7 +234,7 @@ def add_pid_to_csv_filename(name):
 
 def add_host_and_pid_to_csv_filename(csv_name):
     UserWarning('add_host_and_pid_to_csv_filename is deprecated')
-    return csv_name.replace('.csv', f'-H{context.host}-P{os.getpid()}.csv')
+    return csv_name.replace('.csv', f'-H{context._host}-P{os.getpid()}.csv')
 
 
 def unique_hash():

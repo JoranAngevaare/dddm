@@ -18,3 +18,15 @@ class TestAddPid(TestCase):
 
     def test_host(self):
         dddm.utils.add_host_and_pid_to_csv_filename('bla.csv')
+
+
+class TestContext(TestCase):
+    def test_context_exists(self):
+        assert dddm.context.context
+
+    def test_load_context(self):
+        dddm.context.get_stbc_context(check=False)
+
+    def test_load_with_check(self):
+        with self.assertRaises(FileNotFoundError):
+            dddm.context.get_stbc_context(check=True)
