@@ -40,7 +40,9 @@ def test_combined_multinest(targets=('Xe_simple', 'Ge_simple'),):
         raise RuntimeError(f'Too many matches for {result_path}')
 
     for res in tqdm(results.result_cache, desc='opening results folder'):
+        print(res)
         plot = dddm.SeabornPlot(res)
+        print(plot)
         plot.plot_kde(bw_adjust=0.75, alpha=0.7)
         plot.plot_sigma_contours(nsigma=3,
                                  bw_adjust=0.75,
@@ -68,6 +70,13 @@ def test_combined_multinest(targets=('Xe_simple', 'Ge_simple'),):
         plt.grid()
         plt.clf()
         plt.close()
+    try:
+        results.add_result('no_such_file')
+    except FileNotFoundError:
+        pass
+    else:
+        raise RuntimeError('No error raised')
+    results._add_result('no_such_file', Tolerant=True)
 
 
 def test_combined_multinest_single_target():

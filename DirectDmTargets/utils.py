@@ -185,7 +185,7 @@ def add_pid_to_csv_filename(name):
     :param name: takes name
     :return: abs_file_name, exist_csv
     """
-
+    UserWarning('add_pid_to_csv_filename is deprecated')
     assert '.csv' in name, f"{name} is not .csv"
     # where to look
     requested_folder = os.path.split(name)[0]
@@ -233,6 +233,7 @@ def add_pid_to_csv_filename(name):
 
 
 def add_host_and_pid_to_csv_filename(csv_name):
+    UserWarning('add_host_and_pid_to_csv_filename is deprecated')
     return csv_name.replace('.csv', f'-H{context.host}-P{os.getpid()}.csv')
 
 

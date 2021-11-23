@@ -467,26 +467,6 @@ def convert_dic_to_savable(config):
     return result
 
 
-def load_nestle_samples(
-        load_from='nested',
-        base=utils.get_result_folder(),
-        item='latest'):
-    save = load_from
-    files = os.listdir(base)
-    if item == 'latest':
-        _selected_files = [int(f.split(save)[-1]) for f in files if save in f]
-        if not _selected_files:
-            raise FileNotFoundError(
-                f'No results in {base}. That only has {files}')
-        item = max(_selected_files)
-
-    load_dir = os.path.join(base, save + str(item) + '/')
-    if not os.path.exists(load_dir):
-        raise FileNotFoundError(f'Cannot find {load_dir} specified by arg: '
-                                f'{item}')
-    return load_nestle_samples_from_file(load_dir)
-
-
 def load_nestle_samples_from_file(load_dir):
     log.info(f'load_nestle_samples::\tloading {load_dir}')
     keys = ['config', 'res_dict', 'h', 'logl', 'logvol', 'logz', 'logzerr',
@@ -538,6 +518,7 @@ def do_strip_from_pid(string):
 
 
 def load_multinest_samples(load_from='nested', item='latest'):
+    UserWarning('load_multinest_samples is deprecated')
     base = utils.get_result_folder()
     save = load_from
     files = os.listdir(base)
@@ -628,9 +609,8 @@ def solve_multinest(LogLikelihood, Prior, n_dims, **kwargs):
         a = np.array([cube[i] for i in range(n_dims)])
         likelihood = float(LogLikelihood(a))
         if not np.isfinite(likelihood):
-            warn('WARNING: loglikelihood not finite: %f\n' % likelihood)
-            warn('         for parameters: %s\n' % a)
-            warn('         returned very low value instead\n')
+            warn(f'WARNING: loglikelihood not finite: {likelihood}\n'
+                 f'for parameters {a}, returned very low value instead')
             return -statistics.LL_LOW_BOUND
         return likelihood
 

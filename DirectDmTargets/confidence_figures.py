@@ -127,6 +127,7 @@ class SeabornPlot:
         return self.result.get_samples()
 
     def _prior_to_kwargs(self, kwargs) -> dict:
+        UserWarning(f'_prior_to_kwargs is deprecated')
         if 'range' not in kwargs:
             prior = self.result.get_from_config('prior')
             r = prior['log_mass']['range']
