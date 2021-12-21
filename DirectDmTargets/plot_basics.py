@@ -1,5 +1,6 @@
 """Some basic functions for plotting et cetera. Used to for instance check that
 the likelihood function is well behaved"""
+# disable bandit
 import pickle
 import colorsys
 import os
@@ -196,7 +197,6 @@ def save_canvas(name,
 def pickle_dump_figure(name):
     fig = plt.gcf()
     pickle.dump(fig, open(name, 'wb'))
-
 
 def open_pickle_figure(name):
     return pickle.load(open(name, 'rb'))
