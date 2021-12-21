@@ -78,9 +78,9 @@ def get_stbc_context(check=True):
     if not os.path.exists(tmp_folder) and check:
         raise FileNotFoundError(f"Cannot find tmp folder at {tmp_folder}")
     stbc_context['tmp_folder'] = tmp_folder
-    for key, value in stbc_context.items():
-        if not os.path.exists(stbc_context[key]) and check:
-            raise FileNotFoundError(f'No folder at {value}')
+    for key, path in stbc_context.items():
+        if not os.path.exists(path) and check:
+            raise FileNotFoundError(f'No folder at {path}')
     return stbc_context
 
 
