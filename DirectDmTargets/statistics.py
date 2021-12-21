@@ -156,12 +156,11 @@ class StatModel:
         else:
             log_path = None
 
-        log = utils.get_logger(self.__class__.__name__, level,
-                               path=log_path)
-        return log
+        return utils.get_logger(self.__class__.__name__, level,
+                                path=log_path)
 
     def set_prior(self, priors_from):
-        self.log.info(f'set_prior')
+        self.log.info('set_prior')
         self.config['prior'] = get_priors(priors_from)
 
     def set_benchmark(self, mass=50, log_cross_section=-45):
@@ -178,7 +177,7 @@ class StatModel:
         self.log.debug(f'taking log10 of mass of {mass}')
         self.config['mw'] = np.log10(mass)
         self.config['sigma'] = log_cross_section
-        if not ((mass == 50) and (log_cross_section == -45)):
+        if mass != 50 or log_cross_section != -45:
             self.log.warning(f'taking log10 of mass of {mass}')
 
     def set_models(self,
@@ -214,7 +213,7 @@ class StatModel:
             'spectrum_class'] = spectrum_class if spectrum_class != 'default' else detector.DetectorSpectrum
 
         if halo_model != 'default' or spectrum_class != 'default':
-            self.log.warning(f"re-evaluate benchmark")
+            self.log.warning('re-evaluate benchmark')
 
     def set_fit_parameters(self, params):
         self.log.info(f'NestedSamplersetting fit'
@@ -227,7 +226,7 @@ class StatModel:
                               f"any of {self.known_parameters}"
                 raise NotImplementedError(err_message)
         known_params = self.known_parameters[:len(params)]
-        if params != known_params and params != tuple(known_params):
+        if params not in [known_params, tuple(known_params)]:
             err_message = f"The parameters are not input in the correct order. Please" \
                           f" insert {known_params} rather than {params}."
             raise NameError(err_message)
@@ -242,11 +241,11 @@ class StatModel:
         """
         no_prior_has_been_set = self.config['prior'] is None
         if no_prior_has_been_set:
-            self.log.warning(f'No prior was set so using Evans_2019')
+            self.log.warning('No prior was set so using Evans_2019')
             self.set_prior('Evans_2019')
         no_wimp_mass_set = self.config['mw'] is None
         if no_wimp_mass_set:
-            self.log.warning(f'No WIMP mass was set so using 50 GeV')
+            self.log.warning('No WIMP mass was set so using 50 GeV')
             # ok, just use some default one
             self.set_benchmark()
         elif self.config['sigma'] is None:
@@ -258,9 +257,9 @@ class StatModel:
         # Finally, set the benchmark
         if _do_evaluate_benchmark:
             # Only do this for the combined experiments!
-            self.log.info(f'Skipping evaluating the benchmark!')
+            self.log.info('Skipping evaluating the benchmark!')
             self.eval_benchmark()
-        self.log.info(f'evaluate benchmark\tall ready to go!')
+        self.log.info('evaluate benchmark\tall ready to go!')
 
     def check_spectrum(self):
         """Lazy alias for eval_spectrum"""
@@ -269,7 +268,7 @@ class StatModel:
         return self.eval_spectrum(parameter_values, parameter_names)
 
     def eval_benchmark(self):
-        self.log.info(f'preparing for running, setting the benchmark')
+        self.log.info('preparing for running, setting the benchmark')
         df = self.check_spectrum()
         self.benchmark_values = df['counts']
         # Save a copy of the benchmark in the config file
@@ -282,7 +281,7 @@ class StatModel:
         :param parameter_names: the names of the parameter_values
         :return:
         """
-        self.log.info(f'Engines running full! Lets get some probabilities')
+        self.log.info('Engines running full! Lets get some probabilities')
         if not self.bench_is_set:
             self.eval_benchmark()
 
@@ -307,7 +306,7 @@ class StatModel:
                 f"{parameter_vals, parameter_names}")
         if not np.isfinite(lp):
             return -np.inf
-        self.log.info(f'loading rate for given parameters')
+        self.log.info('loading rate for given parameters')
         evaluated_rate = self.eval_spectrum(
             parameter_vals, parameter_names)['counts']
 
@@ -316,7 +315,7 @@ class StatModel:
         if np.isnan(lp + ll):
             raise ValueError(
                 f"Returned NaN from likelihood. lp = {lp}, ll = {ll}")
-        self.log.info(f'likelihood evaluated')
+        self.log.info('likelihood evaluated')
         return lp + ll
 
     def log_prior(self, value, variable_name):
@@ -371,10 +370,10 @@ class StatModel:
         checked_values = check_shape(values)
 
         if len(parameter_names) == 2:
-            if parameter_names[0] == 'log_mass' and parameter_names[1] == 'log_cross_section':
-                # This is the right order
-                pass
-            else:
+            if (
+                parameter_names[0] != 'log_mass'
+                or parameter_names[1] != 'log_cross_section'
+            ):
                 raise NotImplementedError(
                     f"Trying to fit two parameters ({parameter_names}), this is not implemented.")
             self.log.debug(
@@ -382,7 +381,7 @@ class StatModel:
                 f"sig = {10. ** checked_values[1]}, halo model = {self.config['halo_model']} and "
                 f"detector = {self.config['detector_config']}")
             if self.config['earth_shielding']:
-                self.log.debug(f"Setting spectrum to Verne in likelihood code")
+                self.log.debug('Setting spectrum to Verne in likelihood code')
                 fit_shm = halo.VerneSHM(
                     log_mass=checked_values[0],  # self.config['mw'],
                     log_cross_section=checked_values[1],  # self.config['sigma'],
@@ -401,8 +400,7 @@ class StatModel:
                     f"{parameter_names}.")
 
             if self.config['earth_shielding']:
-                self.log.debug(
-                    f"Setting spectrum to Verne in likelihood code")
+                self.log.debug('Setting spectrum to Verne in likelihood code')
                 fit_shm = halo.VerneSHM(
                     log_mass=checked_values[0],  # 'mw
                     log_cross_section=checked_values[1],  # 'sigma'
@@ -412,13 +410,13 @@ class StatModel:
                     rho_dm=checked_values[
                         4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)  # 'density'
             else:
-                self.log.debug(f"Using SHM in likelihood code")
+                self.log.debug('Using SHM in likelihood code')
                 fit_shm = halo.SHM(
                     v_0=checked_values[2] * nu.km / nu.s,
                     v_esc=checked_values[3] * nu.km / nu.s,
                     rho_dm=checked_values[4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
 
-        elif len(parameter_names) > 2 and not len(parameter_names) == 5:
+        elif len(parameter_names) > 2:
             raise NotImplementedError(
                 f"Not so quickly cowboy, before you code fitting "
                 f"{len(parameter_names)} parameters or more, first code it! "
@@ -437,7 +435,7 @@ class StatModel:
 
         spectrum = self.config_to_spectrum(spectrum)
         binned_spectrum = spectrum.get_data(poisson=False)
-        self.log.debug(f"we have results!")
+        self.log.debug('we have results!')
 
         if np.any(binned_spectrum['counts'] < 0):
             error_message = (
@@ -445,13 +443,12 @@ class StatModel:
                 f"Or one or more priors are not constrained correctly. "
                 f"dump of parameters:\n" f"{parameter_names} = {values}."
             )
-            if 'migd' in self.config['detector']:
-                binned_spectrum = spectrum.set_negative_to_zero(binned_spectrum)
-                self.log.error(error_message)
-            else:
+            if 'migd' not in self.config['detector']:
                 raise ValueError(error_message)
 
-        self.log.debug(f"returning results")
+            binned_spectrum = spectrum.set_negative_to_zero(binned_spectrum)
+            self.log.error(error_message)
+        self.log.debug('returning results')
         return binned_spectrum
 
     def config_to_spectrum(self, spectrum,
@@ -470,7 +467,7 @@ class StatModel:
     def read_priors_mean(self, prior_name) -> ty.Union[int, float]:
         self.log.debug(f'reading {prior_name}')
         if self.config['prior'] is None:
-            raise ValueError(f'Prior not set!')
+            raise ValueError('Prior not set!')
         return self.config['prior'][prior_name]['mean']
 
     @property

@@ -48,12 +48,11 @@ class SHM:
 
     def parameter_dict(self):
         """Return a dict of readable parameters of the current settings"""
-        parameters = dict(
+        return dict(
             v_0=self.v_0 / (nu.km / nu.s),
             v_esc=self.v_esc / (nu.km / nu.s),
             rho_dm=self.rho_dm / (nu.GeV / nu.c0 ** 2 / nu.cm ** 3),
         )
-        return parameters
 
 
 class VerneSHM:
@@ -95,11 +94,11 @@ class VerneSHM:
         # we will save/read the velocity distribution (from).
         self.fname = os.path.join(
             'f_params',
-            f'loc_{str(self.location)}',
+            f'loc_{self.location}',
             f'v0_{int(self.v_0_nodim)}',
             f'vesc_{int(self.v_esc_nodim)}',
             f'rho_{self.rho_dm_nodim:.3f}',
-            f'sig_{self.log_cross_section:.1f}_mx_{self.log_mass:.2f}'
+            f'sig_{self.log_cross_section:.1f}_mx_{self.log_mass:.2f}',
         )
 
         self.itp_func = None
@@ -194,7 +193,7 @@ class VerneSHM:
 
     def parameter_dict(self):
         """Return a dict of readable parameters of the current settings"""
-        parameters = dict(
+        return dict(
             v_0=self.v_0_nodim,
             v_esc=self.v_esc_nodim,
             rho_dm=self.rho_dm_nodim,
@@ -202,7 +201,6 @@ class VerneSHM:
             log_mass=self.log_mass,
             location=self.location,
         )
-        return parameters
 
 
 class GenSpectrum:
@@ -243,10 +241,7 @@ class GenSpectrum:
         :return: pd.DataFrame containing events binned in energy
         """
         result = pd.DataFrame()
-        if poisson:
-            result['counts'] = self.get_poisson_events()
-        else:
-            result['counts'] = self.get_events()
+        result['counts'] = self.get_poisson_events() if poisson else self.get_events()
         bins = utils.get_bins(self.E_min, self.E_max, self.n_bins)
         result['bin_centers'] = np.mean(bins, axis=1)
         result['bin_left'] = bins[:, 0]
@@ -308,9 +303,9 @@ class GenSpectrum:
         :return: None
         """
         assert isinstance(update, dict)
-        for key in update.keys():
+        for key in update:
             if check_if_set and key not in self.config:
-                message = f'{key} not in config of {str(self)}'
+                message = f'{key} not in config of {self}'
                 raise ValueError(message)
 
         self.config.update(update)
@@ -319,10 +314,10 @@ class GenSpectrum:
         """Given the a detector config, check that all the required fields are available"""
         if not isinstance(det, dict):
             raise ValueError("Detector should be dict")
-        missing = []
-        for field in self.required_detector_fields:
-            if field not in det:
-                missing.append(field)
+        missing = [
+            field for field in self.required_detector_fields if field not in det
+        ]
+
         if missing:
             raise ValueError(f'Missing {missing} fields in detector config, got {det}')
 
@@ -342,8 +337,7 @@ class GenSpectrum:
         bin_width = np.diff(
             utils.get_bins(self.E_min, self.E_max, self.n_bins),
             axis=1)[:, 0]
-        events = rate * bin_width * self.config['exp_eff']
-        return events
+        return rate * bin_width * self.config['exp_eff']
 
     def get_poisson_events(self):
         """

@@ -127,7 +127,7 @@ class SeabornPlot:
         return self.result.get_samples()
 
     def _prior_to_kwargs(self, kwargs) -> dict:
-        UserWarning(f'_prior_to_kwargs is deprecated')
+        UserWarning('_prior_to_kwargs is deprecated')
         if 'range' not in kwargs:
             prior = self.result.get_from_config('prior')
             r = prior['log_mass']['range']
@@ -191,7 +191,7 @@ class ResultsManager:
             if not tolerant:
                 raise e
             self.log.debug(e)
-            self.log.warning(f'loading {path} lead to {str(e)}')
+            self.log.warning(f'loading {path} lead to {e}')
             return
         self.result_cache.append(result)
 
@@ -205,17 +205,14 @@ class ResultsManager:
         for path in tqdm(matches, disable=not show_tqdm):
             self.log.debug(f'open {path}')
             self._add_result(path, tolerant=True)
-        self.log.info(f'Opening done, build df')
+        self.log.info('Opening done, build df')
         self.build_df()
 
     def apply_mask(self, mask):
         assert len(mask) == len(self.result_cache)
         self.log.debug(f'Removing {np.sum(mask)}/'
                        f'{len(self.result_cache)}')
-        new_list = []
-        for m_i, m in enumerate(mask):
-            if m:
-                new_list.append(self.result_cache[m_i])
+        new_list = [self.result_cache[m_i] for m_i, m in enumerate(mask) if m]
         del self.result_cache
         self.result_cache = new_list
         del new_list
