@@ -115,7 +115,7 @@ def migdal_background_superCDMS_Ge_HV(e_min, e_max, nbins):
     # Assume flat bg from 32Si (Fig. 4 & Table V), ignore other isotopes.
     bg_rate = 27  # counts/kg/keV/year
     conv_units = 1.0e3  # Tonne
-    if not e_max <= 100:  # 100 keV
+    if e_max > 100:  # 100 keV
         raise ValueError(
             f'Assume flat background only below 100 keV ({e_min}, {e_max})')
     if e_max >= 20:  # keV
@@ -132,7 +132,7 @@ def migdal_background_superCDMS_Si_HV(e_min, e_max, nbins):
     # Assume flat bg from 32Si (Fig. 4 & Table V), ignore other isotopes.
     bg_rate = 300  # counts/kg/keV/year
     conv_units = 1.0e3  # Tonne
-    if not e_max <= 100:  # 100 keV
+    if e_max > 100:  # 100 keV
         raise ValueError(
             f'Assume flat background only below 100 keV ({e_min}, {e_max})')
     if e_max >= 20:  # keV
@@ -147,7 +147,7 @@ def migdal_background_superCDMS_Ge_iZIP(e_min, e_max, nbins):
     """
     bg_rate = 22  # counts/kg/keV/year see table V: https://arxiv.org/pdf/1610.00006.pdf
     conv_units = 1.0e3  # Tonne
-    if not e_max < 20:  # 20 keV
+    if e_max >= 20:  # 20 keV
         raise ValueError(
             f'Assume flat background only below 10 keV ({e_min}, {e_max})')
     return np.full(nbins, bg_rate * conv_units)
@@ -161,7 +161,7 @@ def migdal_background_superCDMS_Si_iZIP(e_min, e_max, nbins):
     # Assume flat bg from 3H (Fig. 4 & Table V), ignore other isotopes.
     bg_rate = 370  # counts/kg/keV/year
     conv_units = 1.0e3  # Tonne
-    if not e_max < 100:
+    if e_max >= 100:
         raise ValueError(
             f'Assume flat background only below 100 keV ({e_min}, {e_max})')
     return np.full(nbins, bg_rate * conv_units)
@@ -358,7 +358,7 @@ experiment = {
     },
 }
 # And calculate the effective exposure for each
-for name in experiment.keys():
+for name in experiment:
     experiment[name]['exp_eff'] = (experiment[name]['exp'] *
                                    experiment[name]['cut_eff'] *
                                    experiment[name]['nr_eff'])
@@ -422,12 +422,10 @@ class DetectorSpectrum(GenSpectrum):
         if 'bg_func' in self.config:
             self.add_background = kwargs.get('add_background', True)
         else:
-            self.log.debug(f'No bg_func in experiment config')
+            self.log.debug('No bg_func in experiment config')
 
     def __str__(self):
-        return (f"DetectorSpectrum class inherited from GenSpectrum.\nSmears "
-                f"spectrum with detector resolution and implements the energy "
-                f"threshold for the detector")
+        return 'DetectorSpectrum class inherited from GenSpectrum.\nSmears spectrum with detector resolution and implements the energy threshold for the detector'
 
     def get_events(self):
         """

@@ -78,9 +78,7 @@ def is_savable_type(item):
     :return: bool if the type is saveable by checking if it is in a limitative list
     """
     savables = (list, np.ndarray, int, str, np.int32, np.int64, np.float32, bool, np.float64)
-    if isinstance(item, savables):
-        return True
-    return False
+    return isinstance(item, savables)
 
 
 def convert_dic_to_savable(config):
@@ -303,7 +301,7 @@ def get_bins(a, b, n) -> np.ndarray:
     :param n: number of bins
     :return: center of bins
     """
-    result = np.vstack((bin_edges(a, b, n)[0:-1], bin_edges(a, b, n)[1:]))
+    result = np.vstack((bin_edges(a, b, n)[:-1], bin_edges(a, b, n)[1:]))
     return np.transpose(result)
 
 

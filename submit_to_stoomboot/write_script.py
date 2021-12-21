@@ -66,7 +66,7 @@ _scriptfile = '%s_%s.sh' % ('dddm', args.arguments.replace("-", "_"))
 _scriptfile = _scriptfile.replace(
     '_context_from_json /project/xenon/jorana/software/dddm_paper/dddm_context.json', '')
 if 'multicore_hash' in args.arguments:
-    print(f'write_script.py::\tChange scriptfile name')
+    print('write_script.py::\tChange scriptfile name')
     script_split = _scriptfile.strip('.sh').split('multicore_hash')
     _scriptfile = "".join([script_split[-1], script_split[0]]) + '.sh'
 _scriptfile = _scriptfile.replace(" ", "").replace("__", "_")
@@ -90,42 +90,35 @@ if not os.path.exists(log_dir):
     print("make %s since no folder was found there" % log_dir)
     subprocess.call(cmd, shell=False)
 n_machines = 1
-#
-# Write the script
-#
-# print(f"write_script.py::\t start writing {scriptfile}")
+with open(scriptfile, 'w') as fout:
+    fout.write('#!/bin/bash \n')
+    fout.write('# setup anaconda \n')
+    fout.write('export PATH=%s \n' % (args.conda))
+    fout.write('source activate %s\n' % (args.environment))
+    if os.path.exists(log_dir + log_done) or os.path.exists(log_dir + log_file):
+        print(f'MAIN::remove {log_done} and/or {log_file}')
+        if os.path.exists(log_dir + log_file):
+            fout.write('rm -f ' + log_dir + log_file + ' \n')
+        if os.path.exists(log_dir + log_done):
+            fout.write('rm -f ' + log_dir + log_done + ' \n')
 
-fout = open(scriptfile, 'w')
-fout.write('#!/bin/bash \n')
-fout.write('# setup anaconda \n')
-fout.write('export PATH=%s \n' % (args.conda))
-fout.write('source activate %s\n' % (args.environment))
-if os.path.exists(log_dir + log_done) or os.path.exists(log_dir + log_file):
-    print(f'MAIN::remove {log_done} and/or {log_file}')
-    if os.path.exists(log_dir + log_file):
-        fout.write('rm -f ' + log_dir + log_file + ' \n')
-    if os.path.exists(log_dir + log_done):
-        fout.write('rm -f ' + log_dir + log_done + ' \n')
-
-fout.write('exec 1> ' + log_dir + log_file + ' \n')
-fout.write('exec 2>&1 \n')
-if args.n_cores > 1:
-    fout.write(
-        'mpiexec -v -n %i python %s/%s %s\n' %
-        (n_machines *
-         args.n_cores,
-         base_dir,
-         args.target,
-         args.arguments))
-elif args.profiler:
-    fout.write('python -m cProfile -o %s %s/%s %s\n' %
-               (prof_file, base_dir, args.target, args.arguments))
-else:
-    fout.write('python %s/%s %s\n' % (base_dir, args.target, args.arguments))
-fout.write('cd ' + log_dir + ' \n')
-fout.write('mv ' + log_file + ' ' + log_done + ' \n')
-fout.close()
-
+    fout.write('exec 1> ' + log_dir + log_file + ' \n')
+    fout.write('exec 2>&1 \n')
+    if args.n_cores > 1:
+        fout.write(
+            'mpiexec -v -n %i python %s/%s %s\n' %
+            (n_machines *
+             args.n_cores,
+             base_dir,
+             args.target,
+             args.arguments))
+    elif args.profiler:
+        fout.write('python -m cProfile -o %s %s/%s %s\n' %
+                   (prof_file, base_dir, args.target, args.arguments))
+    else:
+        fout.write('python %s/%s %s\n' % (base_dir, args.target, args.arguments))
+    fout.write('cd ' + log_dir + ' \n')
+    fout.write('mv ' + log_file + ' ' + log_done + ' \n')
 # print("write_script.py::\t done writing")
 
 #
@@ -140,7 +133,6 @@ cmd = 'qsub %s %s %s' % (basic_options, "-q " + args.q, scriptfile)
 subprocess.call(cmd, shell=False)
 sub_cmd = f'scripts/stbc/sub_{_scriptfile.split("_")[0]}.sh'
 print(f'Write command to {sub_cmd}')
-fout = open(sub_cmd, 'w')
-fout.write(cmd + '\n')
-fout.close()
+with open(sub_cmd, 'w') as fout:
+    fout.write(cmd + '\n')
 print("write_script.py::\t job written and submitted. Bye bye")

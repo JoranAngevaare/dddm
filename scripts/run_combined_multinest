@@ -68,7 +68,6 @@ def get_multiprocessing_rank():
     except (ModuleNotFoundError, ImportError) as e:
         raise ModuleNotFoundError('Cannot run in multicore mode as'
                                   ' mpi4py is not installed') from e
-        rank = 0
     print(f"MPI-info\tn_cores: {multiprocessing.cpu_count()}\t"
           f"pid: {os.getpid()}\t"
           f"ppid: {os.getppid()}\trank{rank}")
@@ -101,11 +100,7 @@ def set_config(model_simulator, args):
     model_simulator.config['prior']['log_cross_section']['param'] = \
         model_simulator.config['prior']['log_cross_section']['range']
 
-    if args.shielding:
-        update_config['halo_model'] = dddm.VerneSHM()
-    else:
-        update_config['halo_model'] = dddm.SHM()
-
+    update_config['halo_model'] = dddm.VerneSHM() if args.shielding else dddm.SHM()
     model_simulator.config.update(update_config)
     update_keys = list(update_config.keys())
     update_keys += ['prior', 'halo_model']
@@ -189,8 +184,7 @@ def parse_arguments():
                         help="add poisson noise to data")
     parser.add_argument('--shielding', action='store_true',
                         help="add shielding to simulation")
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 def open_json(path):

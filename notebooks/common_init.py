@@ -26,7 +26,7 @@ pd.set_option('display.max_rows', 100)
 print('Done import')
 print("SYSTEM")
 print(f"\tRunning on {sys.platform}")
-print(f"\tPython version " + sys.version.replace('\n', ''))
+print('\tPython version ' + sys.version.replace('\n', ''))
 print(f"\tPython installation {sys.executable}")
 print("MODULES")
 for module in [dddm, wr]:

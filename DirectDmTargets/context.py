@@ -57,9 +57,9 @@ def get_default_context():
                     f'Could not find nor make {default_context[name]}. Tailor '
                     f'context.py to your needs. Could not initialize folders '
                     f'correctly because of {e}.')
-    for key in default_context.keys():
+    for key, value in default_context.items():
         if not os.path.exists(default_context[key]):
-            log.warning(f'No folder at {default_context[key]}')
+            log.warning(f'No folder at {value}')
     return default_context
 
 
@@ -78,9 +78,9 @@ def get_stbc_context(check=True):
     if not os.path.exists(tmp_folder) and check:
         raise FileNotFoundError(f"Cannot find tmp folder at {tmp_folder}")
     stbc_context['tmp_folder'] = tmp_folder
-    for key in stbc_context.keys():
+    for key, value in stbc_context.items():
         if not os.path.exists(stbc_context[key]) and check:
-            raise FileNotFoundError(f'No folder at {stbc_context[key]}')
+            raise FileNotFoundError(f'No folder at {value}')
     return stbc_context
 
 
