@@ -200,4 +200,5 @@ def pickle_dump_figure(name):
 
 
 def open_pickle_figure(name):
+    # disable bandit
     return pickle.load(open(name, 'rb'))
