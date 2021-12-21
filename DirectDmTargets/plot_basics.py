@@ -198,5 +198,6 @@ def pickle_dump_figure(name):
     fig = plt.gcf()
     pickle.dump(fig, open(name, 'wb'))
 
+
 def open_pickle_figure(name):
     return pickle.load(open(name, 'rb'))
