@@ -101,7 +101,6 @@ class VerneSHM:
             f'sig_{self.log_cross_section:.1f}_mx_{self.log_mass:.2f}',
         )
 
-
         self.itp_func = None
         self.log = utils.get_logger(self.__class__.__name__)
 

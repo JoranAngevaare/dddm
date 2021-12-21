@@ -157,7 +157,7 @@ class StatModel:
             log_path = None
 
         return utils.get_logger(self.__class__.__name__, level,
-                               path=log_path)
+                                path=log_path)
 
     def set_prior(self, priors_from):
         self.log.info('set_prior')
