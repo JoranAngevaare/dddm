@@ -57,9 +57,9 @@ def get_default_context():
                     f'Could not find nor make {default_context[name]}. Tailor '
                     f'context.py to your needs. Could not initialize folders '
                     f'correctly because of {e}.')
-    for key, value in default_context.items():
-        if not os.path.exists(default_context[key]):
-            log.warning(f'No folder at {value}')
+    for key, path in default_context.items():
+        if not os.path.exists(path):
+            log.warning(f'No folder at {path}')
     return default_context
 
 
