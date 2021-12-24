@@ -160,12 +160,12 @@ class SeabornPlot:
         kwargs.setdefault('levels', levels)
 
         df = self.samples_to_df()
-        sns.kdeplot(data=df, x='mass', y='cross_section', **kwargs)
+        return sns.kdeplot(data=df, x='mass', y='cross_section', **kwargs)
 
     def plot_kde(self, **kwargs):
         kwargs.setdefault('levels', 100)
         kwargs.setdefault('fill', True)
-        self.plot_sigma_contours(**kwargs)
+        return self.plot_sigma_contours(**kwargs)
 
 
 class ResultsManager:
