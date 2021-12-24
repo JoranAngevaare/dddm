@@ -78,19 +78,15 @@ def get_bivariate(self, common_norm, fill, levels, thresh, color, warn_singular,
         observations = sub_data[["x", "y"]]
 
         # Extract the weights for this subset of observations
-        if "weights" in self.variables:
-            weights = sub_data["weights"]
-        else:
-            weights = None
-
+        weights = sub_data["weights"] if "weights" in self.variables else None
         # Check that KDE will not error out
         variance = observations[["x", "y"]].var()
         if any(math.isclose(x, 0) for x in variance) or variance.isna().any():
-            msg = (
-                "Dataset has 0 variance; skipping density estimate. "
-                "Pass `warn_singular=False` to disable this warning."
-            )
             if warn_singular:
+                msg = (
+                    "Dataset has 0 variance; skipping density estimate. "
+                    "Pass `warn_singular=False` to disable this warning."
+                )
                 warnings.warn(msg, UserWarning)
             continue
 
@@ -119,9 +115,8 @@ def get_bivariate(self, common_norm, fill, levels, thresh, color, warn_singular,
         thresh = 0
     if isinstance(levels, Number):
         levels = np.linspace(thresh, 1, levels)
-    else:
-        if min(levels) < 0 or max(levels) > 1:
-            raise ValueError("levels must be in [0, 1]")
+    elif min(levels) < 0 or max(levels) > 1:
+        raise ValueError("levels must be in [0, 1]")
 
     # Transform from iso-proportions to iso-densities
     if common_norm:
