@@ -234,22 +234,31 @@ def pow10(x):
     return 10 ** x
 
 
-def set_xticks_top(only_lines=False):
-    xlim = plt.xlim()
-
+def set_xticks_top(show_lines=False,
+                   rotation=0,
+                   x_label=r"$M_{\chi}$ $[GeV/c^{2}]$"):
     ax = plt.gca()
-    x_ticks = [0.1, 0.5, 1, 5, 50, 1000]
-    x_ticks = [x for x in x_ticks if (xlim[1] >= np.log10(x) >= xlim[0])]
-    for x_tick in x_ticks:
-        ax.axvline(np.log10(x_tick), alpha=0.1)
-    if only_lines:
-        return
-
+    bin_range = ax.get_xlim()
     secax = ax.secondary_xaxis('top', functions=(pow10, np.log10))
-    secax.set_ticks(x_ticks)
-    secax.set_xticklabels([str(x) for x in x_ticks])
-    secax.xaxis.set_tick_params(rotation=45)
-    secax.set_xlabel(r"$M_{\chi}$ $[GeV/c^{2}]$")
+
+    x_ticks = [0.001, 0.01, 0.1, 0.5, 1, 5, 10, 100, 1000, 10_000]
+    x_ticks = [t for t in x_ticks if t > 10 ** bin_range[0] and t < 10 ** bin_range[1]]
+    if show_lines:
+        for x_tick in x_ticks:
+            ax.axvline(np.log10(x_tick), alpha=0.1)
+
+    def str_fmt(x):
+        if isinstance(x, (list, tuple, np.ndarray)):
+            return [str_fmt(x) for x in x]
+        if x <= 0.1:
+            return f'{x:.2f}'
+        if x <= 1:
+            return f'{x:.1f}'
+        return f'{int(x)}'
+
+    secax.set_ticks(x_ticks, labels=str_fmt(x_ticks))
+    secax.xaxis.set_tick_params(rotation=rotation)
+    secax.set_xlabel(x_label)
 
 
 def x_label():
