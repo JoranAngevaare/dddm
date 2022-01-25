@@ -123,8 +123,6 @@ def print_versions(
     return pd.DataFrame(versions)
 
 
-
-
 def check_folder_for_file(file_path):
     """
     :param file_path: path with one or more subfolders
