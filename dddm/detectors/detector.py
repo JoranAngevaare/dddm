@@ -6,6 +6,7 @@ import numpy as np
 # from dddm import GenSpectrum
 import dddm
 
+
 def det_res_Xe(E):
     """
     :param E: recoil energy (in keV)
