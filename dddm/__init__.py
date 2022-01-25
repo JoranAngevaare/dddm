@@ -1,22 +1,14 @@
 __version__ = '2.1.0'
-
 from . import context
-from . import detector
-from . import confidence_figures
-from . import emcee_applications
-from . import halo
-from . import nested_sampling
-from . import plot_basics
-from . import statistics
-from . import utils
-from . import seaborn_utils
+from .context import *
 
-from .detector import *
-from .emcee_applications import *
-from .halo import *
-from .nested_sampling import *
-from .plot_basics import *
+from . import statistics
 from .statistics import *
+
+from . import utils
 from .utils import *
-from .confidence_figures import *
-from .seaborn_utils import *
+
+from samplers import *
+from recoil_rates import *
+from plotting import *
+from detectors import *
