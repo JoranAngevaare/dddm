@@ -72,7 +72,7 @@ jobs:
           NUMBA_DISABLE_JIT: 1
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
-          coverage run --source=DirectDmTargets setup.py test -v
+          coverage run --source=dddm setup.py test -v
           coveralls --service=github
       - name: goodbye
         run: echo goodbye
