@@ -14,7 +14,7 @@ from warnings import warn
 import corner
 import matplotlib.pyplot as plt
 import numpy as np
-from DirectDmTargets import context, detector, statistics, utils
+from dddm import context, detector, statistics, utils
 from scipy import special as spsp
 
 log = logging.getLogger()

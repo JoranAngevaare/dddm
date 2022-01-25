@@ -18,7 +18,7 @@ import os
 import corner
 import matplotlib.pyplot as plt
 import numpy as np
-from DirectDmTargets import statistics, utils
+from dddm import statistics, utils
 
 log = logging.getLogger()
 

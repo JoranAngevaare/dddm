@@ -1,6 +1,6 @@
 import logging
 
-import DirectDmTargets as dddm
+import dddm
 import os
 from .test_multinest_shielded import _is_windows
 import matplotlib.pyplot as plt

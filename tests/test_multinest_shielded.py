@@ -1,6 +1,6 @@
 from sys import platform
 
-import DirectDmTargets as dddm
+import dddm
 
 
 def _is_windows():

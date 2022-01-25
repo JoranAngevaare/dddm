@@ -7,7 +7,7 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-from DirectDmTargets import statistics, halo, detector, utils
+from dddm import statistics, halo, detector, utils
 from tqdm import tqdm
 
 

@@ -1,14 +1,128 @@
 """Basic functions for saving et cetera"""
-
-import datetime
 import logging
 import os
 import uuid
-
+from dddm import context
 import numpy as np
-from DirectDmTargets import context
+import pandas as pd
+import socket
+import sys
+import datetime
+from importlib import import_module
+from git import Repo, InvalidGitRepositoryError
+import typing as ty
+from collections import defaultdict
 
 log = logging.getLogger()
+
+
+def exporter(export_self=False):
+    """Export utility modified from https://stackoverflow.com/a/41895194
+    Returns export decorator, __all__ list
+    stolen from
+    https://github.com/AxFoundation/strax/blob/d3608efc77acd52e1d5a208c3092b6b45b27a6e2/strax/utils.py#46
+    """
+    all_ = []
+    if export_self:
+        all_.append('exporter')
+
+    def decorator(obj):
+        all_.append(obj.__name__)
+        return obj
+
+    return decorator, all_
+
+
+export, __all__ = exporter(export_self=True)
+
+
+@export
+def to_str_tuple(x: ty.Union[str, bytes, list, tuple, pd.Series, np.ndarray]) -> ty.Tuple[str]:
+    """
+    Convert any sensible instance to a tuple of strings
+    stolen from
+    https://github.com/AxFoundation/strax/blob/d3608efc77acd52e1d5a208c3092b6b45b27a6e2/strax/utils.py#242
+    """
+    if isinstance(x, (str, bytes)):
+        return (x,)
+    elif isinstance(x, list):
+        return tuple(x)
+    elif isinstance(x, tuple):
+        return x
+    elif isinstance(x, pd.Series):
+        return tuple(x.values.tolist())
+    elif isinstance(x, np.ndarray):
+        return tuple(x.tolist())
+    raise TypeError(f"Expected string or tuple of strings, got {type(x)}")
+
+
+@export
+def print_versions(
+        modules=('DirectDmTargets', 'numpy', 'numba', 'pymultinest', 'verne', 'wimprates'),
+        return_string=False,
+        include_git=True
+):
+    """
+    Print versions of modules installed.
+
+    :param modules: Modules to print, should be str, tuple or list. E.g.
+        print_versions(modules=('numpy')
+    :param return_string: optional. Instead of printing the message,
+        return a string
+    :param include_git: Include the current branch and latest
+        commit hash
+    :return: optional, the message that would have been printed
+    """
+    message = (f'Working on {socket.getfqdn()} with the following '
+               f'versions and installation paths:')
+    py_version = sys.version.replace(' (', '\t(').replace('\n', '')
+    message += f"\npython\tv{py_version}"
+    versions = defaultdict(list)
+    for m in to_str_tuple(modules):
+        try:
+            mod = import_module(m)
+        except (ModuleNotFoundError, ImportError):
+            print(f'{m} is not installed')
+            continue
+
+        message += f'\n{m}'
+        v = None
+        p = None
+        git = None
+        if hasattr(mod, '__version__'):
+            message += f'\tv{mod.__version__}'
+            v = mod.__version__
+        if hasattr(mod, '__path__'):
+            module_path = mod.__path__[0]
+            message += f'\t{module_path}'
+            p = module_path
+            if include_git:
+                try:
+                    repo = Repo(module_path, search_parent_directories=True)
+                except InvalidGitRepositoryError:
+                    # not a git repo
+                    pass
+                else:
+                    try:
+                        branch = repo.active_branch
+                    except TypeError:
+                        branch = 'unknown'
+                    try:
+                        commit_hash = repo.head.object.hexsha
+                    except TypeError:
+                        commit_hash = 'unknown'
+                    message += f'\tgit branch:{branch} | {commit_hash[:7]}'
+                    git = f'branch:{branch} | {commit_hash[:7]}'
+        versions['module'].append(m)
+        versions['path'].append(p)
+        versions['version'].append(v)
+        versions['git'].append(git)
+    if return_string:
+        return message
+    print(message)
+    return pd.DataFrame(versions)
+
+
 
 
 def check_folder_for_file(file_path):

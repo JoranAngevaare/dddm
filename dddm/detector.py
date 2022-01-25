@@ -3,7 +3,7 @@
 from warnings import warn
 import numba
 import numpy as np
-from DirectDmTargets.halo import GenSpectrum
+from dddm.halo import GenSpectrum
 
 
 def det_res_Xe(E):

@@ -10,9 +10,9 @@ import numpy as np
 import pandas as pd
 import verne
 import wimprates as wr
-from DirectDmTargets import utils
+from dddm import utils
 import typing as ty
-from DirectDmTargets.context import context
+from dddm import context
 from scipy.interpolate import interp1d
 
 

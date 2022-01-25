@@ -1,7 +1,7 @@
 """
 Test if the 1D likelihood returns a value that is close to the set benchmark value
 """
-import DirectDmTargets as dddm
+import dddm
 import numpy as np
 from hypothesis import given, settings, strategies
 from tqdm import tqdm

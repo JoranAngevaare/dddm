@@ -5,7 +5,7 @@ import seaborn as sns
 import os
 import pandas as pd
 import numpy as np
-import DirectDmTargets as dddm
+import dddm
 from glob import glob
 from tqdm import tqdm
 

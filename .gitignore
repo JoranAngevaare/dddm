@@ -1,10 +1,10 @@
 # ignore pychache
-DirectDmTargets/__pycache__/*
+dddm/__pycache__/*
 *.pyc
 2019*
 notebooks/old/*
-DirectDmTargets/__*
-DirectDmTargets/DD_DM_targets_data
+dddm/__*
+dddm/DD_DM_targets_data
 backups/*
 # submit_to_stoomboot*
 build/
@@ -36,7 +36,7 @@ notebooks/.ipynb_checkpoints*
 .idea*
 .eggs/*
 DirectDmTargets.egg-info/*
-DirectDmTargets/archive.py
+dddm/archive.py
 *.png
 .hypothesis
 .coverage

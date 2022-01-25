@@ -13,7 +13,6 @@ from seaborn._decorators import _deprecate_positional_args
 
 from numbers import Number
 import math
-import warnings
 
 import numpy as np
 import matplotlib.pyplot as plt

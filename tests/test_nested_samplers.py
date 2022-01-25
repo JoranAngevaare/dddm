@@ -2,7 +2,7 @@ import logging
 import tempfile
 from sys import platform
 
-import DirectDmTargets as dddm
+import dddm
 import matplotlib.pyplot as plt
 
 log = logging.getLogger()

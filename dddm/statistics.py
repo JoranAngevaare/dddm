@@ -3,13 +3,12 @@ Statistical model giving likelihoods for detecting a spectrum given a
 benchmark to compare it with.
 """
 
-import logging
 import os
 from sys import platform
 import numericalunits as nu
 import numpy as np
 from datetime import datetime
-from DirectDmTargets import context, detector, halo, utils
+from dddm import context, detector, halo, utils
 from scipy.special import loggamma
 import typing as ty
 

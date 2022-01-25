@@ -1,4 +1,4 @@
-import DirectDmTargets as dddm
+import dddm
 from unittest import TestCase
 import os
 

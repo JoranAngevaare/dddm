@@ -1,4 +1,4 @@
-import DirectDmTargets as dddm
+import dddm
 import matplotlib.pyplot as plt
 import numericalunits as nu
 import numpy as np

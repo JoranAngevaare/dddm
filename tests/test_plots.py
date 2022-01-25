@@ -1,6 +1,6 @@
 import tempfile
 
-import DirectDmTargets as dddm
+import dddm
 import matplotlib.pyplot as plt
 import numpy as np
 from hypothesis import given, strategies

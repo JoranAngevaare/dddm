@@ -7,7 +7,7 @@ import os
 from socket import getfqdn
 from immutabledict import immutabledict
 import typing as ty
-import DirectDmTargets
+import dddm
 import verne
 
 context = {}
@@ -33,7 +33,7 @@ def get_default_context():
 
     # Generally people will end up here
     log.info(f'context.py::\tunknown host {_host} be careful here')
-    installation_folder = DirectDmTargets.__path__[0]
+    installation_folder = dddm.__path__[0]
     verne_folder = os.path.join(os.path.split(verne.__path__[0])[0], 'results')
     default_context = {
         'software_dir': installation_folder,
