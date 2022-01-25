@@ -3,7 +3,6 @@
 from warnings import warn
 import numba
 import numpy as np
-# from dddm import GenSpectrum
 import dddm
 
 def det_res_Xe(E):
