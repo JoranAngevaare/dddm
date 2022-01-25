@@ -8,7 +8,9 @@ from sys import platform
 import numericalunits as nu
 import numpy as np
 from datetime import datetime
-from dddm import context, detector, halo, utils
+from dddm import context, utils
+from dddm.recoil_rates import halo, halo_shielded, spectrum
+from dddm.detectors import detector
 from scipy.special import loggamma
 import typing as ty
 
@@ -181,9 +183,9 @@ class StatModel:
 
     def set_models(self,
                    halo_model: ty.Union[halo.SHM,
-                                        halo.VerneSHM] = 'default',
+                                        halo_shielded.VerneSHM] = 'default',
                    spectrum_class: ty.Union[detector.DetectorSpectrum,
-                                            halo.GenSpectrum] = 'default'):
+                                            spectrum.GenSpectrum] = 'default'):
         """
         Update the config with the required settings
         :param halo_model: The halo model used

@@ -7,7 +7,7 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-from dddm import statistics, halo, detector, utils
+import dddm # from dddm import statistics, halo, detector, utils
 from tqdm import tqdm
 
 

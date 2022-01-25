@@ -3,8 +3,8 @@
 from warnings import warn
 import numba
 import numpy as np
-from dddm.halo import GenSpectrum
-
+# from dddm import GenSpectrum
+import dddm
 
 def det_res_Xe(E):
     """
@@ -412,7 +412,7 @@ def smear_signal(rate, energy, sigma, bin_width):
     return _smear_signal(rate, energy, sigma, bin_width)
 
 
-class DetectorSpectrum(GenSpectrum):
+class DetectorSpectrum(dddm.recoil_rates.spectrum.GenSpectrum):
     add_background = False
     required_detector_fields = 'name material type exp_eff exp exp_eff E_thr res'.split()
 
