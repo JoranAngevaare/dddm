@@ -37,8 +37,7 @@ def test_likelihood_converges(mass, sigma, detector_i, prior_i):
         assert c.config['prior'] == dddm.get_priors(prior_name)
         assert c.benchmark_values is not None
 
-    benchmark_all_zero = not np.any(stats.sub_classes[0].benchmark_values)
-    if benchmark_all_zero:
+    if benchmark_all_zero := not np.any(stats.sub_classes[0].benchmark_values):
         print('If everything is zero, I don\'t have to check if we converge')
         return
 
