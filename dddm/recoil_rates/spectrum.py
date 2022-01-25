@@ -126,11 +126,9 @@ class GenSpectrum:
         """Given the a detector config, check that all the required fields are available"""
         if not isinstance(det, dict):
             raise ValueError("Detector should be dict")
-        missing = [
+        if missing := [
             field for field in self.required_detector_fields if field not in det
-        ]
-
-        if missing:
+        ]:
             raise ValueError(f'Missing {missing} fields in detector config, got {det}')
 
     def get_bin_centers(self) -> np.ndarray:
