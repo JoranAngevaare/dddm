@@ -323,7 +323,7 @@ class NestedSamplerStatModel(dddm.StatModel):
         saved_ok = isinstance(saved_in, str) and os.path.exists(saved_in)
         if saved_ok and not force_index:
             return saved_in
-        target_save = dddm.utils.open_save_dir(f'nes_{self.config["sampler"][:2]}',
+        target_save = dddm.context.open_save_dir(f'nes_{self.config["sampler"][:2]}',
                                                force_index=force_index,
                                                _hash=_hash)
         self.log_dict['saved_in'] = target_save
@@ -332,7 +332,7 @@ class NestedSamplerStatModel(dddm.StatModel):
 
     def get_tmp_dir(self, force_index=False, _hash=None):
         if (not self.log_dict['tmp_dir']) or force_index:
-            self.log_dict['tmp_dir'] = dddm.utils.open_save_dir(
+            self.log_dict['tmp_dir'] = dddm.context.open_save_dir(
                 f'{self.config["sampler"]}',
                 base_dir=dddm.context.context['tmp_folder'],
                 force_index=force_index,

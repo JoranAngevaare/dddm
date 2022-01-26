@@ -187,7 +187,7 @@ class StatModel:
 
     def set_models(self,
                    halo_model: ty.Union[halo.SHM,
-                                        halo_shielded.VerneSHM] = 'default',
+                                        halo_shielded.ShieldedSHM] = 'default',
                    spectrum_class: ty.Union[detector.DetectorSpectrum,
                                             spectrum.GenSpectrum] = 'default'):
         """
@@ -198,7 +198,7 @@ class StatModel:
         """
 
         if self.config['earth_shielding']:
-            model = halo.VerneSHM(
+            model = halo_shielded.ShieldedSHM(
                 log_mass=self.config['mw'],
                 log_cross_section=self.config['sigma'],
                 location=self.config['detector_config']['location'],
@@ -387,7 +387,7 @@ class StatModel:
                 f"detector = {self.config['detector_config']}")
             if self.config['earth_shielding']:
                 self.log.debug('Setting spectrum to Verne in likelihood code')
-                fit_shm = halo.VerneSHM(
+                fit_shm = halo_shielded.ShieldedSHM(
                     log_mass=checked_values[0],  # self.config['mw'],
                     log_cross_section=checked_values[1],  # self.config['sigma'],
                     location=self.config['detector_config']['location'],
@@ -406,7 +406,7 @@ class StatModel:
 
             if self.config['earth_shielding']:
                 self.log.debug('Setting spectrum to Verne in likelihood code')
-                fit_shm = halo.VerneSHM(
+                fit_shm = halo_shielded.ShieldedSHM(
                     log_mass=checked_values[0],  # 'mw
                     log_cross_section=checked_values[1],  # 'sigma'
                     location=self.config['detector_config']['location'],

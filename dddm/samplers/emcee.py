@@ -146,7 +146,7 @@ class MCMCStatModel(statistics.StatModel):
         if not self.log_dict['did_run']:
             self.run_emcee()
         # open a folder where to save to results
-        save_dir = utils.open_save_dir(
+        save_dir = dddm.context.open_save_dir(
             default_emcee_save_dir(),
             base_dir=save_to_dir,
             force_index=force_index)
