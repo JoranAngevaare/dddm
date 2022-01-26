@@ -1,16 +1,14 @@
 import logging
-
+from unittest import skipIf
 import dddm
 import os
-from .test_multinest_shielded import _is_windows
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 log = logging.getLogger()
 
-
+@skipIf(dddm.is_windows(), "Multinest only works on linux")
 def test_combined_multinest(targets=('Xe_simple', 'Ge_simple'),):
-    if _is_windows():
-        return
+
     dddm.experiment['Combined'] = {'type': 'combined'}
     stats = dddm.CombinedInference(
         targets,
@@ -78,6 +76,6 @@ def test_combined_multinest(targets=('Xe_simple', 'Ge_simple'),):
         raise RuntimeError('No error raised')
     results._add_result('no_such_file', tolerant=True)
 
-
+@skipIf(dddm.is_windows(), "Multinest only works on linux")
 def test_combined_multinest_single_target():
     test_combined_multinest(targets=('Xe',))

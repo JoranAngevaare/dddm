@@ -11,7 +11,6 @@ from importlib import import_module
 from git import Repo, InvalidGitRepositoryError
 import typing as ty
 from collections import defaultdict
-from sys import platform
 from platform import python_version
 log = logging.getLogger()
 
@@ -79,11 +78,9 @@ def print_versions(
     if include_python:
         versions['module'] = ['python']
         versions['version'] = [python_version()]
-        versions['path'] = [None]
+        versions['path'] = [sys.executable]
         versions['git'] = [None]
     for m in to_str_tuple(modules):
-        if is_windows() and m == 'pymultinest':
-            continue
         result = _version_info_for_module(m, include_git=include_git)
         if result is None:
             continue
@@ -155,7 +152,7 @@ def now(tstart=None):
 
 @export
 def is_windows():
-    return 'win' in platform
+    return 'win' in sys.platform
 
 
 def is_savable_type(item):

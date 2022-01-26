@@ -1,20 +1,14 @@
 import logging
 import tempfile
-from sys import platform
-
+from unittest import skipIf
 import dddm
 import matplotlib.pyplot as plt
 
 log = logging.getLogger()
 
 
-def _is_windows():
-    return 'win' in platform
-
-
+@skipIf(dddm.is_windows(), "Multinest only works on linux")
 def test_nested_simple_multinest():
-    if _is_windows():
-        return
     fit_class = dddm.NestedSamplerStatModel('Xe')
     fit_class.config['tol'] = 0.5
     fit_class.config['nlive'] = 50
@@ -23,10 +17,8 @@ def test_nested_simple_multinest():
     fit_class.run_multinest()
     fit_class.get_summary()
 
-
+@skipIf(dddm.is_windows(), "Multinest only works on linux")
 def test_nested_astrophysics_multinest():
-    if _is_windows():
-        return
     fit_unconstrained = dddm.NestedSamplerStatModel('Xe')
     fit_unconstrained.config['tol'] = 0.1
     fit_unconstrained.config['nlive'] = 30

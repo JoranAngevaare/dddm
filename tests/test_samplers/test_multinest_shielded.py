@@ -1,9 +1,8 @@
 import dddm
+from unittest import skipIf
 
-
+@skipIf(dddm.is_windows(), "Multinest only works on linux")
 def test_nested_simple_multinest_earth_shielding():
-    if _is_windows():
-        return
     fit_class = dddm.NestedSamplerStatModel('Xe')
     fit_class.config['tol'] = 0.1
     fit_class.config['nlive'] = 10
