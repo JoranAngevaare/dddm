@@ -1,5 +1,5 @@
 """Introduce detector effects into the expected detection spectrum"""
-
+import warnings
 from warnings import warn
 import numba
 import numpy as np
@@ -372,6 +372,7 @@ for name in experiment:
 
 # Make a new experiment that is a placeholder for the CombinedInference class.
 experiment['Combined'] = {'type': 'combined'}
+experiment = immutabledict(experiment)
 
 
 @numba.njit
@@ -411,7 +412,8 @@ def _smear_signal(rate, energy, sigma, bin_width):
 
 def smear_signal(rate, energy, sigma, bin_width):
     if np.max(sigma) < bin_width:
-        # print(f'Resolution {np.mean(sigma)} better than bin_width {bin_width}!')
+        warnings.warn(f'Resolution {np.mean(sigma)} smaller than bin_width {bin_width}!',
+                      UserWarning)
         return rate
     return _smear_signal(rate, energy, sigma, bin_width)
 
