@@ -69,7 +69,7 @@ def test_detector_spectrum():
 
 
 def test_shielded_detector_spectrum():
-    use_SHM = dddm.ShieldedSHM()
+    use_SHM = dddm.ShieldedSHM(location='XENON')
     assert len(_galactic_spectrum_inner(use_SHM))
 
 

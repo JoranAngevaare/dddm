@@ -3,6 +3,7 @@ import tempfile
 from unittest import skipIf
 import dddm
 import matplotlib.pyplot as plt
+from unittest import TestCase
 
 log = logging.getLogger()
 
@@ -48,41 +49,46 @@ def test_nested_astrophysics_multinest():
         plt.close()
 
 
-def test_nested_astrophysics_nestle():
-    fit_unconstrained = dddm.NestedSamplerStatModel('Xe')
-    fit_unconstrained.config['sampler'] = 'nestle'
-    fit_unconstrained.config['tol'] = 0.1
-    fit_unconstrained.config['nlive'] = 30
-    fit_unconstrained.config['max_iter'] = 2
-    fit_unconstrained.set_fit_parameters(fit_unconstrained.known_parameters)
-    print(f"Fitting for parameters:"
-          f"\n{fit_unconstrained.config['fit_parameters']}")
-    fit_unconstrained.run_nestle()
-    fit_unconstrained.get_summary()
+class NestleTests(TestCase):
+    def setUp(self) -> None:
+        self.ct = dddm.test_context()
+
+    def test_nested_astrophysics_nestle(self):
+        detector = self.st.get_detector('Xe_simple')
+        fit_unconstrained = dddm.NestedSamplerStatModel('Xe')
+        fit_unconstrained.config['sampler'] = 'nestle'
+        fit_unconstrained.config['tol'] = 0.1
+        fit_unconstrained.config['nlive'] = 30
+        fit_unconstrained.config['max_iter'] = 2
+        fit_unconstrained.set_fit_parameters(fit_unconstrained.known_parameters)
+        print(f"Fitting for parameters:"
+              f"\n{fit_unconstrained.config['fit_parameters']}")
+        fit_unconstrained.run_nestle()
+        fit_unconstrained.get_summary()
 
 
-def test_nestle():
-    stats = dddm.NestedSamplerStatModel('Xe')
-    stats.config['sampler'] = 'nestle'
-    stats.config['tol'] = 0.1
-    stats.config['nlive'] = 30
-    print('Start run')
-    stats.run_nestle()
-    print('Save results')
-    stats.save_results()
-    print('Show corner')
-    try:
-        stats.show_corner()
-    except FileNotFoundError as e:
-        print(stats.log_dict['saved_in'])
-        import os
-        print(os.listdir(stats.log_dict['saved_in']))
-        raise e
-    plt.close()
-    plt.clf()
-    print('Save & show again')
-    # Deprecate this function?
-    stats.get_tmp_dir()
-    stats.get_save_dir()
-    plt.close()
-    plt.clf()
+    def test_nestle():
+        stats = dddm.NestedSamplerStatModel('Xe')
+        stats.config['sampler'] = 'nestle'
+        stats.config['tol'] = 0.1
+        stats.config['nlive'] = 30
+        print('Start run')
+        stats.run_nestle()
+        print('Save results')
+        stats.save_results()
+        print('Show corner')
+        try:
+            stats.show_corner()
+        except FileNotFoundError as e:
+            print(stats.log_dict['saved_in'])
+            import os
+            print(os.listdir(stats.log_dict['saved_in']))
+            raise e
+        plt.close()
+        plt.clf()
+        print('Save & show again')
+        # Deprecate this function?
+        stats.get_tmp_dir()
+        stats.get_save_dir()
+        plt.close()
+        plt.clf()

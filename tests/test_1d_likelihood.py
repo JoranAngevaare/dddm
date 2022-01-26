@@ -18,7 +18,6 @@ known_priors = 'Pato_2010 Evans_2019 migdal_wide low_mass migdal_extremely_wide 
        )
 def test_likelihood_converges(mass, sigma, detector_i, prior_i):
     """Test that a 1D likelihood scan actually returns the maximum at the set value"""
-    return
     detector_name = known_detectors[detector_i]
     prior_name = known_priors[prior_i]
 

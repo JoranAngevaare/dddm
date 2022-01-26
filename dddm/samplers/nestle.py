@@ -15,6 +15,7 @@ log = logging.getLogger()
 export, __all__ = dddm.exporter()
 
 
+@export
 class NestedSamplerStatModel(MultiNestSampler):
     def run(self):
         self._fix_parameters()

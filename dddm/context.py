@@ -40,8 +40,18 @@ class Context:
      - detector objects
     """
 
-    _directories = {}
-    _detector_registry = {}
+    _directories = None
+    _detector_registry = None
+    _samplers = immutabledict({
+        'nestle': dddm.NestedSamplerStatModel,
+        'multinest': dddm.MultiNestSampler,
+        'emcee': dddm.MCMCStatModel,
+        'multinest_combined': dddm.CombinedInference,
+        })
+    _halo_classes = immutabledict({
+        'shm': dddm.SHM,
+        'shielded_shm': dddm.ShieldedSHM,
+    })
 
     def register(self, detector: dddm.Experiment):
         """Register a detector to the context"""
@@ -73,6 +83,53 @@ class Context:
         result['exists'] = [os.path.exists(p) for p in result['path']]
         result['n_files'] = [(len(os.listdir(p)) if os.path.exists(p) else 0) for p in
                              result['path']]
+
+    def get_detector(self, detector: str, **kwargs):
+        if detector not in self._detector_registry:
+            raise NotImplementedError(f'{detector} not in {self.detectors}')
+        return self._detector_registry[detector](**kwargs)
+
+    def get_sampler_for_detector(self,
+                                 wimp_mass,
+                                 cross_section,
+                                 sampler_name:str,
+                                 detector_name: ty.Union[str, list, tuple],
+                                 prior: ty.Union[str, dict],
+                                 halo_name='shm',
+                                 detector_kwargs: dict = None,
+                                 halo_kwargs:dict=None,
+                                 sampler_kwargs: dict=None,
+                                 fit_parameters=dddm.statistics.get_param_list(),
+                                 ):
+        sampler_class = self._samplers[sampler_name]
+
+        sampler_kwargs={} if not sampler_kwargs else sampler_kwargs
+        halo_kwargs={} if not halo_kwargs else halo_kwargs
+        detector_kwargs={} if not detector_kwargs else detector_kwargs
+
+        halo_model = self._halo_classes[halo_name](**halo_kwargs)
+        # TODO instead, create a super detector instead of smaller ones
+        if isinstance(detector_name, (list, tuple)):
+            if not sampler_class.allow_multiple_detectors:
+                raise NotImplementedError(f'{sampler_class} does not allow multiple detectors')
+            detector_instance = [self.get_detector(det, **detector_kwargs) for det in detector_name]
+            spectrum_instance = [dddm.DetectorSpectrum(experiment=d, dark_matter_model=halo_model)
+                                 for d in detector_instance]
+        else:
+            detector_instance = self.get_detector(detector_name, **detector_kwargs)
+            spectrum_instance = dddm.DetectorSpectrum(experiment=detector_instance,
+                                                      dark_matter_model=halo_model)
+        if isinstance(prior, str):
+            prior = dddm.get_priors(prior)
+        sampler_instance = sampler_class(wimp_mass=wimp_mass,
+                                         cross_section=cross_section,
+                                         spectrum_class=spectrum_instance,
+                                         prior=prior,
+                                         tmp_folder = self._directories['tmp_folder'],
+                                         **sampler_kwargs
+                                         )
+        return sampler_instance
+
 
     @property
     def detectors(self):

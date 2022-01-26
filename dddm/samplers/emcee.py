@@ -32,8 +32,30 @@ def default_emcee_save_dir():
 
 @export
 class MCMCStatModel(statistics.StatModel):
-    def __init__(self, *args):
-        super().__init__(*args)
+
+    def __init__(
+            self,
+            wimp_mass: ty.Union[float, int],
+            cross_section: ty.Union[float, int],
+            spectrum_class: ty.Union[detector_spectrum.DetectorSpectrum,
+                                     spectrum.GenSpectrum],
+            prior: dict,
+            tmp_folder: str,
+            fit_parameters=('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k'),
+
+            detector_name=None,
+            verbose=False,
+            notes='default',
+    ):
+        super().__init__(wimp_mass=wimp_mass,
+                         cross_section=cross_section,
+                         spectrum_class=spectrum_class,
+                         prior=prior,
+                         tmp_folder=tmp_folder,
+                         fit_parameters=fit_parameters,
+                         detector_name=detector_name,
+                         verbose=verbose,
+                         notes=notes)
         self.nwalkers = 50
         self.nsteps = 100
         self.config['fit_parameters'] = ['log_mass', 'log_cross_section']

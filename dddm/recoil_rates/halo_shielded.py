@@ -6,6 +6,7 @@ import verne
 from dddm import utils, exporter
 import warnings
 from scipy.interpolate import interp1d
+import numpy as np
 
 export, __all__ = exporter()
 
@@ -46,9 +47,9 @@ class ShieldedSHM:
         self.v_esc = v_esc_nodim * nu.km / nu.s
         self.rho_dm = rho_dm_nodim * nu.GeV / nu.c0 ** 2 / nu.cm ** 3
 
-        assert self.v_0_nodim == v_0_nodim
-        assert self.v_esc_nodim == v_esc_nodim
-        assert self.rho_dm_nodim == rho_dm_nodim
+        assert np.isclose(self.v_0_nodim, v_0_nodim), (self.v_0_nodim, v_0_nodim)
+        assert np.isclose(self.v_esc_nodim, v_esc_nodim), (self.v_esc_nodim, v_esc_nodim)
+        assert np.isclose(self.rho_dm_nodim, rho_dm_nodim), (self.rho_dm_nodim, rho_dm_nodim)
 
         # in contrast to the SHM, the earth shielding does need the mass and
         # cross-section to calculate the rates.
@@ -178,7 +179,7 @@ class ShieldedSHM:
         return self.v_esc / (nu.km / nu.s)
 
     @property
-    def rho_dm_no_dim(self):
+    def rho_dm_nodim(self):
         return self.rho_dm / (nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
 
 

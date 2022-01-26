@@ -105,6 +105,7 @@ def get_param_list():
 class StatModel:
     # Keep these fit parameters in this order
     _parameter_order = ('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k')
+    allow_multiple_detectors=False
     known_parameters = tuple(get_param_list())
     benchmark_values = None
 
