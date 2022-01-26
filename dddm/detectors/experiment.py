@@ -45,11 +45,9 @@ class Detector:
                     'location',
                     'n_energy_bins',),
     ):
-        missing = []
-        for att in attributes_should_be_set:
-            if getattr(self, att) is None:
-                missing.append(att)
-        if missing:
+        if missing := [
+            att for att in attributes_should_be_set if getattr(self, att) is None
+        ]:
             raise NotImplementedError(f'Missing {missing} for {self}')
         assert self.interaction_type in ['SI'], f'{self.interaction_type} unknown'
         # Should not raise a ValueError
