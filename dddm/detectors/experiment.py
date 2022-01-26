@@ -36,6 +36,15 @@ class Experiment:
                           'n_energy_bins',
                           )
 
+    def __init__(self,
+                 n_energy_bins=50,
+                 e_min_kev=0,
+                 e_max_kev=5,
+                 ):
+        self.n_energy_bins=n_energy_bins
+        self.e_min_kev=e_min_kev
+        self.e_max_kev=e_max_kev
+
     def __repr__(self):
         return f'{self.__class__.__name__}: {self.detector_name}. Hash:{self.detector_hash}'
 
@@ -48,14 +57,14 @@ class Experiment:
             raise NotImplementedError(f'Missing {missing} for {self}')
         assert self.interaction_type in ['SI', 'migdal_SI'], f'{self.interaction_type} unknown'
         # Should not raise a ValueError
-        self.resolution(energies_in_kev=[1])
-        self.background_function(energies_in_kev=[1])
+        self.resolution(energies_in_kev=np.array([1]))
+        self.background_function(energies_in_kev=np.array([1]))
 
-    def resolution(self, energies_in_kev):
+    def resolution(self, energies_in_kev: np.ndarray)->np.ndarray:
         """Return resolution at <energies [keV]>"""
         raise NotImplementedError
 
-    def background_function(self, energies_in_kev):
+    def background_function(self, energies_in_kev: np.ndarray)->np.ndarray:
         """Return background at <energies [keV>"""
         raise NotImplementedError
 
@@ -70,7 +79,7 @@ class Experiment:
 
     @property
     def detector_hash(self):
-        return dddm.hashablize(self.config)
+        return dddm.deterministic_hash(self.config)
 
     @staticmethod
     def _flat_resolution(n_bins: int, resolution_kev: ty.Union[float, int]):

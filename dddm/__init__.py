@@ -21,3 +21,6 @@ from .samplers import *
 
 from . import plotting
 from .plotting import *
+
+from .test_utils import *
+from . import test_utils

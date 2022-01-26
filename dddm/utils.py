@@ -407,6 +407,7 @@ class NumpyJSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+@export
 def deterministic_hash(thing, length=10):
     """
     Return a base32 lowercase string of length determined from hashing

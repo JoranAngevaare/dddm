@@ -160,6 +160,7 @@ class GenSpectrum:
             return counts
         return counts
 
+    @property
     def _allowed_requests(self):
         """Which items are we allowed to get from the experiment class"""
         allowed = list(self.detector._required_settings)

@@ -74,11 +74,16 @@ class Context:
         result['n_files'] = [(len(os.listdir(p)) if os.path.exists(p) else 0) for p in
                              result['path']]
 
+    @property
+    def detectors(self):
+        return sorted(list(self._detector_registry.keys()))
+
     @staticmethod
     def _check_detector_is_valid(detector: dddm.Experiment):
         detector()._check_class()
 
 
+@export
 def base_context():
     context = Context()
     installation_folder = dddm.__path__[0]

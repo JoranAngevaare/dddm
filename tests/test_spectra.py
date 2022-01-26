@@ -33,22 +33,29 @@ def test_simple_spectrum():
     plt.close()
 
 
+def plt_ll_sigma_mass(spec_clas, vary, det_class=dddm.examples.XenonSimple, bins=10, m=50, sig=1e-45):
+    assert vary in ['mass', 'sig'], "use sig or mass"
+    use_SHM = dddm.SHM()
+    det=det_class(n_energy_bins = bins)
+    events = spec_clas(dark_matter_model=use_SHM, experiment=det)
+    data = events.get_data(m, sig, poisson=False)
+
+
 def _galactic_spectrum_inner(
         use_SHM,
-        det='Xe',
+        det_class=dddm.examples.XenonSimple,
         event_class=dddm.GenSpectrum,
+        mw = 1,
+        sigma = 1e-35,
+        E_max = None,
         nbins=10):
-    mw = 1
-    sigma = 1e-35
-    E_max = None
 
-    event_args = (mw, sigma, use_SHM, dddm.experiment_registry[det])
-    events = event_class(*event_args)
-    
-    events.set_config({'n_energy_bins': nbins})
     if E_max:
-        events.set_config({'E_max': E_max})
-    return events.get_data(poisson=False)
+        detector=det_class(n_energy_bins=nbins, e_max_kev = E_max)
+    else:
+        detector=det_class(n_energy_bins=nbins)
+    events = event_class(use_SHM, detector)
+    return events.get_data(mw, sigma, poisson=False)
 
 
 def test_detector_spectrum():
@@ -68,15 +75,11 @@ def test_shielded_detector_spectrum():
 
 def test_detector_spectra():
     use_SHM = dddm.SHM()
-    for det, det_properties in dddm.experiment_registry.items():
-        if det_properties['type'] == 'combined':
-            # This is not implemented as such
-            continue
-        if 'bg_func' in det_properties:
-            _galactic_spectrum_inner(
-                use_SHM, 
-                det, 
-                event_class=dddm.DetectorSpectrum, 
-                nbins=1)
-        else:
-            _galactic_spectrum_inner(use_SHM, det, nbins=3)
+    ct = dddm.test_context()
+    for det, det_class in ct._detector_registry.items():
+        _galactic_spectrum_inner(
+            use_SHM,
+            det_class=det_class,
+            event_class=dddm.DetectorSpectrum,
+            nbins=5)
+

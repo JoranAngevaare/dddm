@@ -6,10 +6,7 @@ export, __all__ = dddm.exporter()
 
 class _BaseSuperCdms(Experiment):
     """Base class of superCDMS to introduce shared properties"""
-    e_min_kev = 0
-    e_max_kev = 5
     location = "SNOLAB"
-    n_energy_bins = 50
 
 
 @export

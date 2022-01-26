@@ -5,15 +5,15 @@ import numpy as np
 class XenonSimple(Experiment):
     detector_name = 'Xe_simple'
     target_material = 'Xe'
-    e_max_kev = 100
-    e_min_kev = 0
     exposure_tonne_year = 5
     energy_threshold_kev = 10
     cut_efficiency = 0.8
     detection_efficiency = 0.5
     interaction_type = 'SI'
     location = 'XENON'
-    n_energy_bins = 10
+
+    def __init__(self, n_energy_bins=10, e_min_kev=0, e_max_kev=100,):
+        super().__init__(n_energy_bins=n_energy_bins,e_min_kev=e_min_kev,e_max_kev=e_max_kev)
 
     def resolution(self, energies_in_kev):
         """Simple square root dependency of the energy resolution"""
@@ -27,15 +27,15 @@ class XenonSimple(Experiment):
 class GermaniumSimple(Experiment):
     detector_name = 'Ge_simple'
     target_material = 'Ge'
-    e_max_kev = 100
-    e_min_kev = 0
     exposure_tonne_year = 3
     energy_threshold_kev = 10
     cut_efficiency = 0.8
     detection_efficiency = 0.9
     interaction_type = 'SI'
     location = 'SUF'
-    n_energy_bins = 10
+
+    def __init__(self, n_energy_bins=10, e_min_kev=0, e_max_kev=100,):
+        super().__init__(n_energy_bins=n_energy_bins,e_min_kev=e_min_kev,e_max_kev=e_max_kev)
 
     def resolution(self, energies_in_kev):
         """Simple resolution model"""
@@ -49,15 +49,15 @@ class GermaniumSimple(Experiment):
 class ArgonSimple(Experiment):
     detector_name = 'Ar_simple'
     target_material = 'Ar'
-    e_max_kev = 100
-    e_min_kev = 0
     exposure_tonne_year = 10
     energy_threshold_kev = 30
     cut_efficiency = 0.8
     detection_efficiency = 0.8
     interaction_type = 'SI'
     location = 'XENON'  # Assume also located at LNGS
-    n_energy_bins = 10
+
+    def __init__(self, n_energy_bins=10, e_min_kev=0, e_max_kev=100,):
+        super().__init__(n_energy_bins=n_energy_bins,e_min_kev=e_min_kev,e_max_kev=e_max_kev)
 
     def resolution(self, energies_in_kev):
         """Simple square root dependency of the energy resolution"""

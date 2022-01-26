@@ -7,11 +7,8 @@ export, __all__ = dddm.exporter()
 
 class _BaseXenonNt(Experiment):
     target_material = 'Xe'
-    e_min_kev = 0
-    e_max_kev = 5
     exposure_tonne_year = 20  # https://arxiv.org/pdf/2007.08796.pdf
     location = "XENON"
-    n_energy_bins = 50
 
 
 @export
@@ -49,7 +46,7 @@ class XenonNtNr(_BaseXenonNt):
 
 
 @export
-class XenonNtMigdal(Experiment):
+class XenonNtMigdal(_BaseXenonNt):
     detector_name = 'XENONnT_Migdal'
     __version__ = '0.0.0'
 

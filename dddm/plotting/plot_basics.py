@@ -64,21 +64,20 @@ def show_ll_function(npoints=1e4, clip_val=-1e4, min_val=0.1):
     plt.ylabel("Nr")
 
 
-def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
+def plt_ll_sigma_mass(spec_clas, vary, det_class=dddm.examples.XenonSimple, bins=10, m=50, sig=1e-45):
     assert vary in ['mass', 'sig'], "use sig or mass"
     use_SHM = dddm.SHM()
-    events = spec_clas(m, sig, use_SHM, dddm.experiment_registry[det])
-    events.config['n_bins'] = bins
-    data = events.get_data(poisson=False)
+    det=det_class(n_energy_bins = bins)
+    events = spec_clas(dark_matter_model=use_SHM, experiment=det)
+    data = events.get_data(m, sig, poisson=False)
+
     if vary == 'sig':
         plt.xlabel(r'$\sigma$ $[cm^2]$')
         plt.axvline(sig, alpha=0.5, color='red', label='truth')
         var = np.linspace(0.1 * sig, 10 * sig, 30)
 
         def model(x):
-            res = spec_clas(m, x, use_SHM, dddm.experiment_registry[det])
-            res.config['n_bins'] = bins
-            return res.get_data(poisson=False)['counts']
+            return events.get_counts(m, x, poisson=False)
 
     elif vary == 'mass':
         plt.xlabel('mass [GeV/$c^2$]')
@@ -86,9 +85,7 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
         var = np.linspace(m / 10, m * 10, 50)
 
         def model(x):
-            res = spec_clas(x, sig, use_SHM, dddm.experiment_registry[det])
-            res.config['n_bins'] = bins
-            return res.get_data(poisson=False)['counts']
+            return events.get_counts(x, sig, poisson=False)
     else:
         raise ValueError(f'Can not vary {vary}')
     plr = [dddm.statistics.log_likelihood(data['counts'], model(x)) for x in
@@ -100,24 +97,24 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
     plt.ylim(np.min(plr), np.max(plr))
 
 
-def plt_ll_sigma_spec(det='Xe', bins=10, m=50, sig=1e-45):
+def plt_ll_sigma_spec(det_class=dddm.examples.XenonSimple, bins=10, m=50, sig=1e-45):
     spec = dddm.GenSpectrum
-    plt_ll_sigma_mass(spec, 'sig', det=det, bins=bins, m=m, sig=sig)
+    plt_ll_sigma_mass(spec, 'sig', det_class=det_class, bins=bins, m=m, sig=sig)
 
 
-def plt_ll_mass_spec(det='Xe', bins=10, m=50, sig=1e-45):
+def plt_ll_mass_spec(det_class=dddm.examples.XenonSimple, bins=10, m=50, sig=1e-45):
     spec = dddm.GenSpectrum
-    plt_ll_sigma_mass(spec, 'mass', det=det, bins=bins, m=m, sig=sig)
+    plt_ll_sigma_mass(spec, 'mass', det_class=det_class, bins=bins, m=m, sig=sig)
 
 
-def plt_ll_sigma_det(det='Xe', bins=10, m=50, sig=1e-45):
+def plt_ll_sigma_det(det_class=dddm.examples.XenonSimple, bins=10, m=50, sig=1e-45):
     spec = dddm.DetectorSpectrum
-    plt_ll_sigma_mass(spec, 'sig', det=det, bins=bins, m=m, sig=sig)
+    plt_ll_sigma_mass(spec, 'sig', det_class=det_class, bins=bins, m=m, sig=sig)
 
 
-def plt_ll_mass_det(det='Xe', bins=10, m=50, sig=1e-45):
+def plt_ll_mass_det(det_class=dddm.examples.XenonSimple, bins=10, m=50, sig=1e-45):
     spec = dddm.DetectorSpectrum
-    plt_ll_sigma_mass(spec, 'mass', det=det, bins=bins, m=m, sig=sig)
+    plt_ll_sigma_mass(spec, 'mass', det_class=det_class, bins=bins, m=m, sig=sig)
 
 
 def plt_priors(itot=100):
