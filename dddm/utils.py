@@ -55,7 +55,10 @@ def to_str_tuple(x: ty.Union[str, bytes, list, tuple, pd.Series, np.ndarray]) ->
         return tuple(x.tolist())
     raise TypeError(f"Expected string or tuple of strings, got {type(x)}")
 
+
 git
+
+
 @export
 def print_versions(
         modules=('dddm', 'numpy', 'numba', 'pymultinest', 'verne', 'wimprates'),
@@ -147,10 +150,10 @@ def now(tstart=None):
         res += f'\tdt=\t{(datetime.datetime.now() - tstart).seconds} s'
     return res
 
+
 @export
 def is_windows():
     return 'win' in platform
-
 
 
 def is_savable_type(item):

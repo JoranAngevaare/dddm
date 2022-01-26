@@ -28,6 +28,7 @@ def default_emcee_save_dir():
     """The name of folders where to save results from the MCMCStatModel"""
     return 'emcee'
 
+
 @export
 class MCMCStatModel(statistics.StatModel):
     def __init__(self, *args):

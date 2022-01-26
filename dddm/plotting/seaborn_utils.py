@@ -59,7 +59,9 @@ def kdeplot(x=None, *, y=None, shade=None, vertical=False, kernel=None, bw=None,
 def get_bivariate(self, common_norm, fill, levels, thresh, color, warn_singular,
                   estimate_kws, **contour_kws, ):
     if any([fill, levels, color, warn_singular, contour_kws]):
-        warnings.warn('fill, levels, color, warn_singular, contour_kws will do nothing', UserWarning)
+        warnings.warn(
+            'fill, levels, color, warn_singular, contour_kws will do nothing',
+            UserWarning)
     estimator = KDE(**estimate_kws)
 
     if not set(self.variables) - {"x", "y"}:

@@ -414,6 +414,7 @@ def smear_signal(rate, energy, sigma, bin_width):
         return rate
     return _smear_signal(rate, energy, sigma, bin_width)
 
+
 @export
 class DetectorSpectrum(dddm.recoil_rates.spectrum.GenSpectrum):
     add_background = False

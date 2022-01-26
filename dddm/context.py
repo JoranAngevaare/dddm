@@ -114,7 +114,6 @@ def load_folder_from_context(request):
     return folder
 
 
-
 def get_result_folder(*args):
     """
     bridge to work with old code when context was not yet implemented

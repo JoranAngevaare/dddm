@@ -20,6 +20,7 @@ export, __all__ = dddm.exporter()
 
 log = logging.getLogger()
 
+
 @export
 class NestedSamplerStatModel(dddm.StatModel):
 
@@ -323,8 +324,8 @@ class NestedSamplerStatModel(dddm.StatModel):
         if saved_ok and not force_index:
             return saved_in
         target_save = dddm.utils.open_save_dir(f'nes_{self.config["sampler"][:2]}',
-                                          force_index=force_index,
-                                          _hash=_hash)
+                                               force_index=force_index,
+                                               _hash=_hash)
         self.log_dict['saved_in'] = target_save
         self.log.info(f'get_save_dir\tsave_dir = {target_save}')
         return target_save

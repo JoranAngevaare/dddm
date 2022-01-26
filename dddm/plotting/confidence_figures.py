@@ -170,6 +170,7 @@ class SeabornPlot:
         kwargs.setdefault('fill', True)
         self.plot_sigma_contours(**kwargs)
 
+
 @export
 class ResultsManager:
     result_cache: list = None
