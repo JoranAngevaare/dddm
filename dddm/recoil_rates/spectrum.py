@@ -1,16 +1,12 @@
-import os
-import shutil
 import numericalunits as nu
 import numpy as np
 import pandas as pd
-import verne
 import wimprates as wr
 import dddm
-from dddm import utils, context
+from dddm import utils
 import typing as ty
 from .halo import SHM
 from .halo_shielded import ShieldedSHM
-from scipy.interpolate import interp1d
 export, __all__ = dddm.exporter()
 
 
@@ -19,85 +15,110 @@ class GenSpectrum:
     required_detector_fields = 'name material type exp_eff'.split()
 
     def __init__(self,
-                 wimp_mass: ty.Union[float, int],
-                 wimp_nucleon_cross_section: ty.Union[float, int],
-                 dark_matter_model: ty.Union[SHM, ShieldedSHM], det):
+                 dark_matter_model: ty.Union[SHM, ShieldedSHM],
+                 experiment: dddm.Experiment,
+                 ):
         """
-        :param wimp_mass: wimp mass (not log)
-        :param wimp_nucleon_cross_section: cross-section of the wimp nucleon interaction
-            (not log)
         :param dark_matter_model: the dark matter model
-        :param det: dictionary containing detector parameters
+        :param experiment: dictionary containing detector parameters
         """
-        self._check_input_detector_config(det)
-
-        # note that this is not in log scale!
-        self.mw = wimp_mass
-        self.sigma_nucleon = wimp_nucleon_cross_section
-
+        assert issubclass(experiment.__class__, dddm.Experiment)
+        self.detector = experiment
         self.dm_model = dark_matter_model
-        self.config = det.copy()
-        self.log = utils.get_logger(self.__class__.__name__)
 
     def __str__(self):
         """
         :return: sting of class info
         """
-        return f"spectrum_simple of a DM model ({self.dm_model}) in a " \
-               f"{self.config['name']} detector"
+        return f'{self.dm_model} at {self.detector}'
 
-    def get_data(self, poisson=True):
+    def get_data(self,
+                 wimp_mass: ty.Union[int, float],
+                 cross_section: ty.Union[int, float],
+                 poisson=False,
+                 ):
         """
-
+        :param wimp_mass: wimp mass (not log)
+        :param cross_section: cross-section of the wimp nucleon interaction
+            (not log)
         :param poisson: type bool, add poisson True or False
         :return: pd.DataFrame containing events binned in energy
         """
         result = pd.DataFrame()
-        result['counts'] = self.get_poisson_events() if poisson else self.get_events()
-        bins = utils.get_bins(self.E_min, self.E_max, self.n_bins)
-        result['bin_centers'] = np.mean(bins, axis=1)
-        result['bin_left'] = bins[:, 0]
-        result['bin_right'] = bins[:, 1]
+
+        bin_edges = self.get_bin_edges()
+        bin_centers = np.mean(bin_edges, axis=1)
+        bin_width = np.diff(bin_edges, axis=1)[:, 0]
+        assert len(bin_centers) == len(bin_width)
+        assert bin_width[0] == bin_edges[0][1]-bin_edges[0][0]
+        counts = self._calculate_counts(wimp_mass=wimp_mass,
+                                        cross_section=cross_section,
+                                        poisson=poisson,
+                                        bin_centers=bin_centers,
+                                        bin_width=bin_width,
+                                        bin_edges=bin_edges,
+                                        )
+        result['counts'] = counts
+        result['bin_centers'] = bin_centers
+        result['bin_left'] = bin_edges[:, 0]
+        result['bin_right'] = bin_edges[:, 1]
         result = self.set_negative_to_zero(result)
         return result
 
-    def spectrum_simple(self, benchmark):
+    def _calculate_counts(self,
+                          wimp_mass: ty.Union[int, float],
+                          cross_section: ty.Union[int, float],
+                          poisson: bool,
+                          bin_centers: np.ndarray,
+                          bin_width: np.ndarray,
+                          bin_edges: np.ndarray,
+                          ) -> np.ndarray:
+        counts = self.spectrum_simple(bin_centers,
+                                      wimp_mass=wimp_mass,
+                                      cross_section=cross_section)
+
+        if poisson:
+            counts = np.random.exponential(counts).astype(np.float)
+
+        counts *= bin_width * self.effective_exposure
+        return counts
+
+    def spectrum_simple(self,
+                        energy_bins: ty.Union[list, tuple, np.ndarray],
+                        wimp_mass: ty.Union[int, float],
+                        cross_section: ty.Union[int, float],
+                        ):
         """
         Compute the spectrum for a given mass and cross-section
-        :param benchmark: insert the kind of DM to consider (should contain Mass
-         and cross-section)
+        :param wimp_mass: wimp mass (not log)
+        :param cross_section: cross-section of the wimp nucleon interaction
+            (not log)
         :return: returns the rate
         """
-        if not isinstance(benchmark, (dict, pd.DataFrame)):
-            benchmark = {'mw': benchmark[0],
-                         'sigma_nucleon': benchmark[1]}
-        else:
-            assert 'mw' in benchmark and 'sigma_nucleon' in benchmark
 
-        material = self.config['material']
-        exp_type = self.config['type']
+        material = self.target_material
+        exp_type = self.interaction_type
 
-        self.log.debug(f'Eval {benchmark} for {material}-{exp_type}')
+        dddm.log.debug(f'Eval {wimp_mass, cross_section} for {material}-{exp_type}')
 
         if exp_type in ['SI']:
-            rate = wr.rate_wimp_std(self.get_bin_centers(),
-                                    benchmark["mw"],
-                                    benchmark["sigma_nucleon"],
+            rate = wr.rate_wimp_std(energy_bins,
+                                    wimp_mass,
+                                    cross_section,
                                     halo_model=self.dm_model,
                                     material=material
                                     )
-        elif exp_type in ['migdal']:
+        elif exp_type in ['migdal_SI']:
             # This integration takes a long time, hence, we will lower the
             # default precision of the scipy dblquad integration
             migdal_integration_kwargs = dict(epsabs=1e-4,
                                              epsrel=1e-4)
             convert_units = (nu.keV * (1000 * nu.kg) * nu.year)
             rate = convert_units * wr.rate_migdal(
-                self.get_bin_centers() * nu.keV,
-                benchmark["mw"] * nu.GeV / nu.c0 ** 2,
-                benchmark["sigma_nucleon"] * nu.cm ** 2,
-                # TODO should this be different for the different experiments?
-                q_nr=0.15,
+                energy_bins * nu.keV,
+                wimp_mass * nu.GeV / nu.c0 ** 2,
+                cross_section * nu.cm ** 2,
+                interaction='SI',
                 halo_model=self.dm_model,
                 material=material,
                 **migdal_integration_kwargs
@@ -106,54 +127,8 @@ class GenSpectrum:
             raise NotImplementedError(f'Unknown {exp_type}-interaction')
         return rate
 
-    def set_config(self, update: dict, check_if_set: bool = True) -> None:
-        """
-        Update the config with the provided update
-        :param update: a dictionary of items to update
-        :param check_if_set: Check that a previous version is actually
-            set
-        :return: None
-        """
-        assert isinstance(update, dict)
-        for key in update:
-            if check_if_set and key not in self.config:
-                message = f'{key} not in config of {self}'
-                raise ValueError(message)
-
-        self.config.update(update)
-
-    def _check_input_detector_config(self, det):
-        """Given the a detector config, check that all the required fields are available"""
-        if not isinstance(det, dict):
-            raise ValueError("Detector should be dict")
-        if missing := [
-            field for field in self.required_detector_fields if field not in det
-        ]:
-            raise ValueError(f'Missing {missing} fields in detector config, got {det}')
-
-    def get_bin_centers(self) -> np.ndarray:
-        """Given Emin and Emax, get an array with bin centers """
-        return np.mean(self.get_bin_edges(), axis=1)
-
     def get_bin_edges(self):
-        return utils.get_bins(self.E_min, self.E_max, self.n_bins)
-
-    def get_events(self):
-        """
-        :return: Events (binned)
-        """
-        assert self.config != {}, "First enter the parameters of the detector"
-        rate = self.spectrum_simple([self.mw, self.sigma_nucleon])
-        bin_width = np.diff(
-            utils.get_bins(self.E_min, self.E_max, self.n_bins),
-            axis=1)[:, 0]
-        return rate * bin_width * self.config['exp_eff']
-
-    def get_poisson_events(self):
-        """
-        :return: events with poisson noise
-        """
-        return np.random.exponential(self.get_events()).astype(np.float)
+        return utils.get_bins(self.e_min_kev, self.e_max_kev, self.n_energy_bins)
 
     def set_negative_to_zero(self, result):
         mask = result['counts'] < 0
@@ -163,14 +138,12 @@ class GenSpectrum:
             return result
         return result
 
-    @property
-    def E_min(self):
-        return self.config.get('E_min', 0)
-
-    @property
-    def E_max(self):
-        return self.config.get('E_max', 10)
-
-    @property
-    def n_bins(self):
-        return self.config.get('n_energy_bins', 50)
+    def __getattr__(self, item):
+        if hasattr(self.detector, item):
+            allowed_requests = list(self.detector._required_settings
+                                    ) + ['effective_exposure']
+            if item not in allowed_requests:
+                raise NotImplementedError(f'Ambiguous request ({item}). '
+                                          f'Only allowed are:\n{allowed_requests}')
+            return getattr(self.detector, item)
+        return super().__getattribute__(item)

@@ -6,3 +6,6 @@ from . import halo_shielded
 
 from . import spectrum
 from .spectrum import *
+
+from . import detector_spectrum
+from .detector_spectrum import *

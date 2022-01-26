@@ -9,8 +9,7 @@ import numericalunits as nu
 import numpy as np
 from datetime import datetime
 from dddm import context, utils
-from dddm.recoil_rates import halo, halo_shielded, spectrum
-from dddm.detectors import detector
+from dddm.recoil_rates import halo, halo_shielded, spectrum, detector_spectrum
 from scipy.special import loggamma
 import typing as ty
 import dddm
@@ -188,7 +187,7 @@ class StatModel:
     def set_models(self,
                    halo_model: ty.Union[halo.SHM,
                                         halo_shielded.ShieldedSHM] = 'default',
-                   spectrum_class: ty.Union[detector.DetectorSpectrum,
+                   spectrum_class: ty.Union[detector_spectrum.DetectorSpectrum,
                                             spectrum.GenSpectrum] = 'default'):
         """
         Update the config with the required settings
@@ -215,7 +214,7 @@ class StatModel:
                 rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
 
         self.config[
-            'spectrum_class'] = spectrum_class if spectrum_class != 'default' else detector.DetectorSpectrum
+            'spectrum_class'] = spectrum_class if spectrum_class != 'default' else detector_spectrum.DetectorSpectrum
 
         if halo_model != 'default' or spectrum_class != 'default':
             self.log.warning('re-evaluate benchmark')

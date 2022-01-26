@@ -3,7 +3,7 @@ import shutil
 import numericalunits as nu
 import pandas as pd
 import verne
-from dddm import utils, context, exporter
+from dddm import utils, exporter
 import warnings
 from scipy.interpolate import interp1d
 export, __all__ = exporter()
