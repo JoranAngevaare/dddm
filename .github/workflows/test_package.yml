@@ -22,10 +22,14 @@ jobs:
       fail-fast: False
       matrix:
         os: ["ubuntu-latest", "windows-latest"]
-        python-version: ["3.8"]
+        python-version: ["3.8", "3.9", "3.10"]
         test: ['coveralls', 'pytest']
         exclude:
           - os: windows-latest
+            test: coveralls
+          - python-version: 3.9
+            test: coveralls
+          - python-version: "3.10"
             test: coveralls
     steps:
       - name: Setup python
@@ -51,7 +55,6 @@ jobs:
           pip install git+https://github.com/jorana/wimprates
           git clone https://github.com/jorana/verne
           pip install -e verne
-          pip install git+https://github.com/JohannesBuchner/PyMultiNest
       - name: Install other stuff
         run: |
           pip install -r extra_requirements/requirements-tests.txt
