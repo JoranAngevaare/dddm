@@ -7,12 +7,13 @@ import os
 from sys import platform
 import numericalunits as nu
 import numpy as np
-from datetime import datetime
+from immutabledict import immutabledict
 from dddm import context, utils
 from dddm.recoil_rates import halo, halo_shielded, spectrum, detector_spectrum
 from scipy.special import loggamma
 import typing as ty
 import dddm
+
 export, __all__ = dddm.exporter()
 
 # Set a lower bound to the log-likelihood (this becomes a problem due to
@@ -89,7 +90,7 @@ def get_priors(priors_from="Evans_2019"):
         elif param['prior_type'] == 'gauss':
             param['param'] = param['mean'], param['std']
             param['dist'] = gauss_prior_distribution
-    return priors
+    return immutabledict(priors)
 
 
 def get_prior_list():
@@ -109,43 +110,47 @@ class StatModel:
 
     def __init__(
             self,
-            detector_name,
+            wimp_mass: ty.Union[float, int],
+            cross_section: ty.Union[float, int],
+            spectrum_class: ty.Union[detector_spectrum.DetectorSpectrum,
+                                     spectrum.GenSpectrum],
+            prior: dict,
+            tmp_folder: str,
+            fit_parameters=('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k'),
+
+            detector_name=None,
             verbose=False,
-            detector_config=None,
+            notes='default',
     ):
         """
         Statistical model used for Bayesian interference of detection in multiple experiments.
         :param detector_name: name of the detector (e.g. Xe)
         """
-        if detector_name not in detector.experiment_registry and detector_config is None:
-            raise ValueError('Please provide detector that is '
-                             'preconfigured or provide new one with detector_dict')
-        if detector_config is None:
-            detector_config = detector.experiment_registry[detector_name]
+        if detector_name is None:
+            detector_name = spectrum_class.detector.detector_name
+        if not issubclass(spectrum_class, detector_spectrum.GenSpectrum):
+            raise ValueError
 
-        self.config = dict(detector=detector_name,
-                           detector_config=detector_config,
-                           # poisson=False,
-                           n_energy_bins=detector_config.get('n_energy_bins', 10),
-                           earth_shielding=False,
-                           E_max=detector_config.get('E_max', 100),
-                           notes='default',
-                           start=datetime.now(),
-                           prior=None,
-                           mw=None,
-                           sigma=None,
-                           halo_model=None,
-                           spectrum_class=None,
-                           )
+        self.spectrum_class = spectrum_class
+        self.config = dict(
+            detector=detector_name,
+            notes=notes,
+            start=utils.now(),
+            prior=prior,
 
-        self.log = self.get_logger(verbose)
+            _wimp_mass=wimp_mass,
+            _cross_section=cross_section,
+            _spectrum_class=spectrum_class,
+        )
+        self.set_fit_parameters(fit_parameters)
+        self.log = self.get_logger(tmp_folder, verbose)
         self.log.info(f"initialized for {detector_name} detector.")
 
     def __str__(self):
         return (f"StatModel::for {self.config['detector']} detector. "
                 f"For info see the config file:\n{self.config}")
 
-    def get_logger(self, verbosity):
+    def get_logger(self, tmp_folder, verbosity):
         if verbosity > 1:
             level = 'DEBUG'
         elif verbosity:
@@ -154,74 +159,29 @@ class StatModel:
             level = 'WARNING'
 
         if 'win' not in platform:
-            log_path = os.path.join(dddm.context.context['tmp_folder'],
+            log_path = os.path.join(tmp_folder,
                                     f"log_{utils.now()}.log")
             self.config['logging'] = log_path
         else:
             log_path = None
 
-        return utils.get_logger(self.__class__.__name__, level,
+        return utils.get_logger(self.__class__.__name__,
+                                level,
                                 path=log_path)
 
-    def set_prior(self, priors_from):
-        self.log.info('set_prior')
-        self.config['prior'] = get_priors(priors_from)
-
-    def set_benchmark(self, mass=50, log_cross_section=-45):
+    def set_benchmark(self):
         """
         Set up the benchmark used in this statistical model. Likelihood
         of other models can be evaluated for this 'truth'
-
-        :param mass: mass of benchmark wimp in GeV. log10(mass) will
-            be saved to config
-        :param log_cross_section: cross-section of wimp in cm^2.
-            log10(sigma) will be saved to config
         """
-        mass, log_cross_section = float(mass), float(log_cross_section)
-        self.log.debug(f'taking log10 of mass of {mass}')
-        self.config['mw'] = np.log10(mass)
-        self.config['sigma'] = log_cross_section
-        if mass != 50 or log_cross_section != -45:
-            self.log.warning(f'taking log10 of mass of {mass}')
-
-    def set_models(self,
-                   halo_model: ty.Union[halo.SHM,
-                                        halo_shielded.ShieldedSHM] = 'default',
-                   spectrum_class: ty.Union[detector_spectrum.DetectorSpectrum,
-                                            spectrum.GenSpectrum] = 'default'):
-        """
-        Update the config with the required settings
-        :param halo_model: The halo model used
-        :param spectrum_class: class used to generate the response of the spectrum in the
-        detector
-        """
-
-        if self.config['earth_shielding']:
-            model = halo_shielded.ShieldedSHM(
-                log_mass=self.config['mw'],
-                log_cross_section=self.config['sigma'],
-                location=self.config['detector_config']['location'],
-                v_0=self.v_0 * nu.km / nu.s,
-                v_esc=self.v_esc * nu.km / nu.s,
-                rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
-
-            self.config['halo_model'] = halo_model if halo_model != 'default' else model
-            self.log.info(f'model is set to: {self.config["halo_model"]}')
-        else:
-            self.config['halo_model'] = halo_model if halo_model != 'default' else halo.SHM(
-                v_0=self.v_0 * nu.km / nu.s,
-                v_esc=self.v_esc * nu.km / nu.s,
-                rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
-
-        self.config[
-            'spectrum_class'] = spectrum_class if spectrum_class != 'default' else detector_spectrum.DetectorSpectrum
-
-        if halo_model != 'default' or spectrum_class != 'default':
-            self.log.warning('re-evaluate benchmark')
+        self.config['log_mass'] = np.log10(self.config['_wimp_mass'])
+        self.config['log_sigma'] = np.log10(self.config['_cross_section'])
+        # No more changes allowed
+        self.config = immutabledict(self.config)
 
     def set_fit_parameters(self, params):
-        self.log.info(f'NestedSamplersetting fit'
-                      f' parameters to {params}')
+        """Write the fit parameters to the config"""
+        self.log.info(f'NestedSamplersetting fit parameters to {params}')
         if not isinstance(params, (list, tuple)):
             raise TypeError("Set the parameter names in a list of strings")
         for param in params:
@@ -236,6 +196,24 @@ class StatModel:
             raise NameError(err_message)
         self.config['fit_parameters'] = params
 
+    def set_models(self):
+        """
+        Update the dm model with with the required settings from the prior
+        """
+        dm_model = self.spectrum_class.dm_model
+        if self._earth_shielding:
+            dm_model.log_mass = self.log_mass
+            dm_model.log_cross_section = self.log_cross_section
+            dm_model.location = self.spectrum_class.location
+            dm_model.v_0 = self.v_0 * nu.km / nu.s
+            dm_model.v_esc = self.v_esc * nu.km / nu.s
+            dm_model.rho_dm = self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3
+        else:
+            dm_model.v_0 = self.v_0 * nu.km / nu.s
+            dm_model.v_esc = self.v_esc * nu.km / nu.s
+            dm_model.rho_dm = self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3
+        assert self.spectrum_class.dm_model.v_0 == self.v_0 * nu.km / nu.s
+
     def _fix_parameters(self, _do_evaluate_benchmark=True):
         """
         This is a very important function as it makes sure all the
@@ -245,12 +223,9 @@ class StatModel:
         """
         no_prior_has_been_set = self.config['prior'] is None
         if no_prior_has_been_set:
-            self.log.warning('No prior was set so using Evans_2019')
-            self.set_prior('Evans_2019')
-        no_wimp_mass_set = self.config['mw'] is None
+            raise ValueError
+        no_wimp_mass_set = self.config.get('log_mass') is None
         if no_wimp_mass_set:
-            self.log.warning('No WIMP mass was set so using 50 GeV')
-            # ok, just use some default one
             self.set_benchmark()
         elif self.config['sigma'] is None:
             raise ValueError('Someone forgot to set sigma?!')
@@ -268,27 +243,25 @@ class StatModel:
     def check_spectrum(self):
         """Lazy alias for eval_spectrum"""
         parameter_names = self._parameter_order[:2]
-        parameter_values = [self.config['mw'], self.config['sigma']]
+        parameter_values = [self.config['log_mass'], self.config['sigma']]
         return self.eval_spectrum(parameter_values, parameter_names)
 
     def eval_benchmark(self):
         self.log.info('preparing for running, setting the benchmark')
-        df = self.check_spectrum()
-        self.benchmark_values = df['counts']
+        if self.bench_is_set:
+            raise RuntimeError
+        self.benchmark_values = self.check_spectrum()
         # Save a copy of the benchmark in the config file
         self.config['benchmark_values'] = list(self.benchmark_values)
 
-    def log_probability(self, parameter_vals, parameter_names):
+    def total_log_prior(self, parameter_vals, parameter_names):
         """
+        For each of the parameter names, read the prior
 
         :param parameter_vals: the values of the model/benchmark considered as the truth
         :param parameter_names: the names of the parameter_values
         :return:
         """
-        self.log.info('Engines running full! Lets get some probabilities')
-        if not self.bench_is_set:
-            self.eval_benchmark()
-
         # single parameter to fit
         if isinstance(parameter_names, str):
             lp = self.log_prior(parameter_vals, parameter_names)
@@ -308,11 +281,24 @@ class StatModel:
                 f"matrix-like for array-like parameter_names. Theta, "
                 f"parameter_names (provided) = "
                 f"{parameter_vals, parameter_names}")
+        return lp
+
+    def log_probability(self, parameter_vals, parameter_names):
+        """
+
+        :param parameter_vals: the values of the model/benchmark considered as the truth
+        :param parameter_names: the names of the parameter_values
+        :return:
+        """
+        self.log.debug('evaluate log probability')
+
+        lp = self.total_log_prior(parameter_vals, parameter_names)
+
         if not np.isfinite(lp):
-            return -np.inf
+            return -LL_LOW_BOUND
+
         self.log.info('loading rate for given parameters')
-        evaluated_rate = self.eval_spectrum(
-            parameter_vals, parameter_names)['counts']
+        evaluated_rate = self.eval_spectrum(parameter_vals, parameter_names)
 
         # Compute the likelihood
         ll = log_likelihood(self.benchmark_values, evaluated_rate)
@@ -347,6 +333,10 @@ class StatModel:
                 f"unknown prior type '{self.config['prior'][variable_name]['prior_type']}',"
                 f" choose either gauss or flat")
 
+    @property
+    def _earth_shielding(self):
+        return str(self.spectrum_class.dm_model) == 'shielded_shm'
+
     def eval_spectrum(self,
                       values: ty.Union[list, tuple, np.ndarray],
                       parameter_names: ty.Union[ty.List[str], ty.Tuple[str]]
@@ -363,38 +353,21 @@ class StatModel:
         """
         self.log.debug(f'evaluate spectrum for {len(values)} parameters')
         if len(values) != len(parameter_names):
-            raise ValueError(f'trying to fit {len(values)} parameters but '
-                             f'{parameter_names} are given.')
-
+            raise ValueError(f'{len(values)} != len({parameter_names})')
         if isinstance(parameter_names, str):
-            raise NotImplementedError(
-                f"Trying to fit a single parameter ({parameter_names}), such a "
-                f"feature is not implemented.")
-
+            raise NotImplementedError(f"Got single param {parameter_names}?")
+        if len(parameter_names) not in [2, 5]:
+            raise NotImplementedError(f"Use either 2 or 5 parameters to fit")
         checked_values = check_shape(values)
+        log_mass = checked_values[0]
+        log_cross_section = checked_values[1]
 
-        if len(parameter_names) == 2:
-            if (
-                parameter_names[0] != 'log_mass'
-                or parameter_names[1] != 'log_cross_section'
-            ):
-                raise NotImplementedError(
-                    f"Trying to fit two parameters ({parameter_names}), this is not implemented.")
-            self.log.debug(
-                f"evaluating {self.config['spectrum_class']} for mw = {10. ** checked_values[0]}, "
-                f"sig = {10. ** checked_values[1]}, halo model = {self.config['halo_model']} and "
-                f"detector = {self.config['detector_config']}")
-            if self.config['earth_shielding']:
-                self.log.debug('Setting spectrum to Verne in likelihood code')
-                fit_shm = halo_shielded.ShieldedSHM(
-                    log_mass=checked_values[0],  # self.config['mw'],
-                    log_cross_section=checked_values[1],  # self.config['sigma'],
-                    location=self.config['detector_config']['location'],
-                    v_0=self.v_0 * nu.km / nu.s,
-                    v_esc=self.v_esc * nu.km / nu.s,
-                    rho_dm=self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
-            else:
-                fit_shm = self.config['halo_model']
+        # Update dark matter parameters in place
+        dm_class = self.spectrum_class.dm_model
+        if self._earth_shielding and len(parameter_names) >= 2:
+            dm_class.log_cross_section = log_cross_section
+            dm_class.log_mass = log_mass
+            assert self.spectrum_class.dm_model.log_mass == log_mass
 
         elif len(parameter_names) == 5:
             if parameter_names != self._parameter_order[:len(parameter_names)]:
@@ -403,69 +376,20 @@ class StatModel:
                     f"{self._parameter_order[:len(parameter_names)]} rather than "
                     f"{parameter_names}.")
 
-            if self.config['earth_shielding']:
-                self.log.debug('Setting spectrum to Verne in likelihood code')
-                fit_shm = halo_shielded.ShieldedSHM(
-                    log_mass=checked_values[0],  # 'mw
-                    log_cross_section=checked_values[1],  # 'sigma'
-                    location=self.config['detector_config']['location'],
-                    v_0=checked_values[2] * nu.km / nu.s,  # 'v_0'
-                    v_esc=checked_values[3] * nu.km / nu.s,  # 'v_esc'
-                    rho_dm=checked_values[
-                        4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)  # 'density'
-            else:
-                self.log.debug('Using SHM in likelihood code')
-                fit_shm = halo.SHM(
-                    v_0=checked_values[2] * nu.km / nu.s,
-                    v_esc=checked_values[3] * nu.km / nu.s,
-                    rho_dm=checked_values[4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
+            v_0 = checked_values[2] * nu.km / nu.s
+            v_esc = checked_values[3] * nu.km / nu.s
+            rho_dm = checked_values[4] * nu.GeV / nu.c0 ** 2 / nu.cm ** 3
+            dm_class.v_0 = v_0
+            dm_class.v_esc = v_esc
+            dm_class.rho_dm = rho_dm
+            assert self.spectrum_class.dm_model.rho_dm == rho_dm
 
-        elif len(parameter_names) > 2:
-            raise NotImplementedError(
-                f"Not so quickly cowboy, before you code fitting "
-                f"{len(parameter_names)} parameters or more, first code it! "
-                f"You are now trying to fit {parameter_names}. Make sure that "
-                f"you are not using forcing a string in this part of the code)")
-        else:
-            raise NotImplementedError(
-                f"Something strange went wrong here. Trying to fit for the"
-                f"parameter_names = {parameter_names}")
+        spectrum = self.spectrum_class.get_counts(
+            wimp_mass=10. ** log_mass,
+            cross_section=10. ** log_cross_section,
+            poisson=False)
 
-        spectrum = self.config['spectrum_class'](
-            10. ** checked_values[0],
-            10. ** checked_values[1],
-            fit_shm,
-            self.config['detector_config'])
-
-        spectrum = self.config_to_spectrum(spectrum)
-        binned_spectrum = spectrum.get_data(poisson=False)
-        self.log.debug('we have results!')
-
-        if np.any(binned_spectrum['counts'] < 0):
-            error_message = (
-                f"Finding negative rates. Presumably v_esc is too small. "
-                f"Or one or more priors are not constrained correctly. "
-                f"dump of parameters:\n" f"{parameter_names} = {values}."
-            )
-            if 'migd' not in self.config['detector']:
-                raise ValueError(error_message)
-
-            binned_spectrum = spectrum.set_negative_to_zero(binned_spectrum)
-            self.log.error(error_message)
         self.log.debug('returning results')
-        return binned_spectrum
-
-    def config_to_spectrum(self, spectrum,
-                           copy_fields=('E_min',
-                                        'E_max',
-                                        'n_energy_bins',
-                                        )
-                           ):
-        """Set the config of the spectrum-class to have the same value as we do"""
-        for to_copy in copy_fields:
-            if to_copy in self.config:
-                self.log.info(f'set {to_copy} to {self.config[to_copy]}')
-                spectrum.set_config({to_copy: self.config[to_copy]})
         return spectrum
 
     def read_priors_mean(self, prior_name) -> ty.Union[int, float]:
@@ -488,7 +412,7 @@ class StatModel:
 
     @property
     def log_mass(self):
-        return self.config['mw']
+        return self.config['log_mass']
 
     @property
     def log_cross_section(self):

@@ -17,6 +17,7 @@ from base64 import b32encode
 from hashlib import sha1
 from collections.abc import Mapping
 import json
+
 log = logging.getLogger()
 
 

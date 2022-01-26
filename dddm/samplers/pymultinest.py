@@ -16,21 +16,44 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import special as spsp
 import dddm
+import typing as ty
+
 export, __all__ = dddm.exporter()
 
 log = logging.getLogger()
 
 
 @export
-class NestedSamplerStatModel(dddm.StatModel):
+class MultiNestSampler(dddm.StatModel):
+    def __init__(self,
+                 wimp_mass: ty.Union[float, int],
+                 cross_section: ty.Union[float, int],
+                 spectrum_class: ty.Union[dddm.DetectorSpectrum,
+                                          dddm.GenSpectrum],
+                 prior: dict,
+                 tmp_folder: str,
+                 fit_parameters=('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k'),
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+                 detector_name=None,
+                 verbose=False,
+                 notes='default',
+                 nlive=1024,
+                 tol=0.1,
+                 ):
+        super().__init__(wimp_mass=wimp_mass,
+                         cross_section=cross_section,
+                         spectrum_class=spectrum_class,
+                         prior=prior,
+                         tmp_folder=tmp_folder,
+                         fit_parameters=fit_parameters,
+                         detector_name=detector_name,
+                         verbose=verbose,
+                         notes=notes,
+                         )
 
         self.config.update(
-            {'tol': 0.1,  # Tolerance for sampling
-             'nlive': 1024,  # number of live points
-             'sampler': 'multinest',
+            {'tol': tol,  # Tolerance for sampling
+             'nlive': nlive,  # number of live points
              })
         self.log_dict = {
             'did_run': False,
@@ -39,19 +62,11 @@ class NestedSamplerStatModel(dddm.StatModel):
             'garbage_bin': []}
 
         self.result = False
-        self.set_fit_parameters(('log_mass', 'log_cross_section'))
 
     def check_did_run(self):
         if not self.log_dict['did_run']:
             self.log.info('did not run yet, lets fire it up!')
-            if self.config['sampler'] == 'nestle':
-                self.run_nestle()
-            elif self.config['sampler'] == 'multinest':
-                self.run_multinest()
-            else:
-                raise NotImplementedError(
-                    f'No such sampler as {self.config["sampler"]}, perhaps '
-                    f'try nestle or multinest')
+            self.run()
         else:
             self.log.info('did run')
 
@@ -119,94 +134,33 @@ class NestedSamplerStatModel(dddm.StatModel):
             for i, val in enumerate(theta)]
         return np.array(result)
 
-    def run_nestle(self):
-        self._fix_parameters()
-        self._print_before_run()
-        if self.config['sampler'] != 'nestle':
-            raise RuntimeError(f'Trying to run nestle but initialization '
-                               f'requires {self.config["sampler"]}')
-
-        # Do the import of nestle inside the class such that the package can be
-        # loaded without nestle
-        try:
-            import nestle
-        except ModuleNotFoundError:
-            raise ModuleNotFoundError(
-                'package nestle not found. See README for installation')
-
-        self.log.debug('We made it to my core function, lets do that optimization')
-        method = 'multi'  # use MutliNest algorithm
-        ndim = len(self.config['fit_parameters'])
-        tol = self.config['tol']  # the stopping criterion
-
-        assert_str = f"Unknown configuration of fit pars: {self.config['fit_parameters']}"
-        assert self.config["fit_parameters"] == self.known_parameters[:ndim], assert_str
-
-        self.log.warning(f'run_nestle::\tstart_fit for {ndim} parameters')
-
-        start = datetime.datetime.now()
-        try:
-            self.result = nestle.sample(
-                self._log_probability_nested,
-                self._log_prior_transform_nested,
-                ndim,
-                method=method,
-                npoints=self.config['nlive'],
-                maxiter=self.config.get('max_iter'),
-                dlogz=tol)
-        except ValueError as e:
-            self.config['fit_time'] = -1
-            self.log.error(
-                f'Nestle did not finish due to a ValueError. Was running with'
-                f'{self.config["fit_parameters"]}')
-            raise e
-
-        end = datetime.datetime.now()
-        dt = (end - start).total_seconds()
-        self.log.info(f'fit_done in {dt} s ({dt / 3600} h)')
-        self.config['fit_time'] = dt
-        self.log_dict['did_run'] = True
-        self.log.info('Finished with running optimizer!')
-
     def _print_before_run(self):
         self.log.warning(
             f"""
             --------------------------------------------------
             {dddm.utils.now()}\n\tFinal print of all of the set options:
-            self.config['tol'] = {self.config['tol']}
-            self.config['nlive'] = {self.config['nlive']}
-            self.config["sampler"] = {self.config["sampler"]}
             self.log = {self.log}
             self.result = {self.result}
-            self.config["fit_parameters"] = {self.config["fit_parameters"]}
-            halo_model = {self.config['halo_model']} with:
-                v_0 = {self.config['halo_model'].parameter_dict()}
             self.benchmark_values = {np.array(self.benchmark_values)}
             self.config = {self.config}
             --------------------------------------------------
             """
         )
 
-    def run_multinest(self):
+    def run(self):
         self._fix_parameters()
         self._print_before_run()
-        if self.config["sampler"] != 'multinest':
-            raise ValueError(f'Wrong sampler {self.config["sampler"]}!')
-        # Do the import of multinest inside the class such that the package can be
-        # loaded without multinest
         try:
             from pymultinest.solve import run, Analyzer, solve
-        except ModuleNotFoundError:
+        except ModuleNotFoundError as e:
             raise ModuleNotFoundError(
-                'package pymultinest not found. See README for installation')
+                'package pymultinest not found. See README') from e
 
         n_dims = len(self.config["fit_parameters"])
         tol = self.config['tol']  # the stopping criterion
         save_at = self.get_save_dir()
-        assert_str = f'Unknown configuration of fit pars: {self.config["fit_parameters"]}'
-        assert self.config["fit_parameters"] == self.known_parameters[:n_dims], assert_str
 
-        self.log.warning('start_fit for %i parameters' % n_dims)
+        self.log.warning(f'start_fit for {n_dims} parameters')
 
         start = datetime.datetime.now()
 
@@ -231,7 +185,7 @@ class NestedSamplerStatModel(dddm.StatModel):
 
         # Open a save-folder after successful running multinest. Move the
         # multinest results there.
-        dddm.utils.check_folder_for_file(save_at)
+        dddm.context.check_folder_for_file(save_at)
         end = datetime.datetime.now()
         dt = (end - start).total_seconds()
         self.log.info(f'fit_done in {dt} s ({dt / 3600} h)')
@@ -249,72 +203,37 @@ class NestedSamplerStatModel(dddm.StatModel):
         # keep a dictionary of all the results
         resdict = {}
 
-        if self.config["sampler"] == 'multinest':
-            # Do the import of multinest inside the class such that the package can be
-            # loaded without multinest
-            try:
-                from pymultinest.solve import run, Analyzer, solve
-            except ModuleNotFoundError:
-                raise ModuleNotFoundError(
-                    'package pymultinest not found. See README for installation')
-            self.log.info('start analyzer of results')
-            analyzer = Analyzer(len(self.config['fit_parameters']),
-                                outputfiles_basename=self.result_file)
-            # Taken from multinest.solve
-            self.result = analyzer.get_stats()
-            samples = analyzer.get_equal_weighted_posterior()[:, :-1]
+        # Do the import of multinest inside the class such that the package can be
+        # loaded without multinest
+        try:
+            from pymultinest.solve import run, Analyzer, solve
+        except ModuleNotFoundError:
+            raise ModuleNotFoundError(
+                'package pymultinest not found. See README for installation')
+        self.log.info('start analyzer of results')
+        analyzer = Analyzer(len(self.config['fit_parameters']),
+                            outputfiles_basename=self.result_file)
+        # Taken from multinest.solve
+        self.result = analyzer.get_stats()
+        samples = analyzer.get_equal_weighted_posterior()[:, :-1]
 
-            self.log.info('parameter values:')
-            for name, col in zip(self.config['fit_parameters'],
-                                 samples.transpose()):
-                self.log.info(
-                    '%15s : %.3f +- %.3f' %
-                    (name, col.mean(), col.std()))
-                resdict[name + '_fit_res'] = (
-                    '{0:5.2f} +/- {1:5.2f}'.format(col.mean(), col.std()))
-                if 'log_' in name:
-                    resdict[name[4:] + '_fit_res'] = '%.3g +/- %.2g' % (
-                        10. ** col.mean(), 10. ** (col.mean()) * np.log(10.) * col.std())
-                    self.log.info(f'\t {name[4:]},'
-                                  f' {resdict[name[4:] + "_fit_res"]}')
-            resdict['n_samples'] = len(samples.transpose()[0])
-            # Pass the samples to the self.result to be saved.
-            self.result['samples'] = samples
-        elif self.config["sampler"] == 'nestle':
-            # Do the import of nestle inside the class such that the package can be
-            # loaded without nestle
-            try:
-                import nestle
-            except ModuleNotFoundError:
-                raise ModuleNotFoundError(
-                    'package nestle not found. See README for installation')
-            # taken from mattpitkin.github.io/samplers-demo/pages/samplers-samplers-everywhere/#Nestle  # noqa
-            # estimate of the statistical uncertainty on logZ
-            logZerrnestle = np.sqrt(self.result.h / self.config['nlive'])
-            # re-scale weights to have a maximum of one
-            nweights = self.result.weights / np.max(self.result.weights)
-            # get the probability of keeping a sample from the weights
-            keepidx = np.where(np.random.rand(len(nweights)) < nweights)[0]
-            # get the posterior samples
-            samples_nestle = self.result.samples[keepidx, :]
-            # estimate of the statistcal uncertainty on logZ
-            resdict['nestle_nposterior'] = len(samples_nestle)
-            resdict['nestle_time'] = self.config['fit_time']  # run time
-            # log marginalised likelihood
-            resdict['nestle_logZ'] = self.result.logz
-            resdict['nestle_logZerr'] = logZerrnestle  # uncertainty on log(Z)
-            resdict['summary'] = self.result.summary()
-            p, cov = nestle.mean_and_cov(
-                self.result.samples, self.result.weights)
-            for i, key in enumerate(self.config['fit_parameters']):
-                resdict[key + '_fit_res'] = (
-                    '{0:5.2f} +/- {1:5.2f}'.format(p[i], np.sqrt(cov[i, i])))
-                self.log.info(f'\t, {key}, {resdict[key + "_fit_res"]}')
-                if 'log_' in key:
-                    resdict[key[4:] + '_fit_res'] = '%.3g +/- %.2g' % (
-                        10. ** p[i], 10. ** (p[i]) * np.log(10) * np.sqrt(cov[i, i]))
-                    self.log.info(
-                        f'\t, {key[4:]}, {resdict[key[4:] + "_fit_res"]}')
+        self.log.info('parameter values:')
+        for name, col in zip(self.config['fit_parameters'],
+                             samples.transpose()):
+            self.log.info(
+                '%15s : %.3f +- %.3f' %
+                (name, col.mean(), col.std()))
+            resdict[name + '_fit_res'] = (
+                '{0:5.2f} +/- {1:5.2f}'.format(col.mean(), col.std()))
+            if 'log_' in name:
+                resdict[name[4:] + '_fit_res'] = '%.3g +/- %.2g' % (
+                    10. ** col.mean(), 10. ** (col.mean()) * np.log(10.) * col.std())
+                self.log.info(f'\t {name[4:]},'
+                              f' {resdict[name[4:] + "_fit_res"]}')
+        resdict['n_samples'] = len(samples.transpose()[0])
+        # Pass the samples to the self.result to be saved.
+        self.result['samples'] = samples
+
         self.log.info('Alright we got all the info we need')
         return resdict
 
@@ -323,9 +242,10 @@ class NestedSamplerStatModel(dddm.StatModel):
         saved_ok = isinstance(saved_in, str) and os.path.exists(saved_in)
         if saved_ok and not force_index:
             return saved_in
-        target_save = dddm.context.open_save_dir(f'nes_{self.config["sampler"][:2]}',
-                                               force_index=force_index,
-                                               _hash=_hash)
+        target_save = dddm.context.open_save_dir(
+            f'nes_{self.__class__.__name__}',
+            force_index=force_index,
+            _hash=_hash)
         self.log_dict['saved_in'] = target_save
         self.log.info(f'get_save_dir\tsave_dir = {target_save}')
         return target_save
@@ -362,7 +282,7 @@ class NestedSamplerStatModel(dddm.StatModel):
 
         for col in self.result.keys():
             if col == 'samples' or not isinstance(col, dict):
-                if self.config["sampler"] == 'multinest' and col == 'samples':
+                if col == 'samples':
                     # in contrast to nestle, multinest returns the weighted
                     # samples.
                     store_at = os.path.join(save_dir,
@@ -384,21 +304,13 @@ class NestedSamplerStatModel(dddm.StatModel):
     def show_corner(self):
         self.check_did_save()
         save_dir = self.log_dict['saved_in']
-
-        if self.config['sampler'] == 'multinest':
-            combined_results = load_multinest_samples_from_file(save_dir)
-            multinest_corner(combined_results, save_dir)
-        elif self.config['sampler'] == 'nestle':
-            combined_results = load_nestle_samples_from_file(save_dir)
-            nestle_corner(combined_results, save_dir)
-        else:
-            # This cannot happen
-            raise ValueError(f"Impossible, sampler was {self.config['sampler']}")
+        combined_results = load_multinest_samples_from_file(save_dir)
+        multinest_corner(combined_results, save_dir)
         self.log.info('Enjoy the plot. Maybe you do want to save it too?')
 
 
 @export
-class CombinedInference(NestedSamplerStatModel):
+class CombinedInference(MultiNestSampler):
     def __init__(self, targets, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -412,7 +324,7 @@ class CombinedInference(NestedSamplerStatModel):
         self.sub_detectors = targets
         self.config['sub_sets'] = targets
         self.sub_classes = [
-            NestedSamplerStatModel(det)
+            MultiNestSampler(det)
             for det in self.sub_detectors
         ]
         self.log.debug(f'Sub detectors are set: {self.sub_classes}')
@@ -473,28 +385,6 @@ def convert_dic_to_savable(config):
             result[key] = convert_dic_to_savable(result[key])
         else:
             result[key] = str(result[key])
-    return result
-
-
-def load_nestle_samples_from_file(load_dir):
-    log.info(f'load_nestle_samples::\tloading {load_dir}')
-    keys = ['config', 'res_dict', 'h', 'logl', 'logvol', 'logz', 'logzerr',
-            'ncall', 'niter', 'samples', 'weights']
-    result = {}
-    files_in_dir = os.listdir(load_dir)
-    for key in keys:
-        for file in files_in_dir:
-            if key + '.npy' in file:
-                result[key] = np.load(
-                    os.path.join(load_dir, file),
-                    allow_pickle=True)
-                break
-        else:
-            raise FileNotFoundError(f'No {key} in {load_dir} only:\n{files_in_dir}')
-        if key in ['config', 'res_dict']:
-            result[key] = result[key].item()
-    log.info(
-        f"load_nestle_samples::\tdone loading\naccess result with:\n{keys}")
     return result
 
 
@@ -574,10 +464,6 @@ def multinest_corner(
     fig.axes[1].text(0, 1, info, verticalalignment='top')
     if save:
         plt.savefig(f"{save}corner.png", dpi=200)
-
-
-def nestle_corner(result, save=False):
-    multinest_corner(result, save, _result_key='samples', _weights=True)
 
 
 def solve_multinest(LogLikelihood, Prior, n_dims, **kwargs):

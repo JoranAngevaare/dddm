@@ -34,8 +34,6 @@ class Experiment:
                           'interaction_type',
                           'location',
                           'n_energy_bins',
-                          'resolution',
-                          'background_function',
                           )
 
     def __repr__(self):
@@ -43,8 +41,7 @@ class Experiment:
 
     def _check_class(self):
         missing = []
-        for att in set(self._required_settings) - {'resolution',
-                                                   'background_function'}:
+        for att in set(self._required_settings):
             if getattr(self, att) is None:
                 missing.append(att)
         if missing:

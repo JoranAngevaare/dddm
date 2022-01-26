@@ -5,6 +5,7 @@ import numpy as np
 import dddm
 from .spectrum import GenSpectrum
 import typing as ty
+
 export, __all__ = dddm.exporter()
 
 
@@ -16,6 +17,7 @@ class DetectorSpectrum(GenSpectrum):
      - energy resolution
      - energy threshold
     """
+
     def __str__(self):
         return f'Detector effects convolved {super().__repr__()}'
 
@@ -139,11 +141,11 @@ def _smear_signal(rate, energy, sigma, bin_width, result_buffer):
 
 
 def _epsilon(e_nr, atomic_number_z):
-    return 11.5 * e_nr * (atomic_number_z**(-7/3))
+    return 11.5 * e_nr * (atomic_number_z ** (-7 / 3))
 
 
 def _g(e_nr, atomic_number_z):
-    eps = _epsilon(e_nr,atomic_number_z)
+    eps = _epsilon(e_nr, atomic_number_z)
     a = 3 * (eps ** 0.15)
     b = 0.7 * (eps ** 0.6)
     return a + b + eps

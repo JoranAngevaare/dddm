@@ -1,4 +1,5 @@
 __version__ = '2.1.0'
+
 from .utils import *
 
 from . import utils
@@ -8,7 +9,6 @@ from .detectors import *
 
 from . import recoil_rates
 from .recoil_rates import *
-
 
 from . import context
 from .context import *
@@ -21,5 +21,3 @@ from .samplers import *
 
 from . import plotting
 from .plotting import *
-
-

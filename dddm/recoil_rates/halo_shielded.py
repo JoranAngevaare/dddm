@@ -6,38 +6,49 @@ import verne
 from dddm import utils, exporter
 import warnings
 from scipy.interpolate import interp1d
+
 export, __all__ = exporter()
 
 
 @export
 class ShieldedSHM:
     """
-        class used to pass a halo model to the rate computation based on the
-        earth shielding effect as calculated by Verne
-        must contain:
-        :param v_esc -- escape velocity (multiplied by units)
-        :param rho_dm -- density in mass/volume of dark matter at the Earth (multiplied by units)
-        The standard halo model also allows variation of v_0
-        :param v_0 -- v0 of the velocity distribution (multiplied by units)
-        :function velocity_dist -- function taking v,t giving normalised
-        velocity distribution in earth rest-frame.
-       """
+    class used to pass a halo model to the rate computation based on the
+    earth shielding effect as calculated by Verne
+    must contain:
 
-    def __init__(self, v_0=None, v_esc=None, rho_dm=None,
-                 log_cross_section=None, log_mass=None, location=None):
-        # This may seem somewhat counter intuitive. But we want to use similar
-        # input as to SHM (see above) to that end, we here divide the input by
-        # the respective units
-        self.v_0_nodim = 230 if v_0 is None else v_0 / (nu.km / nu.s)
-        self.v_esc_nodim = 544 if v_esc is None else v_esc / (nu.km / nu.s)
-        self.rho_dm_nodim = (0.3 if rho_dm is None else
-                             rho_dm / (nu.GeV / nu.c0 ** 2 / nu.cm ** 3))
+    :param v_esc -- escape velocity (multiplied by units)
+    :param rho_dm -- density in mass/volume of dark matter at the Earth (multiplied by units)
+        The standard halo model also allows variation of v_0
+    :param v_0 -- v0 of the velocity distribution (multiplied by units)
+    :function velocity_dist -- function taking v,t giving normalised
+        velocity distribution in earth rest-frame.
+    """
+
+    def __init__(self,
+                 location,
+                 file_folder='./verne_files',
+                 v_0=None,
+                 v_esc=None,
+                 rho_dm=None,
+                 log_cross_section=None,
+                 log_mass=None,
+
+                 ):
+        v_0_nodim = 230 if v_0 is None else v_0 / (nu.km / nu.s)
+        v_esc_nodim = 544 if v_esc is None else v_esc / (nu.km / nu.s)
+        rho_dm_nodim = (0.3 if rho_dm is None else
+                        rho_dm / (nu.GeV / nu.c0 ** 2 / nu.cm ** 3))
 
         # Here we keep the units dimensionful as these parameters are requested
         # by wimprates and therefore must have dimensions
-        self.v_0 = self.v_0_nodim * nu.km / nu.s
-        self.v_esc = self.v_esc_nodim * nu.km / nu.s
-        self.rho_dm = self.rho_dm_nodim * nu.GeV / nu.c0 ** 2 / nu.cm ** 3
+        self.v_0 = v_0_nodim * nu.km / nu.s
+        self.v_esc = v_esc_nodim * nu.km / nu.s
+        self.rho_dm = rho_dm_nodim * nu.GeV / nu.c0 ** 2 / nu.cm ** 3
+
+        assert self.v_0_nodim == v_0_nodim
+        assert self.v_esc_nodim == v_esc_nodim
+        assert self.rho_dm_nodim == rho_dm_nodim
 
         # in contrast to the SHM, the earth shielding does need the mass and
         # cross-section to calculate the rates.
@@ -58,6 +69,7 @@ class ShieldedSHM:
 
         self.itp_func = None
         self.log = utils.get_logger(self.__class__.__name__)
+        self.file_folder = file_folder
 
     def __str__(self):
         # The standard halo model observed at some location shielded from strongly
@@ -72,7 +84,7 @@ class ShieldedSHM:
         """
 
         # set up folders and names
-        file_folder = context.context['verne_files']
+        file_folder = self.file_folder
         file_name = os.path.join(file_folder, self.fname + '_avg' + '.csv')
         utils.check_folder_for_file(os.path.join(file_folder, self.fname))
 
@@ -156,6 +168,18 @@ class ShieldedSHM:
             log_mass=self.log_mass,
             location=self.location,
         )
+
+    @property
+    def v_0_nodim(self):
+        return self.v_0 / (nu.km / nu.s)
+
+    @property
+    def v_esc_nodim(self):
+        return self.v_esc / (nu.km / nu.s)
+
+    @property
+    def rho_dm_no_dim(self):
+        return self.rho_dm / (nu.GeV / nu.c0 ** 2 / nu.cm ** 3)
 
 
 class VerneSHM(ShieldedSHM):

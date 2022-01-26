@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from dddm import statistics, utils
 import dddm
+
 export, __all__ = dddm.exporter()
 log = logging.getLogger()
 

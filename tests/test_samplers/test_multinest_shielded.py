@@ -1,6 +1,7 @@
 import dddm
 from unittest import skipIf
 
+
 @skipIf(not dddm.is_installed('pymultinest'), 'pymultinest is not installed')
 @skipIf(dddm.is_windows(), "Multinest only works on linux")
 def test_nested_simple_multinest_earth_shielding():

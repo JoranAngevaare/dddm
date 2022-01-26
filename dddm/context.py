@@ -10,6 +10,7 @@ from immutabledict import immutabledict
 import typing as ty
 import verne
 import dddm
+
 export, __all__ = dddm.exporter()
 __all__ += ['log']
 
@@ -39,7 +40,7 @@ class Context:
      - detector objects
     """
 
-    _directories={}
+    _directories = {}
     _detector_registry = {}
 
     def register(self, detector: dddm.Experiment):
@@ -70,7 +71,8 @@ class Context:
         result = {'name': list(self._directories.keys())}
         result['path'] = [self._directories[name] for name in result['name']]
         result['exists'] = [os.path.exists(p) for p in result['path']]
-        result['n_files'] = [(len(os.listdir(p)) if os.path.exists(p) else 0) for p in result['path']]
+        result['n_files'] = [(len(os.listdir(p)) if os.path.exists(p) else 0) for p in
+                             result['path']]
 
     @staticmethod
     def _check_detector_is_valid(detector: dddm.Experiment):
@@ -93,6 +95,7 @@ def base_context():
     for detector in base_detectors:
         context.register(detector)
     return context
+
 
 def get_temp():
     if 'TMPDIR' in os.environ and os.access(os.environ['TMPDIR'], os.W_OK):

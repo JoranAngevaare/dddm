@@ -7,6 +7,7 @@ from dddm import utils
 import typing as ty
 from .halo import SHM
 from .halo_shielded import ShieldedSHM
+
 export, __all__ = dddm.exporter()
 
 
@@ -36,21 +37,21 @@ class GenSpectrum:
                  wimp_mass: ty.Union[int, float],
                  cross_section: ty.Union[int, float],
                  poisson=False,
-                 ):
+                 return_counts=False,
+                 ) -> ty.Union[pd.DataFrame, np.ndarray]:
         """
         :param wimp_mass: wimp mass (not log)
         :param cross_section: cross-section of the wimp nucleon interaction
             (not log)
         :param poisson: type bool, add poisson True or False
+        :param return_counts: instead of a dataframe, return counts only
         :return: pd.DataFrame containing events binned in energy
         """
-        result = pd.DataFrame()
-
         bin_edges = self.get_bin_edges()
         bin_centers = np.mean(bin_edges, axis=1)
         bin_width = np.diff(bin_edges, axis=1)[:, 0]
         assert len(bin_centers) == len(bin_width)
-        assert bin_width[0] == bin_edges[0][1]-bin_edges[0][0]
+        assert bin_width[0] == bin_edges[0][1] - bin_edges[0][0]
         counts = self._calculate_counts(wimp_mass=wimp_mass,
                                         cross_section=cross_section,
                                         poisson=poisson,
@@ -58,12 +59,33 @@ class GenSpectrum:
                                         bin_width=bin_width,
                                         bin_edges=bin_edges,
                                         )
+        counts = self.set_negative_to_zero(counts)
+        if return_counts:
+            return counts
+
+        result = pd.DataFrame()
         result['counts'] = counts
         result['bin_centers'] = bin_centers
         result['bin_left'] = bin_edges[:, 0]
         result['bin_right'] = bin_edges[:, 1]
-        result = self.set_negative_to_zero(result)
         return result
+
+    def get_counts(self,
+                   wimp_mass: ty.Union[int, float],
+                   cross_section: ty.Union[int, float],
+                   poisson=False,
+                   ) -> np.array:
+        """
+        :param wimp_mass: wimp mass (not log)
+        :param cross_section: cross-section of the wimp nucleon interaction
+            (not log)
+        :param poisson: type bool, add poisson True or False
+        :return: array of counts/bin
+        """
+        return self.get_data(wimp_mass=wimp_mass,
+                             cross_section=cross_section,
+                             poisson=poisson,
+                             return_counts=True)
 
     def _calculate_counts(self,
                           wimp_mass: ty.Union[int, float],
@@ -130,20 +152,27 @@ class GenSpectrum:
     def get_bin_edges(self):
         return utils.get_bins(self.e_min_kev, self.e_max_kev, self.n_energy_bins)
 
-    def set_negative_to_zero(self, result):
-        mask = result['counts'] < 0
+    def set_negative_to_zero(self, counts: np.ndarray):
+        mask = counts < 0
         if np.any(mask):
             self.log.warning('Finding negative rates. Doing hard override!')
-            result['counts'][mask] = 0
-            return result
-        return result
+            counts[mask] = 0
+            return counts
+        return counts
+
+    def _allowed_requests(self):
+        """Which items are we allowed to get from the experiment class"""
+        allowed = list(self.detector._required_settings)
+        allowed += ['effective_exposure',
+                    'resolution',
+                    'background_function',
+                    ]
+        return allowed
 
     def __getattr__(self, item):
         if hasattr(self.detector, item):
-            allowed_requests = list(self.detector._required_settings
-                                    ) + ['effective_exposure']
-            if item not in allowed_requests:
+            if item not in self._allowed_requests:
                 raise NotImplementedError(f'Ambiguous request ({item}). '
-                                          f'Only allowed are:\n{allowed_requests}')
+                                          f'Only allowed are:\n{self._allowed_requests}')
             return getattr(self.detector, item)
         return super().__getattribute__(item)
