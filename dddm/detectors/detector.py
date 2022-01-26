@@ -5,6 +5,7 @@ import numba
 import numpy as np
 import dddm
 
+
 def det_res_Xe(E):
     """
     :param E: recoil energy (in keV)

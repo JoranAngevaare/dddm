@@ -6,4 +6,3 @@ from . import halo_shielded
 
 from . import spectrum
 from .spectrum import *
-
