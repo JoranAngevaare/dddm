@@ -60,7 +60,7 @@ def test_detector_spectrum():
 
 
 def test_shielded_detector_spectrum():
-    use_SHM = dddm.VerneSHM()
+    use_SHM = dddm.ShieldedSHM()
     _galactic_spectrum_inner(use_SHM)
 
 

@@ -10,17 +10,6 @@ backups/*
 build/
 dist/
 finished_sims.csv
-notebooks/2020_02_02_figs/
-notebooks/2020_02_24_sanity_checks/
-submit_to_stoomboot/.ipynb_checkpoints/
-submit_to_stoomboot/cleanup-spectra.ipynb
-submit_to_stoomboot/example.txt
-submit_to_stoomboot/kill_all.py
-submit_to_stoomboot/profiles/
-submit_to_stoomboot/scripts/
-submit_to_stoomboot/some_script.py
-submit_to_stoomboot/submit_test.sh
-submit_to_stoomboot/test_submit.sh
 *.ipynb
 Untitled*
 
@@ -35,7 +24,7 @@ notebooks/.ipynb_checkpoints/*
 notebooks/.ipynb_checkpoints*
 .idea*
 .eggs/*
-DirectDmTargets.egg-info/*
+dddm.egg-info/*
 dddm/archive.py
 *.png
 .hypothesis

@@ -2,7 +2,6 @@
 import logging
 import os
 import uuid
-from dddm import context
 import numpy as np
 import pandas as pd
 import socket
@@ -12,6 +11,7 @@ from importlib import import_module
 from git import Repo, InvalidGitRepositoryError
 import typing as ty
 from collections import defaultdict
+from sys import platform
 
 log = logging.getLogger()
 
@@ -55,10 +55,10 @@ def to_str_tuple(x: ty.Union[str, bytes, list, tuple, pd.Series, np.ndarray]) ->
         return tuple(x.tolist())
     raise TypeError(f"Expected string or tuple of strings, got {type(x)}")
 
-
+git
 @export
 def print_versions(
-        modules=('DirectDmTargets', 'numpy', 'numba', 'pymultinest', 'verne', 'wimprates'),
+        modules=('dddm', 'numpy', 'numba', 'pymultinest', 'verne', 'wimprates'),
         return_string=False,
         include_git=True
 ):
@@ -79,12 +79,13 @@ def print_versions(
     message += f"\npython\tv{py_version}"
     versions = defaultdict(list)
     for m in to_str_tuple(modules):
+        if is_windows() and m == 'pymultinest':
+            continue
         try:
             mod = import_module(m)
         except (ModuleNotFoundError, ImportError):
             print(f'{m} is not installed')
             continue
-
         message += f'\n{m}'
         v = None
         p = None
@@ -146,41 +147,10 @@ def now(tstart=None):
         res += f'\tdt=\t{(datetime.datetime.now() - tstart).seconds} s'
     return res
 
+@export
+def is_windows():
+    return 'win' in platform
 
-def load_folder_from_context(request):
-    """
-
-    :param request: request a named path from the context
-    :return: the path that is requested
-    """
-    try:
-        folder = context.context[request]
-    except KeyError:
-        log.info(f'Requesting {request} but that is not in {context.context.keys()}')
-        raise KeyError
-    if not os.path.exists(folder):
-        raise FileNotFoundError(f'Could not find {folder}')
-    # Should end up here:
-    return folder
-
-
-def get_result_folder(*args):
-    """
-    bridge to work with old code when context was not yet implemented
-    """
-    if args:
-        log.warning(
-            f'get_result_folder::\tfunctionality deprecated ignoring {args}')
-    log.info(
-        f'get_result_folder::\trequested folder is {context.context["results_dir"]}')
-    return load_folder_from_context('results_dir')
-
-
-def get_verne_folder():
-    """
-    bridge to work with old code when context was not yet implemented
-    """
-    return load_folder_from_context('verne_files')
 
 
 def is_savable_type(item):
@@ -229,40 +199,6 @@ def _folders_plus_one(root_dir, save_as):
     return os.path.join(root_dir, save_as + str(n_last + 1))
 
 
-def open_save_dir(save_as, base_dir=None, force_index=False, _hash=None):
-    """
-
-    :param save_as: requested name of folder to open in the result folder
-    :param base_dir: folder where the save_as dir is to be saved in.
-        This is the results folder by default
-    :param force_index: option to force to write to a number (must be an
-        override!)
-    :param _hash: add a has to save_as dir to avoid duplicate naming
-        conventions while running multiple jobs
-    :return: the name of the folder as was saveable (usually input +
-        some number)
-    """
-    if base_dir is None:
-        base_dir = get_result_folder()
-    if force_index:
-        results_path = os.path.join(base_dir, save_as + str(force_index))
-    elif _hash is None:
-        if force_index is not False:
-            raise ValueError(
-                f'do not set _hash to {_hash} and force_index to '
-                f'{force_index} simultaneously'
-            )
-        results_path = _folders_plus_one(base_dir, save_as)
-    else:
-        results_path = os.path.join(base_dir, save_as + '_HASH' + str(_hash))
-
-    check_folder_for_file(os.path.join(results_path, "some_file_goes_here"))
-    log.info('open_save_dir::\tusing ' + results_path)
-    # log.debug(
-    #     f'Other files in {results_path} base are {os.listdir(os.path.split(results_path)[0])}')
-    return results_path
-
-
 def str_in_list(string, _list):
     """checks if sting is in any of the items in _list
     if so return that item"""
@@ -288,63 +224,6 @@ def add_temp_to_csv(abspath):
     assert '.csv' in abspath, f"{abspath} is not .csv"
     abspath = abspath.replace('.csv', f'_temp_{os.getpid()}.csv')
     return abspath
-
-
-def add_pid_to_csv_filename(name):
-    """
-    :param name: takes name
-    :return: abs_file_name, exist_csv
-    """
-    UserWarning('add_pid_to_csv_filename is deprecated')
-    assert '.csv' in name, f"{name} is not .csv"
-    # where to look
-    requested_folder = os.path.split(name)[0]
-    # what to look for
-    file_name = os.path.split(name)[-1].replace('.csv', "")
-
-    if os.path.exists(name) and not os.stat(name).st_size:
-        # Check that the file we are looking for is not an empty file, that
-        # would be bad.
-        log.warning(f"WARNING:\t removing empty file {name}")
-        os.remove(name)
-
-    # What can we see
-    if not os.path.exists(requested_folder):
-        exist_csv = False
-        if context._host not in name:
-            abs_file_name = add_host_and_pid_to_csv_filename(name)
-        else:
-            abs_file_name = name
-        return exist_csv, abs_file_name
-
-    files_in_folder = os.listdir(requested_folder)
-    log.debug(f'VerneSHM::\tlooking for "{file_name}" in "{requested_folder}".'
-              f'\n\tDoes it have the right file?\n\t'
-              f'{is_str_in_list(file_name, files_in_folder)}'
-              # f'That folder has "{files_in_folder}".'
-              f' ')
-
-    if is_str_in_list(file_name, files_in_folder):
-        log.debug(
-            f'VerneSHM::\tUsing {str_in_list(file_name, files_in_folder)} since it has {file_name}')
-        exist_csv = True
-        abs_file_name = os.path.join(requested_folder,
-                                     str_in_list(file_name, files_in_folder))
-        log.info(f'VerneSHM::\tUsing {abs_file_name} as input')
-    else:
-        log.info("VerneSHM::\tNo file found")
-        exist_csv = False
-        if context._host not in name:
-            abs_file_name = add_host_and_pid_to_csv_filename(name)
-        else:
-            abs_file_name = name
-
-    return exist_csv, os.path.abspath(abs_file_name)
-
-
-def add_host_and_pid_to_csv_filename(csv_name):
-    UserWarning('add_host_and_pid_to_csv_filename is deprecated')
-    return csv_name.replace('.csv', f'-H{context._host}-P{os.getpid()}.csv')
 
 
 def unique_hash():

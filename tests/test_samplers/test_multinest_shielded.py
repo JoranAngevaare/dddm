@@ -1,10 +1,4 @@
-from sys import platform
-
 import dddm
-
-
-def _is_windows():
-    return 'win' in platform
 
 
 def test_nested_simple_multinest_earth_shielding():

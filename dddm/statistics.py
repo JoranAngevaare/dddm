@@ -13,12 +13,14 @@ from dddm.recoil_rates import halo, halo_shielded, spectrum
 from dddm.detectors import detector
 from scipy.special import loggamma
 import typing as ty
+import dddm
+export, __all__ = dddm.exporter()
 
 # Set a lower bound to the log-likelihood (this becomes a problem due to
 # machine precision). Set to same number as multinest.
 LL_LOW_BOUND = 1e-90
 
-
+@export
 def get_priors(priors_from="Evans_2019"):
     """
     :return: dictionary of priors, type and values
@@ -98,6 +100,7 @@ def get_param_list():
     return ['log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density']
 
 
+@export
 class StatModel:
     # Keep these fit parameters in this order
     _parameter_order = ('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k')
@@ -151,7 +154,7 @@ class StatModel:
             level = 'WARNING'
 
         if 'win' not in platform:
-            log_path = os.path.join(context.context['tmp_folder'],
+            log_path = os.path.join(dddm.context.context['tmp_folder'],
                                     f"log_{utils.now()}.log")
             self.config['logging'] = log_path
         else:

@@ -4,6 +4,9 @@ from warnings import warn
 import numba
 import numpy as np
 import dddm
+export, __all__ = dddm.exporter()
+
+__all__ += ['experiment']
 
 
 def det_res_Xe(E):
@@ -411,7 +414,7 @@ def smear_signal(rate, energy, sigma, bin_width):
         return rate
     return _smear_signal(rate, energy, sigma, bin_width)
 
-
+@export
 class DetectorSpectrum(dddm.recoil_rates.spectrum.GenSpectrum):
     add_background = False
     required_detector_fields = 'name material type exp_eff exp exp_eff E_thr res'.split()
@@ -425,7 +428,9 @@ class DetectorSpectrum(dddm.recoil_rates.spectrum.GenSpectrum):
             self.log.debug('No bg_func in experiment config')
 
     def __str__(self):
-        return 'DetectorSpectrum class inherited from GenSpectrum.\nSmears spectrum with detector resolution and implements the energy threshold for the detector'
+        return ('DetectorSpectrum class inherited from GenSpectrum.\n'
+                'Smears spectrum with detector resolution and implements '
+                'the energy threshold for the detector')
 
     def get_events(self):
         """

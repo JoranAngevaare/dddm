@@ -3,11 +3,13 @@ import shutil
 import numericalunits as nu
 import pandas as pd
 import verne
-from dddm import utils, context
+from dddm import utils, context, exporter
 import warnings
 from scipy.interpolate import interp1d
+export, __all__ = exporter()
 
 
+@export
 class ShieldedSHM:
     """
         class used to pass a halo model to the rate computation based on the
@@ -70,7 +72,7 @@ class ShieldedSHM:
         """
 
         # set up folders and names
-        file_folder = context['verne_files']
+        file_folder = context.context['verne_files']
         file_name = os.path.join(file_folder, self.fname + '_avg' + '.csv')
         utils.check_folder_for_file(os.path.join(file_folder, self.fname))
 

@@ -17,7 +17,7 @@ def test_nested_simple_multinest():
         return
     fit_class = dddm.NestedSamplerStatModel('Xe')
     fit_class.config['tol'] = 0.5
-    fit_class.config['nlive'] = 100
+    fit_class.config['nlive'] = 50
     fit_class.set_benchmark(mass=49)
     print(f"Fitting for parameters:\n{fit_class.config['fit_parameters']}")
     fit_class.run_multinest()

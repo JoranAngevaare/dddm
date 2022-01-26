@@ -1,7 +1,7 @@
 __version__ = '2.1.0'
-from . import utils
 from .utils import *
 
+from . import utils
 from . import context
 from .context import *
 

@@ -8,8 +8,10 @@ import numpy as np
 import dddm
 from glob import glob
 from tqdm import tqdm
+export, __all__ = dddm.exporter()
 
 
+@export
 class DDDMResult:
     """Parse results from fitting from nested sampling"""
     result: dict = None
@@ -100,6 +102,7 @@ class DDDMResult:
         return len(param)
 
 
+@export
 class SeabornPlot:
     def __init__(self, result: DDDMResult):
         self.result = result
@@ -167,7 +170,7 @@ class SeabornPlot:
         kwargs.setdefault('fill', True)
         self.plot_sigma_contours(**kwargs)
 
-
+@export
 class ResultsManager:
     result_cache: list = None
     result_df: pd.DataFrame = None
@@ -230,7 +233,7 @@ class ResultsManager:
         return self.result_df
 
 
-def pow10(x):
+def _pow10(x):
     return 10 ** x
 
 
@@ -239,7 +242,7 @@ def set_xticks_top(show_lines=False,
                    x_label=r"$M_{\chi}$ $[GeV/c^{2}]$"):
     ax = plt.gca()
     bin_range = ax.get_xlim()
-    secax = ax.secondary_xaxis('top', functions=(pow10, np.log10))
+    secax = ax.secondary_xaxis('top', functions=(_pow10, np.log10))
 
     x_ticks = [0.001, 0.01, 0.1, 0.5, 1, 5, 10, 100, 1000, 10_000]
     x_ticks = [t for t in x_ticks if t > 10 ** bin_range[0] and t < 10 ** bin_range[1]]

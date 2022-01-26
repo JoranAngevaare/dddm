@@ -16,10 +16,9 @@ import math
 
 import numpy as np
 import matplotlib.pyplot as plt
-
-
-def _default_color(*args, **kwargs):
-    return 'k'
+import dddm
+import warnings
+export, __all__ = dddm.exporter()
 
 
 @_deprecate_positional_args
@@ -59,7 +58,8 @@ def kdeplot(x=None, *, y=None, shade=None, vertical=False, kernel=None, bw=None,
 
 def get_bivariate(self, common_norm, fill, levels, thresh, color, warn_singular,
                   estimate_kws, **contour_kws, ):
-    contour_kws = contour_kws.copy()
+    if any([fill, levels, color, warn_singular, contour_kws]):
+        warnings.warn('fill, levels, color, warn_singular, contour_kws will do nothing', UserWarning)
     estimator = KDE(**estimate_kws)
 
     if not set(self.variables) - {"x", "y"}:
@@ -127,14 +127,19 @@ def get_bivariate(self, common_norm, fill, levels, thresh, color, warn_singular,
         return xx, yy, density, draw_levels, key
 
 
-def extract_data(x, y, **kwargs):
+def _default_color(*args, **kwargs):
+    return 'k'
+
+
+def _extract_data(x, y, **kwargs):
     p, intermediate_kwargs = kdeplot(x=x, y=y, levels=3, **kwargs)
     x, y, H, levels, levels_keys = get_bivariate(p, **intermediate_kwargs)
     return x, y, H, levels, levels_keys
 
 
+@export
 def one_sigma_area(x, y, clf=True, **kwargs):
-    x, y, H, levels, levels_keys = extract_data(x, y, **kwargs)
+    x, y, H, levels, levels_keys = _extract_data(x, y, **kwargs)
     if clf:
         plt.clf()
     bin_area = np.diff(x[:2]) * np.diff(y[:2])

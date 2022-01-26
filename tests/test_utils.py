@@ -12,7 +12,7 @@ def test_to_str_tuple():
         'a',
         ['a', 'b'],
         ('a', 'b'),
-        np.array([1, 2]),
+        np.array(['a', 'b']),
         pd.Series(['a', 'b'])
     ]
     for t in tests:

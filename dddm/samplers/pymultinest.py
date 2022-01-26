@@ -14,13 +14,14 @@ from warnings import warn
 import corner
 import matplotlib.pyplot as plt
 import numpy as np
-from dddm import context, detector, statistics, utils
 from scipy import special as spsp
+import dddm
+export, __all__ = dddm.exporter()
 
 log = logging.getLogger()
 
-
-class NestedSamplerStatModel(statistics.StatModel):
+@export
+class NestedSamplerStatModel(dddm.StatModel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -73,7 +74,7 @@ class NestedSamplerStatModel(statistics.StatModel):
         evaluated_rate = self.eval_spectrum(parameter_vals, parameter_names)[
             'counts']
 
-        ll = statistics.log_likelihood(self.benchmark_values, evaluated_rate)
+        ll = dddm.statistics.log_likelihood(self.benchmark_values, evaluated_rate)
         if np.isnan(ll):
             raise ValueError(f"Returned NaN from likelihood. ll = {ll}")
         self.log.debug('found it! returning the log likelihood')
@@ -170,7 +171,7 @@ class NestedSamplerStatModel(statistics.StatModel):
         self.log.warning(
             f"""
             --------------------------------------------------
-            {utils.now()}\n\tFinal print of all of the set options:
+            {dddm.utils.now()}\n\tFinal print of all of the set options:
             self.config['tol'] = {self.config['tol']}
             self.config['nlive'] = {self.config['nlive']}
             self.config["sampler"] = {self.config["sampler"]}
@@ -221,7 +222,7 @@ class NestedSamplerStatModel(statistics.StatModel):
             outputfiles_basename=save_at_temp,
             verbose=True,
             evidence_tolerance=tol,
-            # null_log_evidence=statistics.LL_LOW_BOUND,
+            # null_log_evidence=dddm.statistics.LL_LOW_BOUND,
             max_iter=self.config.get('max_iter', 0),
 
         )
@@ -229,7 +230,7 @@ class NestedSamplerStatModel(statistics.StatModel):
 
         # Open a save-folder after successful running multinest. Move the
         # multinest results there.
-        utils.check_folder_for_file(save_at)
+        dddm.utils.check_folder_for_file(save_at)
         end = datetime.datetime.now()
         dt = (end - start).total_seconds()
         self.log.info(f'fit_done in {dt} s ({dt / 3600} h)')
@@ -321,7 +322,7 @@ class NestedSamplerStatModel(statistics.StatModel):
         saved_ok = isinstance(saved_in, str) and os.path.exists(saved_in)
         if saved_ok and not force_index:
             return saved_in
-        target_save = utils.open_save_dir(f'nes_{self.config["sampler"][:2]}',
+        target_save = dddm.utils.open_save_dir(f'nes_{self.config["sampler"][:2]}',
                                           force_index=force_index,
                                           _hash=_hash)
         self.log_dict['saved_in'] = target_save
@@ -330,9 +331,9 @@ class NestedSamplerStatModel(statistics.StatModel):
 
     def get_tmp_dir(self, force_index=False, _hash=None):
         if (not self.log_dict['tmp_dir']) or force_index:
-            self.log_dict['tmp_dir'] = utils.open_save_dir(
+            self.log_dict['tmp_dir'] = dddm.utils.open_save_dir(
                 f'{self.config["sampler"]}',
-                base_dir=context.context['tmp_folder'],
+                base_dir=dddm.context.context['tmp_folder'],
                 force_index=force_index,
                 _hash=_hash)
         self.log.info(
@@ -395,11 +396,12 @@ class NestedSamplerStatModel(statistics.StatModel):
         self.log.info('Enjoy the plot. Maybe you do want to save it too?')
 
 
+@export
 class CombinedInference(NestedSamplerStatModel):
     def __init__(self, targets, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if not np.all([t in detector.experiment for t in targets]):
+        if not np.all([t in dddm.experiment for t in targets]):
             raise NotImplementedError(
                 f'Insert tuple of sub-experiments. {targets} are incorrect format')
         if len(targets) < 2:
@@ -464,7 +466,7 @@ class CombinedInference(NestedSamplerStatModel):
 def convert_dic_to_savable(config):
     result = config.copy()
     for key in result.keys():
-        if utils.is_savable_type(result[key]):
+        if dddm.utils.is_savable_type(result[key]):
             pass
         elif isinstance(result[key], dict):
             result[key] = convert_dic_to_savable(result[key])
@@ -523,21 +525,6 @@ def do_strip_from_pid(string):
     return new_key
 
 
-def load_multinest_samples(load_from='nested', item='latest'):
-    UserWarning('load_multinest_samples is deprecated')
-    base = utils.get_result_folder()
-    save = load_from
-    files = os.listdir(base)
-    if item == 'latest':
-        item = max(int(f.split(save)[-1]) for f in files if save[:3] in f)
-
-    load_dir = os.path.join(base, save + str(item))
-    if not os.path.exists(load_dir):
-        raise FileNotFoundError(f"Cannot find {load_dir} specified by arg: "
-                                f"{item}")
-    return load_multinest_samples_from_file(load_dir)
-
-
 def _get_info(result, _result_key):
     info = r"$M_\chi}$=%.2f" % 10. ** np.float(result['config']['mw'])
     for prior_key in result['config']['prior'].keys():
@@ -564,9 +551,9 @@ def multinest_corner(
         _result_key='weighted_samples',
         _weights=False):
     info, ndim = _get_info(result, _result_key)
-    labels = statistics.get_param_list()[:ndim]
+    labels = dddm.statistics.get_param_list()[:ndim]
     truths = []
-    for prior_name in statistics.get_prior_list()[:ndim]:
+    for prior_name in dddm.statistics.get_prior_list()[:ndim]:
         if prior_name == "rho_0":
             prior_name = 'density'
         if prior_name in result['config']:
@@ -617,7 +604,7 @@ def solve_multinest(LogLikelihood, Prior, n_dims, **kwargs):
         if not np.isfinite(likelihood):
             warn(f'WARNING: loglikelihood not finite: {likelihood}\n'
                  f'for parameters {a}, returned very low value instead')
-            return -statistics.LL_LOW_BOUND
+            return -dddm.statistics.LL_LOW_BOUND
         return likelihood
 
     kwargs['LogLikelihood'] = SafeLoglikelihood

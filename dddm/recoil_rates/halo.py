@@ -3,16 +3,8 @@ For a given detector get a WIMPrate for a given detector (not taking into
 account any detector effects
 """
 
-import os
-import shutil
 import numericalunits as nu
-import numpy as np
-import pandas as pd
-import verne
 import wimprates as wr
-from dddm import utils, context
-import typing as ty
-from scipy.interpolate import interp1d
 import dddm
 export, __all__ = dddm.exporter()
 

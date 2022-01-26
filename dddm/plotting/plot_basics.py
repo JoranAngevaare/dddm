@@ -1,5 +1,5 @@
-"""Some basic functions for plotting et cetera. Used to for instance check that
-the likelihood function is well behaved"""
+"""Some basic functions for plotting et cetera. Used to for instance to
+check that the likelihood function is well behaved"""
 # disable bandit
 import pickle
 import colorsys
@@ -45,7 +45,7 @@ def ll_element_wise(x, y, clip_val=-1e4):
     r = np.zeros((rows, cols))
     for i in tqdm(range(rows)):
         for j in range(cols):
-            r[i][j] = statistics.log_likelihood_function(x[i][j], y[i][j])
+            r[i][j] = dddm.statistics.log_likelihood_function(x[i][j], y[i][j])
     return np.clip(r, clip_val, 0)
 
 
@@ -66,8 +66,8 @@ def show_ll_function(npoints=1e4, clip_val=-1e4, min_val=0.1):
 
 def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
     assert vary in ['mass', 'sig'], "use sig or mass"
-    use_SHM = halo.SHM()
-    events = spec_clas(m, sig, use_SHM, detector.experiment[det])
+    use_SHM = dddm.SHM()
+    events = spec_clas(m, sig, use_SHM, dddm.experiment[det])
     events.config['n_bins'] = bins
     data = events.get_data(poisson=False)
     if vary == 'sig':
@@ -76,7 +76,7 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
         var = np.linspace(0.1 * sig, 10 * sig, 30)
 
         def model(x):
-            res = spec_clas(m, x, use_SHM, detector.experiment[det])
+            res = spec_clas(m, x, use_SHM, dddm.experiment[det])
             res.config['n_bins'] = bins
             return res.get_data(poisson=False)['counts']
 
@@ -86,42 +86,42 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
         var = np.linspace(m / 10, m * 10, 50)
 
         def model(x):
-            res = spec_clas(x, sig, use_SHM, detector.experiment[det])
+            res = spec_clas(x, sig, use_SHM, dddm.experiment[det])
             res.config['n_bins'] = bins
             return res.get_data(poisson=False)['counts']
     else:
         raise ValueError(f'Can not vary {vary}')
-    plr = [statistics.log_likelihood(data['counts'], model(x)) for x in
+    plr = [dddm.statistics.log_likelihood(data['counts'], model(x)) for x in
            tqdm(var)]
 
     plt.xlim(var[0], var[-1])
-    var, plr = utils.remove_nan(var, plr), utils.remove_nan(plr, var)
+    var, plr = dddm.utils.remove_nan(var, plr), dddm.utils.remove_nan(plr, var)
     plt.plot(var, plr, drawstyle='steps-mid')
     plt.ylim(np.min(plr), np.max(plr))
 
 
 def plt_ll_sigma_spec(det='Xe', bins=10, m=50, sig=1e-45):
-    spec = halo.GenSpectrum
+    spec = dddm.GenSpectrum
     plt_ll_sigma_mass(spec, 'sig', det=det, bins=bins, m=m, sig=sig)
 
 
 def plt_ll_mass_spec(det='Xe', bins=10, m=50, sig=1e-45):
-    spec = halo.GenSpectrum
+    spec = dddm.GenSpectrum
     plt_ll_sigma_mass(spec, 'mass', det=det, bins=bins, m=m, sig=sig)
 
 
 def plt_ll_sigma_det(det='Xe', bins=10, m=50, sig=1e-45):
-    spec = detector.DetectorSpectrum
+    spec = dddm.DetectorSpectrum
     plt_ll_sigma_mass(spec, 'sig', det=det, bins=bins, m=m, sig=sig)
 
 
 def plt_ll_mass_det(det='Xe', bins=10, m=50, sig=1e-45):
-    spec = detector.DetectorSpectrum
+    spec = dddm.DetectorSpectrum
     plt_ll_sigma_mass(spec, 'mass', det=det, bins=bins, m=m, sig=sig)
 
 
 def plt_priors(itot=100):
-    priors = statistics.get_priors()
+    priors = dddm.get_priors()
     for key in priors.keys():
         par = priors[key]['param']
         dist = priors[key]['dist']

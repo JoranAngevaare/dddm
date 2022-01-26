@@ -19,7 +19,8 @@ import corner
 import matplotlib.pyplot as plt
 import numpy as np
 from dddm import statistics, utils
-
+import dddm
+export, __all__ = dddm.exporter()
 log = logging.getLogger()
 
 
@@ -27,7 +28,7 @@ def default_emcee_save_dir():
     """The name of folders where to save results from the MCMCStatModel"""
     return 'emcee'
 
-
+@export
 class MCMCStatModel(statistics.StatModel):
     def __init__(self, *args):
         super().__init__(*args)
