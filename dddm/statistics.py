@@ -269,7 +269,7 @@ class StatModel:
     def check_spectrum(self):
         """Lazy alias for eval_spectrum"""
         parameter_names = self._parameter_order[:2]
-        parameter_values = [self.config['mw'], self.config['sigma'], ]
+        parameter_values = [self.config['mw'], self.config['sigma']]
         return self.eval_spectrum(parameter_values, parameter_names)
 
     def eval_benchmark(self):
