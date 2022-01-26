@@ -18,7 +18,7 @@ def test_emcee():
         save_dir = fit_class.config['save_dir']
         r = dddm.samplers.emcee.load_chain_emcee(
             override_load_from=save_dir)
-        dddm.emcee_applications.emcee_plots(r)
+        dddm.samplers.emcee.emcee_plots(r)
         plt.clf()
         plt.close()
 

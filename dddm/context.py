@@ -103,13 +103,12 @@ def load_folder_from_context(request):
     :param request: request a named path from the context
     :return: the path that is requested
     """
-    try:
-        folder = context.context[request]
-    except KeyError:
-        log.info(f'Requesting {request} but that is not in {context.context.keys()}')
-        raise KeyError
+    if request in context:
+        folder = context[request]
+    else:
+        raise FileNotFoundError(f'Requesting {request} but that is not in {context.keys()}')
     if not os.path.exists(folder):
-        raise FileNotFoundError(f'Could not find {folder}')
+        raise FileNotFoundError(f'Could not find {folder} (requested was {request}')
     # Should end up here:
     return folder
 
@@ -122,7 +121,7 @@ def get_result_folder(*args):
         log.warning(
             f'get_result_folder::\tfunctionality deprecated ignoring {args}')
     log.info(
-        f'get_result_folder::\trequested folder is {context.context["results_dir"]}')
+        f'get_result_folder::\trequested folder is {context["results_dir"]}')
     return load_folder_from_context('results_dir')
 
 

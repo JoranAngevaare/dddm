@@ -17,6 +17,7 @@ def test_nested_simple_multinest():
     fit_class.run_multinest()
     fit_class.get_summary()
 
+
 @skipIf(dddm.is_windows(), "Multinest only works on linux")
 def test_nested_astrophysics_multinest():
     fit_unconstrained = dddm.NestedSamplerStatModel('Xe')

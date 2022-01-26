@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 log = logging.getLogger()
 
+
 @skipIf(dddm.is_windows(), "Multinest only works on linux")
 def test_combined_multinest(targets=('Xe_simple', 'Ge_simple'),):
 
@@ -75,6 +76,7 @@ def test_combined_multinest(targets=('Xe_simple', 'Ge_simple'),):
     else:
         raise RuntimeError('No error raised')
     results._add_result('no_such_file', tolerant=True)
+
 
 @skipIf(dddm.is_windows(), "Multinest only works on linux")
 def test_combined_multinest_single_target():

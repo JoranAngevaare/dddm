@@ -182,7 +182,7 @@ class MCMCStatModel(statistics.StatModel):
 def load_chain_emcee(load_from=default_emcee_save_dir(),
                      override_load_from=None,
                      item='latest'):
-    base = utils.get_result_folder()
+    base = dddm.context.get_result_folder()
     save = load_from
     if override_load_from is not None:
         base = override_load_from
