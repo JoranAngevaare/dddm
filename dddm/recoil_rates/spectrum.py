@@ -36,7 +36,7 @@ class GenSpectrum:
         self.sigma_nucleon = wimp_nucleon_cross_section
 
         self.dm_model = dark_matter_model
-        self.config = det
+        self.config = det.copy()
         self.log = utils.get_logger(self.__class__.__name__)
 
     def __str__(self):
