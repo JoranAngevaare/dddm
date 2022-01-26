@@ -4,6 +4,7 @@ from warnings import warn
 import numba
 import numpy as np
 import dddm
+from immutabledict import immutabledict
 export, __all__ = dddm.exporter()
 
 __all__ += ['experiment']
