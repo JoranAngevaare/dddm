@@ -402,7 +402,7 @@ class CombinedInference(NestedSamplerStatModel):
     def __init__(self, targets, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if not np.all([t in dddm.experiment for t in targets]):
+        if not np.all([t in dddm.experiment_registry for t in targets]):
             raise NotImplementedError(
                 f'Insert tuple of sub-experiments. {targets} are incorrect format')
         if len(targets) < 2:

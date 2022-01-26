@@ -118,11 +118,11 @@ class StatModel:
         Statistical model used for Bayesian interference of detection in multiple experiments.
         :param detector_name: name of the detector (e.g. Xe)
         """
-        if detector_name not in detector.experiment and detector_config is None:
+        if detector_name not in detector.experiment_registry and detector_config is None:
             raise ValueError('Please provide detector that is '
                              'preconfigured or provide new one with detector_dict')
         if detector_config is None:
-            detector_config = detector.experiment[detector_name]
+            detector_config = detector.experiment_registry[detector_name]
 
         self.config = dict(detector=detector_name,
                            detector_config=detector_config,

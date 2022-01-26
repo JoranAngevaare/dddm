@@ -7,7 +7,7 @@ import dddm
 from immutabledict import immutabledict
 export, __all__ = dddm.exporter()
 
-__all__ += ['experiment']
+__all__ += ['experiment_registry']
 
 
 def det_res_Xe(E):
@@ -209,7 +209,7 @@ def nr_background_superCDMS_Si(e_min, e_max, nbins):
 # nuclear recoil acceptance (nr_eff), energy threshold [keV] (E_thr),
 # resolution function (res)
 
-experiment = {
+experiment_registry = {
     'Xe_simple': {'material': 'Xe', 'type': 'SI', 'exp': 5., 'cut_eff': 0.8, 'nr_eff': 0.5, 'E_thr': 10.,
                   'location': "XENON", 'res': det_res_Xe, 'n_energy_bins': 10, 'E_max': 100},
     'Ge_simple': {'material': 'Ge', 'type': 'SI', 'exp': 3., 'cut_eff': 0.8, 'nr_eff': 0.9, 'E_thr': 10.,
@@ -362,17 +362,17 @@ experiment = {
     },
 }
 # And calculate the effective exposure for each
-for name in experiment:
-    experiment[name]['exp_eff'] = (experiment[name]['exp'] *
-                                   experiment[name]['cut_eff'] *
-                                   experiment[name]['nr_eff'])
-    experiment[name]['name'] = name
-    if 'E_min' not in experiment[name]:
-        experiment[name]['E_min'] = 0
+for name in experiment_registry:
+    experiment_registry[name]['exp_eff'] = (experiment_registry[name]['exp'] *
+                                            experiment_registry[name]['cut_eff'] *
+                                            experiment_registry[name]['nr_eff'])
+    experiment_registry[name]['name'] = name
+    if 'E_min' not in experiment_registry[name]:
+        experiment_registry[name]['E_min'] = 0
 
 # Make a new experiment that is a placeholder for the CombinedInference class.
-experiment['Combined'] = {'type': 'combined'}
-experiment = immutabledict(experiment)
+experiment_registry['Combined'] = {'type': 'combined'}
+experiment_registry = immutabledict(experiment_registry)
 
 
 @numba.njit

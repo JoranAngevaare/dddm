@@ -67,7 +67,7 @@ def show_ll_function(npoints=1e4, clip_val=-1e4, min_val=0.1):
 def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
     assert vary in ['mass', 'sig'], "use sig or mass"
     use_SHM = dddm.SHM()
-    events = spec_clas(m, sig, use_SHM, dddm.experiment[det])
+    events = spec_clas(m, sig, use_SHM, dddm.experiment_registry[det])
     events.config['n_bins'] = bins
     data = events.get_data(poisson=False)
     if vary == 'sig':
@@ -76,7 +76,7 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
         var = np.linspace(0.1 * sig, 10 * sig, 30)
 
         def model(x):
-            res = spec_clas(m, x, use_SHM, dddm.experiment[det])
+            res = spec_clas(m, x, use_SHM, dddm.experiment_registry[det])
             res.config['n_bins'] = bins
             return res.get_data(poisson=False)['counts']
 
@@ -86,7 +86,7 @@ def plt_ll_sigma_mass(spec_clas, vary, det='Xe', bins=10, m=50, sig=1e-45):
         var = np.linspace(m / 10, m * 10, 50)
 
         def model(x):
-            res = spec_clas(x, sig, use_SHM, dddm.experiment[det])
+            res = spec_clas(x, sig, use_SHM, dddm.experiment_registry[det])
             res.config['n_bins'] = bins
             return res.get_data(poisson=False)['counts']
     else:

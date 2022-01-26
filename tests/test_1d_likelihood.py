@@ -6,7 +6,7 @@ import numpy as np
 from hypothesis import given, settings, strategies
 from tqdm import tqdm
 
-known_detectors = [k for k in dddm.experiment.keys() if ('migd' not in k and 'Combined' not in k)]
+known_detectors = [k for k in dddm.experiment_registry.keys() if ('migd' not in k and 'Combined' not in k)]
 known_priors = 'Pato_2010 Evans_2019 migdal_wide low_mass migdal_extremely_wide low_mass_fixed'.split()
 
 

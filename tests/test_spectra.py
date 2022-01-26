@@ -42,7 +42,7 @@ def _galactic_spectrum_inner(
     sigma = 1e-35
     E_max = None
 
-    event_args = (mw, sigma, use_SHM, dddm.experiment[det])
+    event_args = (mw, sigma, use_SHM, dddm.experiment_registry[det])
     events = event_class(*event_args)
     
     events.set_config({'n_energy_bins': nbins})
@@ -68,7 +68,7 @@ def test_shielded_detector_spectrum():
 
 def test_detector_spectra():
     use_SHM = dddm.SHM()
-    for det, det_properties in dddm.detector.experiment.items():
+    for det, det_properties in dddm.experiment_registry.items():
         if det_properties['type'] == 'combined':
             # This is not implemented as such
             continue
