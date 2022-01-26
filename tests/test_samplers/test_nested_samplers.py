@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 log = logging.getLogger()
 
-
+@skipIf(not dddm.is_installed('pymultinest'), 'pymultinest is not installed')
 @skipIf(dddm.is_windows(), "Multinest only works on linux")
 def test_nested_simple_multinest():
     fit_class = dddm.NestedSamplerStatModel('Xe')
@@ -17,7 +17,7 @@ def test_nested_simple_multinest():
     fit_class.run_multinest()
     fit_class.get_summary()
 
-
+@skipIf(not dddm.is_installed('pymultinest'), 'pymultinest is not installed')
 @skipIf(dddm.is_windows(), "Multinest only works on linux")
 def test_nested_astrophysics_multinest():
     fit_unconstrained = dddm.NestedSamplerStatModel('Xe')

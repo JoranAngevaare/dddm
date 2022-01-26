@@ -9,6 +9,7 @@ import sys
 import datetime
 from importlib import import_module
 from git import Repo, InvalidGitRepositoryError
+from functools import lru_cache
 import typing as ty
 from collections import defaultdict
 from platform import python_version
@@ -153,6 +154,17 @@ def now(tstart=None):
 @export
 def is_windows():
     return 'win' in sys.platform
+
+
+@export
+@lru_cache
+def is_installed(module):
+    """Try to import <module>, return False if not installed"""
+    try:
+        import_module(module)
+        return True
+    except (ModuleNotFoundError, ImportError):
+        return False
 
 
 def is_savable_type(item):
