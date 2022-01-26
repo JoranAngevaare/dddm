@@ -13,8 +13,12 @@ class TestContext(TestCase):
     def test_load_with_check(self):
         with self.assertRaises((FileNotFoundError, ValueError)):
             dddm.context.get_stbc_context(check=True)
-
+        tempdir = os.environ.copy().get('TMPDIR')
         os.environ.update({'TMPDIR': '.'})
 
         with self.assertRaises((FileNotFoundError, ValueError)):
             dddm.context.get_stbc_context(check=True)
+        if tempdir:
+            os.environ.update({'TMPDIR': tempdir})
+        else:
+            del os.environ['TMPDIR']

@@ -41,27 +41,34 @@ def _galactic_spectrum_inner(
     mw = 1
     sigma = 1e-35
     E_max = None
-    args = (mw, sigma, use_SHM, dddm.experiment[det])
-    events = event_class(*args)
+
+    class EventClass(event_class):
+        def __init__(self, *args, **kwargs):
+            self.config = super().config.copy()
+            super.__init__(*args, **kwargs)
+
+    event_args = (mw, sigma, use_SHM, dddm.experiment[det])
+    events = EventClass(*event_args)
+
     events.set_config({'n_energy_bins': nbins})
     if E_max:
         events.set_config({'E_max': E_max})
-    events.get_data(poisson=False)
+    return events.get_data(poisson=False)
 
 
 def test_detector_spectrum():
     use_SHM = dddm.SHM()
-    _galactic_spectrum_inner(use_SHM)
+    assert len(_galactic_spectrum_inner(use_SHM))
 
 
 def test_detector_spectrum():
     use_SHM = dddm.SHM()
-    _galactic_spectrum_inner(use_SHM, event_class=dddm.DetectorSpectrum)
+    assert len(_galactic_spectrum_inner(use_SHM, event_class=dddm.DetectorSpectrum))
 
 
 def test_shielded_detector_spectrum():
     use_SHM = dddm.ShieldedSHM()
-    _galactic_spectrum_inner(use_SHM)
+    assert len(_galactic_spectrum_inner(use_SHM))
 
 
 def test_detector_spectra():
@@ -72,6 +79,9 @@ def test_detector_spectra():
             continue
         if 'bg_func' in det_properties:
             _galactic_spectrum_inner(
-                use_SHM, det, event_class=dddm.DetectorSpectrum, nbins=1)
+                use_SHM,
+                det,
+                event_class=dddm.DetectorSpectrum,
+                nbins=1)
         else:
             _galactic_spectrum_inner(use_SHM, det, nbins=3)
