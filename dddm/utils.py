@@ -12,7 +12,7 @@ from git import Repo, InvalidGitRepositoryError
 import typing as ty
 from collections import defaultdict
 from sys import platform
-
+from platform import python_version
 log = logging.getLogger()
 
 
@@ -56,12 +56,11 @@ def to_str_tuple(x: ty.Union[str, bytes, list, tuple, pd.Series, np.ndarray]) ->
     raise TypeError(f"Expected string or tuple of strings, got {type(x)}")
 
 
-git
-
-
 @export
 def print_versions(
-        modules=('dddm', 'numpy', 'numba', 'pymultinest', 'verne', 'wimprates'),
+        modules=('dddm', 'numpy', 'numba', 'wimprates'),
+        print_output=True,
+        include_python=True,
         return_string=False,
         include_git=True
 ):
@@ -69,62 +68,65 @@ def print_versions(
     Print versions of modules installed.
 
     :param modules: Modules to print, should be str, tuple or list. E.g.
-        print_versions(modules=('numpy')
+        print_versions(modules=('numpy', 'dddm',))
     :param return_string: optional. Instead of printing the message,
         return a string
     :param include_git: Include the current branch and latest
         commit hash
     :return: optional, the message that would have been printed
     """
-    message = (f'Working on {socket.getfqdn()} with the following '
-               f'versions and installation paths:')
-    py_version = sys.version.replace(' (', '\t(').replace('\n', '')
-    message += f"\npython\tv{py_version}"
     versions = defaultdict(list)
+    if include_python:
+        versions['module'] = ['python']
+        versions['version'] = [python_version()]
+        versions['path'] = [None]
+        versions['git'] = [None]
     for m in to_str_tuple(modules):
         if is_windows() and m == 'pymultinest':
             continue
-        try:
-            mod = import_module(m)
-        except (ModuleNotFoundError, ImportError):
-            print(f'{m} is not installed')
+        result = _version_info_for_module(m, include_git=include_git)
+        if result is None:
             continue
-        message += f'\n{m}'
-        v = None
-        p = None
-        git = None
-        if hasattr(mod, '__version__'):
-            message += f'\tv{mod.__version__}'
-            v = mod.__version__
-        if hasattr(mod, '__path__'):
-            module_path = mod.__path__[0]
-            message += f'\t{module_path}'
-            p = module_path
-            if include_git:
-                try:
-                    repo = Repo(module_path, search_parent_directories=True)
-                except InvalidGitRepositoryError:
-                    # not a git repo
-                    pass
-                else:
-                    try:
-                        branch = repo.active_branch
-                    except TypeError:
-                        branch = 'unknown'
-                    try:
-                        commit_hash = repo.head.object.hexsha
-                    except TypeError:
-                        commit_hash = 'unknown'
-                    message += f'\tgit branch:{branch} | {commit_hash[:7]}'
-                    git = f'branch:{branch} | {commit_hash[:7]}'
+        version, path, git_info = result
         versions['module'].append(m)
-        versions['path'].append(p)
-        versions['version'].append(v)
-        versions['git'].append(git)
+        versions['version'].append(version)
+        versions['path'].append(path)
+        versions['git'].append(git_info)
+    df = pd.DataFrame(versions)
+    info = f'Host {socket.getfqdn()}\n{df.to_string(index=False)}'
+    if print_output:
+        print(info)
     if return_string:
-        return message
-    print(message)
-    return pd.DataFrame(versions)
+        return info
+    return df
+
+
+def _version_info_for_module(module_name, include_git):
+    try:
+        mod = import_module(module_name)
+    except (ModuleNotFoundError, ImportError):
+        print(f'{module_name} is not installed')
+        return
+    git = None
+    version = mod.__dict__.get('__version__', None)
+    module_path = mod.__dict__.get('__path__', [None])[0]
+    if include_git:
+        try:
+            repo = Repo(module_path, search_parent_directories=True)
+        except InvalidGitRepositoryError:
+            # not a git repo
+            pass
+        else:
+            try:
+                branch = repo.active_branch
+            except TypeError:
+                branch = 'unknown'
+            try:
+                commit_hash = repo.head.object.hexsha
+            except TypeError:
+                commit_hash = 'unknown'
+            git = f'branch:{branch} | {commit_hash[:7]}'
+    return version, module_path, git
 
 
 def check_folder_for_file(file_path):
