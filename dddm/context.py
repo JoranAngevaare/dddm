@@ -133,7 +133,6 @@ class Context:
                              cross_section=cross_section,
                              spectrum_class=spectrum_instance,
                              prior=prior,
-                             tmp_folder=self._directories['tmp_folder'],
                              fit_parameters=fit_parameters,
                              **sampler_kwargs
                              )
