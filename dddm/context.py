@@ -146,7 +146,7 @@ class Context:
         takes = inspect.getfullargspec(function).args
         for directory, path in self._directories.items():
             if directory in takes:
-                current_kwargs.update({directory, path})
+                current_kwargs.update({directory: path})
         return current_kwargs
 
     @property
