@@ -110,4 +110,3 @@ class PymultinestTestCombined(TestCase):
         else:
             raise RuntimeError('No error raised')
         results._add_result('no_such_file', tolerant=True)
-
