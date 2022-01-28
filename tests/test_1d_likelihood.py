@@ -11,7 +11,7 @@ _known_detectors = dddm.test_context().detectors
 _known_priors = 'Pato_2010 Evans_2019 migdal_wide low_mass migdal_extremely_wide low_mass_fixed'.split()
 
 
-@skipIf(True, 'bla')
+# @skipIf(True, 'bla')
 class TestLikelihoodMinimum(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()

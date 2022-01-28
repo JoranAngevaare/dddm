@@ -186,6 +186,8 @@ class MultiNestSampler(dddm.StatModel):
         dt = (end - start).total_seconds()
         self.log.info(f'fit_done in {dt} s ({dt / 3600} h)')
         self.log_dict['did_run'] = True
+        # release the config
+        self.config = dddm.utils._immutable_to_dict(self.config)
         self.config['fit_time'] = dt
 
         self.log.info('Finished with running Multinest!')
