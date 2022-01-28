@@ -38,9 +38,9 @@ class PymultinestTestCombined(TestCase):
             detector_name=['Xe_simple', 'Ar_simple', 'Ge_simple'],
             prior="Pato_2010",
             halo_name=halo_name,
-            detector_kwargs=dict(detector_name='test_combined'),
+            detector_kwargs=None,
             halo_kwargs=None if halo_name == 'shm' else dict(location='XENON'),
-            sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0),
+            sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0, detector_name='test_combined'),
             fit_parameters=fit_parameters,
         )
 

@@ -39,9 +39,9 @@ class TestLikelihoodMinimum(TestCase):
             detector_name=detector_name,
             prior=prior_name,
             halo_name='shm',
-            detector_kwargs=dict(detector_name='test_combined'),
+            detector_kwargs=None,
             halo_kwargs=None,
-            sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0),
+            sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0, detector_name='test_combined'),
             fit_parameters=fit_params,
         )
         sampler.set_benchmark(mass, sigma)
