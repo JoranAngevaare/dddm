@@ -34,7 +34,7 @@ class TestLikelihoodMinimum(TestCase):
             fit_params = ('log_mass', 'log_cross_section')
         sampler = self.ct.get_sampler_for_detector(
             wimp_mass=mass,
-            cross_section=sigma,
+            cross_section=10**sigma,
             sampler_name='multinest_combined',
             detector_name=[detector_name],
             prior=prior_name,
@@ -50,7 +50,7 @@ class TestLikelihoodMinimum(TestCase):
 
         # Check that all the subconfigs are correctly set
         for c in sampler.sub_classes:
-            assert c.log_cross_section == sigma
+            assert c.log_cross_section == sigma, c.config
             assert c.log_mass == np.log10(mass)
             assert c.config['prior'] == dddm.get_priors(prior_name)
             assert c.benchmark_values is not None
