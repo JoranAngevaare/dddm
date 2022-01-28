@@ -84,7 +84,7 @@ class CombinedInference(MultiNestSampler):
         for c in self.sub_classes:
             self.log.debug(f'Fixing parameters for {c}')
             c._fix_parameters()
-        self.copy_config('log_mass log_cross_section _wimp_mass _cross_section'.split())
+        # self.copy_config('log_mass log_cross_section _wimp_mass _cross_section'.split())
 
     def _log_probability_nested(self, theta):
         return np.sum([c._log_probability_nested(theta)
@@ -98,7 +98,7 @@ class CombinedInference(MultiNestSampler):
                     f'{np.setdiff1d(keys, list(self.config.keys()))}')
             values = [s.config[k] for s in self.sub_classes]
             values.append(self.config[k])
-            assert len(set(values)) == 1, f'Got inconsistent configs {values}'
+            assert len(set(values)) == 1, f'Got inconsistent configs {values} for {k}'
         # for k in keys:
         #     if k not in self.config:
         #         raise ValueError(
