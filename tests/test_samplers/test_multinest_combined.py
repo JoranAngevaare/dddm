@@ -34,7 +34,7 @@ class PymultinestTestCombined(TestCase):
         sampler = self.ct.get_sampler_for_detector(
             wimp_mass=mw,
             cross_section=cross_section,
-            sampler_name='combined_multinest',
+            sampler_name='multinest_combined',
             detector_name=['Xe_simple', 'Ar_simple', 'Ge_simple'],
             prior="Pato_2010",
             halo_name=halo_name,
