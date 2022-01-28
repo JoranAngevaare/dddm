@@ -9,7 +9,7 @@ MCMC is:
 Nevertheless, the walkers give great insight in how the likelihood-function is
 felt by the steps that the walkers make
 """
-
+from warnings import warn
 import datetime
 import json
 import os
@@ -198,11 +198,13 @@ class MCMCStatModel(statistics.StatModel):
     @property
     def mw(self):
         """Lazy alias"""
+        warn('Use log_mass instead', DeprecationWarning)
         return self.log_mass
 
     @property
     def sigma(self):
         """Lazy alias"""
+        warn('Use log_mass instead', DeprecationWarning)
         return self.log_cross_section
 
 

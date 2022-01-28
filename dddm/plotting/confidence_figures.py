@@ -81,7 +81,7 @@ class DDDMResult:
 
     @property
     def mass(self):
-        log_mass = self.get_from_config('mw', None)
+        log_mass = self.get_from_config('log_mass', None)
         if log_mass is None:
             return -1
         return round(np.power(10, log_mass), 3)
@@ -120,7 +120,7 @@ class SeabornPlot:
         plt.scatter(*self.samples, **kwargs)
 
     def plot_bench(self, c='cyan', **kwargs):
-        plt.scatter(self.result.get_from_config('mw'),
+        plt.scatter(self.result.get_from_config('log_mass'),
                     self.result.sigma,
                     s=10 ** 2,
                     edgecolors='black',
