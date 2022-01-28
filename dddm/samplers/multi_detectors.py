@@ -27,7 +27,8 @@ class CombinedInference(MultiNestSampler):
             detector_name=None,
             verbose=False,
             notes='default',
-
+            nlive=1024,
+            tol=0.1,
     ):
         assert detector_name is not None
         # Make list explicit
@@ -44,6 +45,8 @@ class CombinedInference(MultiNestSampler):
                          verbose=verbose,
                          results_dir=results_dir,
                          notes=notes,
+                         nlive=nlive,
+                         tol=tol,
                          )
         if len(spectrum_classes) < 2:
             self.log.warning(

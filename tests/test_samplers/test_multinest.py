@@ -1,12 +1,14 @@
-import dddm
 from unittest import skipIf
 from unittest import TestCase
 import dddm
 import numpy as np
 
-@skipIf(not dddm.utils.is_installed('pymultinest'), 'pymultinest is not installed')
-@skipIf(dddm.utils.is_windows(), "Multinest only works on linux")
-class TestPymultinest(TestCase):
+
+@skipIf(not dddm.utils.is_installed('pymultinest'),
+        'pymultinest is not installed')
+@skipIf(dddm.utils.is_windows(),
+        "Multinest only works on linux")
+class PymultinestTest(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()
 
@@ -31,6 +33,7 @@ class TestPymultinest(TestCase):
             sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0),
             fit_parameters=fit_parameters,
         )
+
         sampler.run()
         results = sampler.get_summary()
 
