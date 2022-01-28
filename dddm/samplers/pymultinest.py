@@ -6,7 +6,6 @@ applying the bayesian algorithm nestle/multinest
 from __future__ import absolute_import, unicode_literals
 import datetime
 import json
-import logging
 import os
 import shutil
 import tempfile
@@ -20,7 +19,6 @@ import typing as ty
 
 export, __all__ = dddm.exporter()
 
-dddm.utils.log
 
 
 @export

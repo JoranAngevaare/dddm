@@ -248,8 +248,7 @@ def emcee_plots(result, save=False, plot_walkers=True, show=False):
             pass
     nsteps, nwalkers, ndim = np.shape(result['full_chain'])
 
-    for str_inf in ['notes', 'start', 'fit_time', 'poisson',
-                    'nwalkers', 'nsteps', 'n_energy_bins']:
+    for str_inf in ['notes', 'start', 'fit_time', 'poisson', 'nwalkers', 'nsteps', 'n_energy_bins']:
         try:
             info += f"\n{str_inf} = %s" % result['config'][str_inf]
             if str_inf == 'start':
@@ -274,29 +273,33 @@ def emcee_plots(result, save=False, plot_walkers=True, show=False):
         show_titles=True)
     fig.axes[1].set_title(f"{result['config']['detector']}", loc='left')
     fig.axes[1].text(0, 1, info, verticalalignment='top')
+
+    if plot_walkers:
+        _plot_walkers(result, truths, labels, save, show)
+    _plt_cleanup(f"{save}corner.png", save, show)
+
+
+def _plot_walkers(result, truths, labels, save, show):
+    fig, axes = plt.subplots(len(labels), figsize=(10, 5), sharex=True)
+    for i, label_i in enumerate(labels):
+        ax = axes[i]
+        ax.plot(result['full_chain'][:, :, i], "k", alpha=0.3)
+        ax.axhline(truths[i])
+        ax.set_xlim(0, len(result['full_chain']))
+        ax.set_ylabel(label_i)
+        ax.yaxis.set_label_coords(-0.1, 0.5)
+
+    axes[-1].set_xlabel("step number")
+
+    _plt_cleanup(f"{save}flat_chain.png", save, show)
+
+
+def _plt_cleanup(name, save, show):
     if save:
-        plt.savefig(f"{save}corner.png", dpi=200)
+        plt.savefig(name, dpi=200)
     if show:
         plt.show()
     else:
         plt.clf()
         plt.close()
 
-    if plot_walkers:
-        fig, axes = plt.subplots(len(labels), figsize=(10, 5), sharex=True)
-        for i, label_i in enumerate(labels):
-            ax = axes[i]
-            ax.plot(result['full_chain'][:, :, i], "k", alpha=0.3)
-            ax.axhline(truths[i])
-            ax.set_xlim(0, len(result['full_chain']))
-            ax.set_ylabel(label_i)
-            ax.yaxis.set_label_coords(-0.1, 0.5)
-
-        axes[-1].set_xlabel("step number")
-        if save:
-            plt.savefig(f"{save}flat_chain.png", dpi=200)
-        if show:
-            plt.show()
-        else:
-            plt.clf()
-            plt.close()
