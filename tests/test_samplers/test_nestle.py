@@ -51,4 +51,3 @@ class NestleTest(TestCase):
             raise e
         plt.close()
         plt.clf()
-        print('Save & show again')
