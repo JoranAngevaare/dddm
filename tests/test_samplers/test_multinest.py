@@ -27,7 +27,7 @@ class NestleTest(TestCase):
             prior="Pato_2010",
             halo_name=halo_name,
             detector_kwargs=None,
-            halo_kwargs=None,
+            halo_kwargs=None if halo_name == 'shm' else dict(location='XENON'),
             sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0),
             fit_parameters=fit_parameters,
         )

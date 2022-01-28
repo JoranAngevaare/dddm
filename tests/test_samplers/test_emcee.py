@@ -1,3 +1,4 @@
+from warnings import warn
 import os.path
 import tempfile
 from unittest import TestCase
@@ -38,6 +39,9 @@ class MCMCTests(TestCase):
             samples = sampler._get_chain_flat_chain()
             mw_res = 10 ** samples[:, 0]
             sigma_res = 10 ** samples[:, 1]
+            fit_converged = np.isfinite(np.mean(mw_res))
+            if not fit_converged:
+                warnings.warn('Fit did not converge', UserWarning)
             for thing, expected, values in zip(('mass', 'cross-section'),
                                                (mw, cross_section),
                                                (mw_res, sigma_res)):
