@@ -1,6 +1,7 @@
 from unittest import TestCase
 import dddm
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class NestleTest(TestCase):
@@ -38,3 +39,16 @@ class NestleTest(TestCase):
             nsigma_off = np.abs(expected - avg) / std
             message = f'For {thing}: expected {expected:.2f} yielded different results {avg:.2f} +/- {std:.2f}. Off by {nsigma_off:.1f} sigma'
             self.assertTrue(nsigma_off < 4, message)
+
+        sampler.save_results()
+        print('Show corner')
+        try:
+            sampler.show_corner()
+        except FileNotFoundError as e:
+            print(sampler.log_dict['saved_in'])
+            import os
+            print(os.listdir(sampler.log_dict['saved_in']))
+            raise e
+        plt.close()
+        plt.clf()
+        print('Save & show again')

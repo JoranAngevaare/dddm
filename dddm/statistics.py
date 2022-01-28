@@ -59,7 +59,12 @@ class StatModel:
         if detector_name is None:
             detector_name = spectrum_class.detector.detector_name
         if not issubclass(spectrum_class.__class__, detector_spectrum.GenSpectrum):
-            raise ValueError
+            if isinstance(spectrum_class, (list, tuple)) and issubclass(
+                    spectrum_class[0].__class__,
+                    detector_spectrum.GenSpectrum):
+                pass
+            else:
+                raise ValueError(f'{spectrum_class}, {spectrum_class.__class__} is not the right class')
 
         self.spectrum_class = spectrum_class
         if isinstance(prior, str):

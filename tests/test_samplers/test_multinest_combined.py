@@ -1,17 +1,12 @@
-from unittest import skipIf
-import dddm
 import os
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-
-log = dddm.utils.log
-
-
-
 from unittest import skipIf
 from unittest import TestCase
 import dddm
 import numpy as np
+
+log = dddm.utils.log
 
 
 @skipIf(not dddm.utils.is_installed('pymultinest'),
