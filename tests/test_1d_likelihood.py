@@ -11,7 +11,8 @@ _known_detectors = dddm.test_context().detectors
 _known_priors = 'Pato_2010 Evans_2019 migdal_wide low_mass migdal_extremely_wide low_mass_fixed'.split()
 
 
-# @skipIf(True, 'bla')
+@skipIf(not dddm.utils.is_installed('pymultinest'), 'pymultinest is not installed')
+@skipIf(dddm.utils.is_windows(), "Multinest only works on linux")
 class TestLikelihoodMinimum(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()
@@ -40,7 +41,7 @@ class TestLikelihoodMinimum(TestCase):
             halo_name='shm',
             detector_kwargs=None,
             halo_kwargs=None,
-            sampler_kwargs=dict(nwalkers=30, nsteps=50, verbose=0),
+            sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0),
             fit_parameters=fit_params,
         )
         sampler.set_benchmark(mass, sigma)
