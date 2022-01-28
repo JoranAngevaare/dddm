@@ -74,7 +74,7 @@ class StatModel:
             _cross_section=cross_section,
             _spectrum_class=spectrum_class,
         )
-        self.log = dddm.utils.log#self.get_logger(tmp_folder, verbose)
+        self.log = dddm.utils.log  # self.get_logger(tmp_folder, verbose)
         self.log.info(f"initialized for {detector_name} detector.")
         self.set_fit_parameters(fit_parameters)
 
@@ -182,10 +182,10 @@ class StatModel:
     def eval_benchmark(self):
         self.log.info('preparing for running, setting the benchmark')
         if self.bench_is_set:
-            raise RuntimeError (self.bench_is_set)
+            raise RuntimeError(self.bench_is_set)
         self.benchmark_values = self.check_spectrum()
         # Save a copy of the benchmark in the config file
-        self.config['benchmark_values']=list(self.benchmark_values)
+        self.config['benchmark_values'] = list(self.benchmark_values)
 
     def total_log_prior(self, parameter_vals, parameter_names):
         """
@@ -398,6 +398,7 @@ def log_likelihood(model, y):
             return -np.inf
         res += res_bin
     return res
+
 
 def check_shape(xs):
     """

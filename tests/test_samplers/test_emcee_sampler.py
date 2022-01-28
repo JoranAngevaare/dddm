@@ -18,11 +18,11 @@ class MCMCTests(TestCase):
             cross_section=cross_section,
             sampler_name='emcee',
             detector_name='Xe_simple',
-            prior ="Pato_2010",
+            prior="Pato_2010",
             halo_name='shm',
             detector_kwargs=None,
             halo_kwargs=None,
-            sampler_kwargs= dict(nwalkers=30, nsteps=50, verbose=0),
+            sampler_kwargs=dict(nwalkers=30, nsteps=50, verbose=0),
             fit_parameters=fit_parameters,
         )
         with tempfile.TemporaryDirectory() as tmpdirname:
@@ -36,14 +36,14 @@ class MCMCTests(TestCase):
             plt.clf()
             plt.close()
             samples = sampler._get_chain_flat_chain()
-            mw_res = 10**samples[:, 0]
-            sigma_res = 10**samples[:, 1]
+            mw_res = 10 ** samples[:, 0]
+            sigma_res = 10 ** samples[:, 1]
             for thing, expected, values in zip(('mass', 'cross-section'),
-                                                (mw, cross_section),
-                                                (mw_res, sigma_res)):
+                                               (mw, cross_section),
+                                               (mw_res, sigma_res)):
                 avg = np.mean(values)
                 std = np.std(values)
-                nsigma_off = (expected-avg)/std
+                nsigma_off = np.abs(expected - avg) / std
                 message = f'Expected {thing} of {expected} yielded different results {avg} +/- {std}. Off by {nsigma_off} sigma'
                 self.assertTrue(nsigma_off < 3, message)
 

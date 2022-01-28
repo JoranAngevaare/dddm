@@ -437,4 +437,5 @@ def deterministic_hash(thing, length=10):
     digest = sha1(jsonned.encode('ascii')).digest()
     return b32encode(digest)[:length].decode('ascii').lower()
 
+
 log = get_logger('dddm')

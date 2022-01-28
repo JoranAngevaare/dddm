@@ -1,16 +1,13 @@
 from __future__ import absolute_import, unicode_literals
 import datetime
 import json
-import logging
 import os
 import shutil
 import numpy as np
 import dddm
 from .pymultinest import MultiNestSampler, multinest_corner, convert_dic_to_savable
 
-export, __all__ = dddm.exporter()
-
-log=dddm.utils.log
+log = dddm.utils.log
 export, __all__ = dddm.exporter()
 
 
@@ -19,9 +16,6 @@ class NestleSampler(MultiNestSampler):
     def run(self):
         self._fix_parameters()
         self._print_before_run()
-        if self.config['sampler'] != 'nestle':
-            raise RuntimeError(f'Trying to run nestle but initialization '
-                               f'requires {self.config["sampler"]}')
 
         # Do the import of nestle inside the class such that the package can be
         # loaded without nestle
@@ -61,6 +55,7 @@ class NestleSampler(MultiNestSampler):
         end = datetime.datetime.now()
         dt = (end - start).total_seconds()
         self.log.info(f'fit_done in {dt} s ({dt / 3600} h)')
+        self.config = dddm.utils._immutable_to_dict(self.config)
         self.config['fit_time'] = dt
         self.log_dict['did_run'] = True
         self.log.info('Finished with running optimizer!')
@@ -108,6 +103,8 @@ class NestleSampler(MultiNestSampler):
                     10. ** p[i], 10. ** (p[i]) * np.log(10) * np.sqrt(cov[i, i]))
                 self.log.info(
                     f'\t, {key[4:]}, {resdict[key[4:] + "_fit_res"]}')
+        resdict['best_fit'] = p
+        resdict['cov_matrix'] = cov
         self.log.info('Alright we got all the info we need')
         return resdict
 

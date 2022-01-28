@@ -5,6 +5,7 @@
 import subprocess
 import os
 import argparse
+
 print("write_script.py::\tstart writing script and submit it to the queue")
 
 #

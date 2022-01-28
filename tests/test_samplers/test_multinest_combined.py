@@ -1,11 +1,10 @@
-import logging
 from unittest import skipIf
 import dddm
 import os
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-log = logging.getLogger()
+log = dddm.utils.log
 
 
 @skipIf(not dddm.is_installed('pymultinest'), 'pymultinest is not installed')

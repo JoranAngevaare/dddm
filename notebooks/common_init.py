@@ -16,12 +16,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 import DirectDmTargets as dddm
+
 print('Start import')
 
 pd.set_option('display.width', 1000)
 pd.set_option('display.max_columns', 150)
 pd.set_option('display.max_rows', 100)
-
 
 print('Done import')
 print("SYSTEM")

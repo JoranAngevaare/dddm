@@ -4,9 +4,11 @@ import dddm
 
 class TestExperimentClass(TestCase):
     """See if we can init the Experiment class as we expect"""
+
     def test_dummy_init(self):
         class DummyExperiment(dddm.Experiment):
             pass
+
         dummy_experiment = DummyExperiment()
         # dummy_experiment._check_class()
 

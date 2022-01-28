@@ -19,6 +19,7 @@ import numpy as np
 from dddm import statistics, utils
 import dddm
 import typing as ty
+
 export, __all__ = dddm.exporter()
 log = dddm.utils.log
 
@@ -44,7 +45,7 @@ class MCMCStatModel(statistics.StatModel):
             detector_name=None,
             verbose=False,
             notes='default',
-            nwalkers= 50,
+            nwalkers=50,
             nsteps=100,
             remove_frac=0.2,
             emcee_thin=15
