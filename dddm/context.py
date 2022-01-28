@@ -20,16 +20,16 @@ _naive_tmp = '/tmp/'
 _host = getfqdn()
 
 base_detectors = [
-    dddm.XenonNtNr,
-    dddm.XenonNtMigdal,
-    dddm.SuperCdmsHvGeNr,
-    dddm.SuperCdmsHvSiNr,
-    dddm.SuperCdmsIzipGeNr,
-    dddm.SuperCdmsIzipSiNr,
-    dddm.SuperCdmsHvGeMigdal,
-    dddm.SuperCdmsHvSiMigdal,
-    dddm.SuperCdmsIzipGeMigdal,
-    dddm.SuperCdmsIzipSiMigdal,
+    dddm.detectors.xenon_nt.XenonNtNr,
+    dddm.detectors.xenon_nt.XenonNtMigdal,
+    dddm.detectors.super_cdms.SuperCdmsHvGeNr,
+    dddm.detectors.super_cdms.SuperCdmsHvSiNr,
+    dddm.detectors.super_cdms.SuperCdmsIzipGeNr,
+    dddm.detectors.super_cdms.SuperCdmsIzipSiNr,
+    dddm.detectors.super_cdms.SuperCdmsHvGeMigdal,
+    dddm.detectors.super_cdms.SuperCdmsHvSiMigdal,
+    dddm.detectors.super_cdms.SuperCdmsIzipGeMigdal,
+    dddm.detectors.super_cdms.SuperCdmsIzipSiMigdal,
 ]
 
 
@@ -43,10 +43,10 @@ class Context:
     _directories = None
     _detector_registry = None
     _samplers = immutabledict({
-        'nestle': dddm.NestedSamplerStatModel,
-        'multinest': dddm.MultiNestSampler,
-        'emcee': dddm.MCMCStatModel,
-        'multinest_combined': dddm.CombinedInference,
+        'nestle': dddm.samplers.nestle.NestleSampler,
+        'multinest': dddm.samplers.pymultinest.MultiNestSampler,
+        'emcee': dddm.samplers.emcee.MCMCStatModel,
+        'multinest_combined': dddm.samplers.multi_detectors.CombinedInference,
     })
     _halo_classes = immutabledict({
         'shm': dddm.SHM,
@@ -55,6 +55,8 @@ class Context:
 
     def register(self, detector: dddm.Experiment):
         """Register a detector to the context"""
+        if self._detector_registry is None:
+            self._detector_registry = {}
         existing_detector = self._detector_registry.get(detector.detector_name)
         if existing_detector is not None:
             log.warning(f'replacing {existing_detector} with {detector}')
@@ -62,6 +64,8 @@ class Context:
         self._detector_registry[detector.detector_name] = detector
 
     def set_paths(self, paths: dict, tolerant=False):
+        if self._directories is None:
+            self._directories = {}
         for reference, path in paths.items():
             if not os.path.exists(path):
                 try:
@@ -113,7 +117,8 @@ class Context:
             if not sampler_class.allow_multiple_detectors:
                 raise NotImplementedError(f'{sampler_class} does not allow multiple detectors')
             detector_instance = [self.get_detector(det, **detector_kwargs) for det in detector_name]
-            spectrum_instance = [dddm.DetectorSpectrum(experiment=d, dark_matter_model=halo_model)
+            spectrum_instance = [dddm.DetectorSpectrum(experiment=d,
+                                                       dark_matter_model=halo_model)
                                  for d in detector_instance]
         else:
             detector_instance = self.get_detector(detector_name, **detector_kwargs)
@@ -126,6 +131,7 @@ class Context:
                                          spectrum_class=spectrum_instance,
                                          prior=prior,
                                          tmp_folder=self._directories['tmp_folder'],
+                                         fit_parameters=fit_parameters,
                                          **sampler_kwargs
                                          )
         return sampler_instance

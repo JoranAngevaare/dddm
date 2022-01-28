@@ -20,7 +20,7 @@ import typing as ty
 
 export, __all__ = dddm.exporter()
 
-log = logging.getLogger()
+dddm.utils.log
 
 
 @export
@@ -87,8 +87,7 @@ class MultiNestSampler(dddm.StatModel):
         :return:
         """
         self.log.debug('there we go! Find that log probability')
-        evaluated_rate = self.eval_spectrum(parameter_vals, parameter_names)[
-            'counts']
+        evaluated_rate = self.eval_spectrum(parameter_vals, parameter_names)
 
         ll = dddm.statistics.log_likelihood(self.benchmark_values, evaluated_rate)
         if np.isnan(ll):

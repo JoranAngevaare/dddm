@@ -69,7 +69,7 @@ stats.set_benchmark(mass=args.mw, log_cross_section=args.cross_section)
 stats.nwalkers = args.nwalkers
 stats.nsteps = args.nsteps
 stats.eval_benchmark()
-stats.run_emcee()
+stats.run()
 stats.save_results()
 assert stats.log_dict['did_run']
 

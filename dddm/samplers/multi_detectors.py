@@ -6,31 +6,63 @@ import shutil
 import numpy as np
 import dddm
 from .pymultinest import MultiNestSampler, convert_dic_to_savable
+import typing as ty
 
 export, __all__ = dddm.exporter()
 
-log = logging.getLogger()
+dddm.utils.log
 
 
 @export
 class CombinedInference(MultiNestSampler):
     allow_multiple_detectors = True
 
-    def __init__(self, targets, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+            self,
+            wimp_mass: ty.Union[float, int],
+            cross_section: ty.Union[float, int],
+            spectrum_class: ty.List[ty.Union[dddm.DetectorSpectrum, dddm.GenSpectrum]],
+            prior: dict,
+            tmp_folder: str,
+            fit_parameters=('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k'),
 
-        if not np.all([t in dddm.experiment_registry for t in targets]):
-            raise NotImplementedError(
-                f'Insert tuple of sub-experiments. {targets} are incorrect format')
-        if len(targets) < 2:
+            detector_name=None,
+            verbose=False,
+            notes='default',
+
+    ):
+        assert detector_name is not None
+        # Make list explicit
+        spectrum_classes = spectrum_class
+        del spectrum_class
+
+        super().__init__(wimp_mass=wimp_mass,
+                         cross_section=cross_section,
+                         spectrum_class=spectrum_classes,
+                         prior=prior,
+                         tmp_folder=tmp_folder,
+                         fit_parameters=fit_parameters,
+                         detector_name=detector_name,
+                         verbose=verbose,
+                         notes=notes,
+                         )
+        if len(spectrum_classes) < 2:
             self.log.warning(
                 "Don't use this class for single experiments! Use NestedSamplerStatModel instead")
-        self.log.debug(f'Register {targets}')
-        self.sub_detectors = targets
-        self.config['sub_sets'] = targets
+        self.sub_detectors = spectrum_classes
+        self.config['sub_sets'] = spectrum_classes
         self.sub_classes = [
-            MultiNestSampler(det)
-            for det in self.sub_detectors
+            MultiNestSampler(wimp_mass=wimp_mass,
+                             cross_section=cross_section,
+                             spectrum_class=one_class,
+                             prior=prior,
+                             tmp_folder=tmp_folder,
+                             fit_parameters=fit_parameters,
+                             detector_name=one_class.detector_name,
+                             verbose=verbose,
+                             notes=notes,
+                             )
+            for one_class in self.sub_detectors
         ]
         self.log.debug(f'Sub detectors are set: {self.sub_classes}')
 
@@ -42,7 +74,7 @@ class CombinedInference(MultiNestSampler):
     def _fix_parameters(self):
         """Fix the parameters of the sub classes"""
         super()._fix_parameters(_do_evaluate_benchmark=False)
-        self.copy_config('mw prior sigma halo_model spectrum_class'.split())
+        self.copy_config('mw prior sigma _wimp_mass _cross_section'.split())
         for c in self.sub_classes:
             self.log.debug(f'Fixing parameters for {c}')
             c._fix_parameters()
@@ -57,11 +89,19 @@ class CombinedInference(MultiNestSampler):
                 raise ValueError(
                     f'One or more of keys not in config: '
                     f'{np.setdiff1d(keys, list(self.config.keys()))}')
-        copy_of_config = {k: self.config[k] for k in keys}
-        self.log.info(f'update config with {copy_of_config}')
-        for c in self.sub_classes:
-            self.log.debug(f'{c} with config {c.config}')
-            c.config.update(copy_of_config)
+            values = [s.config[k] for s in self.sub_classes]
+            values.append(self.config[k])
+            assert len(set(values)) == 1, f'Got inconsistent configs {values}'
+        # for k in keys:
+        #     if k not in self.config:
+        #         raise ValueError(
+        #             f'One or more of keys not in config: '
+        #             f'{np.setdiff1d(keys, list(self.config.keys()))}')
+        # copy_of_config = {k: self.config[k] for k in keys}
+        # self.log.info(f'update config with {copy_of_config}')
+        # for c in self.sub_classes:
+        #     self.log.debug(f'{c} with config {c.config}')
+        #     c.config.update(copy_of_config)
 
     def save_sub_configs(self, force_index=False):
         save_dir = self.get_save_dir(force_index=force_index)

@@ -8,7 +8,8 @@ from sys import platform
 import numericalunits as nu
 import numpy as np
 from immutabledict import immutabledict
-from dddm import context, utils
+from dddm import utils
+from dddm.priors import get_priors
 from dddm.recoil_rates import halo, halo_shielded, spectrum, detector_spectrum
 from scipy.special import loggamma
 import typing as ty
@@ -21,80 +22,8 @@ export, __all__ = dddm.exporter()
 LL_LOW_BOUND = 1e-90
 
 
-@export
-def get_priors(priors_from="Evans_2019"):
-    """
-    :return: dictionary of priors, type and values
-    """
-    if priors_from == "Pato_2010":
-        priors = {'log_mass': {'range': [0.1, 3], 'prior_type': 'flat'},
-                  'log_cross_section': {'range': [-46, -42], 'prior_type': 'flat'},
-                  'density': {'range': [0.001, 0.9], 'prior_type': 'gauss', 'mean': 0.4,
-                              'std': 0.1},
-                  'v_0': {'range': [80, 380], 'prior_type': 'gauss', 'mean': 230, 'std': 30},
-                  'v_esc': {'range': [379, 709], 'prior_type': 'gauss', 'mean': 544, 'std': 33},
-                  'k': {'range': [0.5, 3.5], 'prior_type': 'flat'}}
-    elif priors_from == "Evans_2019":
-        # https://arxiv.org/abs/1901.02016
-        priors = {'log_mass': {'range': [0.1, 3], 'prior_type': 'flat'},
-                  'log_cross_section': {'range': [-46, -42], 'prior_type': 'flat'},
-                  'density': {'range': [0.001, 0.9], 'prior_type': 'gauss', 'mean': 0.55,
-                              'std': 0.17},
-                  'v_0': {'range': [80, 380], 'prior_type': 'gauss', 'mean': 233, 'std': 3},
-                  'v_esc': {'range': [379, 709], 'prior_type': 'gauss', 'mean': 528, 'std': 24.5}}
-    elif priors_from == "migdal_wide":
-        priors = {'log_mass': {'range': [-1.5, 1.5], 'prior_type': 'flat'},
-                  'log_cross_section': {'range': [-48, -37], 'prior_type': 'flat'},
-                  # see Evans_2019_constraint
-                  'density': {'range': [0.001, 0.9], 'prior_type': 'gauss', 'mean': 0.55,
-                              'std': 0.17},
-                  'v_0': {'range': [80, 380], 'prior_type': 'gauss', 'mean': 233, 'std': 20},
-                  'v_esc': {'range': [379, 709], 'prior_type': 'gauss', 'mean': 528, 'std': 24.5},
-                  'k': {'range': [0.5, 3.5], 'prior_type': 'flat'}}
-    elif priors_from == "low_mass":
-        priors = {'log_mass': {'range': [-1.5, 1.5], 'prior_type': 'flat'},
-                  'log_cross_section': {'range': [-48, -37], 'prior_type': 'flat'},
-                  # see Evans_2019_constraint
-                  'density': {'range': [0.0001, 1], 'prior_type': 'gauss', 'mean': 0.55,
-                              'std': 0.17},
-                  'v_0': {'range': [133, 333], 'prior_type': 'gauss', 'mean': 233, 'std': 20},
-                  'v_esc': {'range': [405.5, 650.5], 'prior_type': 'gauss', 'mean': 528,
-                            'std': 24.5}}
-    elif priors_from == "low_mass_fixed":
-        priors = {'log_mass': {'range': [-2, 2], 'prior_type': 'flat'},
-                  'log_cross_section': {'range': [-53, -27], 'prior_type': 'flat'},
-                  # see Evans_2019_constraint
-                  'density': {'range': [0.0001, 1], 'prior_type': 'gauss', 'mean': 0.55,
-                              'std': 0.17},
-                  'v_0': {'range': [133, 333], 'prior_type': 'gauss', 'mean': 233, 'std': 20},
-                  'v_esc': {'range': [405.5, 650.5], 'prior_type': 'gauss', 'mean': 528,
-                            'std': 24.5}}
-    elif priors_from == "migdal_extremely_wide":
-        priors = {'log_mass': {'range': [-2, 3], 'prior_type': 'flat'},
-                  'log_cross_section': {'range': [-50, -30], 'prior_type': 'flat'},
-                  'density': {'range': [0.001, 0.9], 'prior_type': 'gauss', 'mean': 0.55,
-                              'std': 0.5},
-                  'v_0': {'range': [80, 380], 'prior_type': 'gauss', 'mean': 233, 'std': 90},
-                  'v_esc': {'range': [379, 709], 'prior_type': 'gauss', 'mean': 528, 'std': 99},
-                  'k': {'range': [0.5, 3.5], 'prior_type': 'flat'}
-                  }
-    else:
-        raise NotImplementedError(
-            f"Taking priors from {priors_from} is not implemented")
-
-    for key in priors.keys():
-        param = priors[key]
-        if param['prior_type'] == 'flat':
-            param['param'] = param['range']
-            param['dist'] = flat_prior_distribution
-        elif param['prior_type'] == 'gauss':
-            param['param'] = param['mean'], param['std']
-            param['dist'] = gauss_prior_distribution
-    return immutabledict(priors)
-
-
 def get_prior_list():
-    return ['mw', 'sigma', 'v_0', 'v_esc', 'density']
+    return ['log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density']
 
 
 def get_param_list():
@@ -129,10 +58,12 @@ class StatModel:
         """
         if detector_name is None:
             detector_name = spectrum_class.detector.detector_name
-        if not issubclass(spectrum_class, detector_spectrum.GenSpectrum):
+        if not issubclass(spectrum_class.__class__, detector_spectrum.GenSpectrum):
             raise ValueError
 
         self.spectrum_class = spectrum_class
+        if isinstance(prior, str):
+            prior = get_priors(prior)
         self.config = dict(
             detector=detector_name,
             notes=notes,
@@ -143,9 +74,9 @@ class StatModel:
             _cross_section=cross_section,
             _spectrum_class=spectrum_class,
         )
-        self.set_fit_parameters(fit_parameters)
-        self.log = self.get_logger(tmp_folder, verbose)
+        self.log = dddm.utils.log#self.get_logger(tmp_folder, verbose)
         self.log.info(f"initialized for {detector_name} detector.")
+        self.set_fit_parameters(fit_parameters)
 
     def __str__(self):
         return (f"StatModel::for {self.config['detector']} detector. "
@@ -176,9 +107,7 @@ class StatModel:
         of other models can be evaluated for this 'truth'
         """
         self.config['log_mass'] = np.log10(self.config['_wimp_mass'])
-        self.config['log_sigma'] = np.log10(self.config['_cross_section'])
-        # No more changes allowed
-        self.config = immutabledict(self.config)
+        self.config['log_cross_section'] = np.log10(self.config['_cross_section'])
 
     def set_fit_parameters(self, params):
         """Write the fit parameters to the config"""
@@ -191,9 +120,9 @@ class StatModel:
                               f"any of {self.known_parameters}"
                 raise NotImplementedError(err_message)
         known_params = self.known_parameters[:len(params)]
-        if params not in [known_params, tuple(known_params)]:
+        if tuple(params) != tuple(known_params):
             err_message = f"The parameters are not input in the correct order. Please" \
-                          f" insert {known_params} rather than {params}."
+                          f"insert {known_params} rather than {params}."
             raise NameError(err_message)
         self.config['fit_parameters'] = params
 
@@ -228,32 +157,35 @@ class StatModel:
         no_wimp_mass_set = self.config.get('log_mass') is None
         if no_wimp_mass_set:
             self.set_benchmark()
-        elif self.config['sigma'] is None:
+        elif self.config['log_cross_section'] is None:
             raise ValueError('Someone forgot to set sigma?!')
 
         # Very important that this comes AFTER the prior setting as we depend on it
         self.set_models()
 
         # Finally, set the benchmark
-        if _do_evaluate_benchmark:
+        if not _do_evaluate_benchmark:
             # Only do this for the combined experiments!
             self.log.info('Skipping evaluating the benchmark!')
+        else:
+            self.log.info('evaluate benchmark\tall ready to go!')
             self.eval_benchmark()
-        self.log.info('evaluate benchmark\tall ready to go!')
+        # No more changes allowed
+        self.config = immutabledict(self.config)
 
     def check_spectrum(self):
         """Lazy alias for eval_spectrum"""
         parameter_names = self._parameter_order[:2]
-        parameter_values = [self.config['log_mass'], self.config['sigma']]
+        parameter_values = [self.config['log_mass'], self.config['log_cross_section']]
         return self.eval_spectrum(parameter_values, parameter_names)
 
     def eval_benchmark(self):
         self.log.info('preparing for running, setting the benchmark')
         if self.bench_is_set:
-            raise RuntimeError
+            raise RuntimeError (self.bench_is_set)
         self.benchmark_values = self.check_spectrum()
         # Save a copy of the benchmark in the config file
-        self.config['benchmark_values'] = list(self.benchmark_values)
+        self.config['benchmark_values']=list(self.benchmark_values)
 
     def total_log_prior(self, parameter_vals, parameter_names):
         """
@@ -371,7 +303,7 @@ class StatModel:
             assert self.spectrum_class.dm_model.log_mass == log_mass
 
         elif len(parameter_names) == 5:
-            if parameter_names != self._parameter_order[:len(parameter_names)]:
+            if tuple(parameter_names) != tuple(self._parameter_order[:len(parameter_names)]):
                 raise NameError(
                     f"The parameters are not in correct order. Please insert"
                     f"{self._parameter_order[:len(parameter_names)]} rather than "
@@ -417,11 +349,11 @@ class StatModel:
 
     @property
     def log_cross_section(self):
-        return self.config['sigma']
+        return self.config['log_cross_section']
 
     @property
     def bench_is_set(self):
-        return self.benchmark_values is None
+        return self.benchmark_values is not None
 
 
 def log_likelihood_function(nb, nr):
@@ -466,16 +398,6 @@ def log_likelihood(model, y):
             return -np.inf
         res += res_bin
     return res
-
-
-def flat_prior_distribution(_range):
-    return np.random.uniform(_range[0], _range[1])
-
-
-def gauss_prior_distribution(_param):
-    mu, sigma = _param
-    return np.random.normal(mu, sigma)
-
 
 def check_shape(xs):
     """

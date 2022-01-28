@@ -16,9 +16,8 @@ from platform import python_version
 from base64 import b32encode
 from hashlib import sha1
 from collections.abc import Mapping
+from immutabledict import immutabledict
 import json
-
-log = logging.getLogger()
 
 
 def exporter(export_self=False):
@@ -317,19 +316,29 @@ def get_bins(a, b, n) -> np.ndarray:
 
 def get_logger(name, level='INFO', path=None) -> logging.Logger:
     """
-    Get logger with hander in nice format
+    Get logger with handler in nice format
     :param name: name of the logger
     :param level: logging level
     :param path: where to save the log files
     :return: logger
     """
-    level = level.upper()
-    new_log = logging.getLogger(name)
-    if not hasattr(logging, level):
-        raise ValueError(f'{level} is invalid for logging')
-    new_log.setLevel(getattr(logging, level))
-    new_log.handlers = [FormattedHandler(path=path)]
-    return new_log
+    logging.basicConfig(filename='./bla.log',
+                        filemode='a',
+                        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                        datefmt='%H:%M:%S',
+                        level=logging.DEBUG)
+
+    logging.info("Running Urban Planning")
+
+    return logging.getLogger('urbanGUI')
+    #
+    # level = level.upper()
+    # new_log = logging.getLogger(name)
+    # if not hasattr(logging, level):
+    #     raise ValueError(f'{level} is invalid for logging')
+    # new_log.setLevel(getattr(logging, level))
+    # new_log.handlers = [FormattedHandler(path=path)]
+    # return new_log
 
 
 class FormattedHandler(logging.Handler):
@@ -341,7 +350,7 @@ class FormattedHandler(logging.Handler):
         m = self.formatted_message(record)
         self.write(m)
         # Strip \n
-        print(m[:-1])
+        # print(m[:-1])
 
     def write(self, m):
         if self.path is None:
@@ -360,6 +369,15 @@ class FormattedHandler(logging.Handler):
                 f"{func_line:20} | "
                 f"{record.getMessage()}\n"
                 )
+
+
+def _immutable_to_dict(some_dict):
+    new_dict = {}
+    for k, v in some_dict.items():
+        if isinstance(v, immutabledict):
+            v = _immutable_to_dict(v)
+        new_dict[k] = v
+    return new_dict
 
 
 def hashablize(obj):
@@ -418,3 +436,5 @@ def deterministic_hash(thing, length=10):
     # disable bandit
     digest = sha1(jsonned.encode('ascii')).digest()
     return b32encode(digest)[:length].decode('ascii').lower()
+
+log = get_logger('dddm')

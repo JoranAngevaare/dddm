@@ -5,18 +5,17 @@ import logging
 import os
 import shutil
 import numpy as np
-from scipy import special as spsp
 import dddm
 from .pymultinest import MultiNestSampler, multinest_corner, convert_dic_to_savable
 
 export, __all__ = dddm.exporter()
 
-log = logging.getLogger()
+log=dddm.utils.log
 export, __all__ = dddm.exporter()
 
 
 @export
-class NestedSamplerStatModel(MultiNestSampler):
+class NestleSampler(MultiNestSampler):
     def run(self):
         self._fix_parameters()
         self._print_before_run()

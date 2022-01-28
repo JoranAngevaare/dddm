@@ -2,7 +2,6 @@ import os
 import shutil
 import numericalunits as nu
 import pandas as pd
-import verne
 from dddm import utils, exporter
 import warnings
 from scipy.interpolate import interp1d
@@ -83,7 +82,7 @@ class ShieldedSHM:
             distribution shaved, load one.
         :return:
         """
-
+        import verne
         # set up folders and names
         file_folder = self.file_folder
         file_name = os.path.join(file_folder, self.fname + '_avg' + '.csv')
