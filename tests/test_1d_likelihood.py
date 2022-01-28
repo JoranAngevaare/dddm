@@ -11,8 +11,6 @@ _known_detectors = dddm.test_context().detectors
 _known_priors = 'Pato_2010 Evans_2019 migdal_wide low_mass migdal_extremely_wide low_mass_fixed'.split()
 
 
-@skipIf(not dddm.utils.is_installed('pymultinest'), 'pymultinest is not installed')
-@skipIf(dddm.utils.is_windows(), "Multinest only works on linux")
 class TestLikelihoodMinimum(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()
@@ -54,8 +52,8 @@ class TestLikelihoodMinimum(TestCase):
             assert c.log_mass == np.log10(mass)
             assert c.config['prior'] == dddm.get_priors(prior_name)
             assert c.benchmark_values is not None
-
-        if benchmark_all_zero := not np.any(sampler.sub_classes[0].benchmark_values):
+        benchmark_all_zero=not np.any(sampler.sub_classes[0].benchmark_values)
+        if benchmark_all_zero:
             print('If everything is zero, I don\'t have to check if we converge')
             return
 

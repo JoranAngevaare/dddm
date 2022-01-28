@@ -53,7 +53,6 @@ class PymultinestTestCombined(TestCase):
             message = f'For {thing}: expected {expected:.2f} yielded different results {avg:.2f} +/- {std:.2f}. Off by {nsigma_off:.1f} sigma'
             self.assertTrue(nsigma_off < 4, message)
 
-        sampler.run_multinest()
         sampler.save_results()
         sampler.save_sub_configs()
 
