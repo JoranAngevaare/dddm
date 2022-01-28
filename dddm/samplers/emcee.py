@@ -302,4 +302,3 @@ def _plt_cleanup(name, save, show):
     else:
         plt.clf()
         plt.close()
-

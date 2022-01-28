@@ -20,7 +20,6 @@ import typing as ty
 export, __all__ = dddm.exporter()
 
 
-
 @export
 class MultiNestSampler(dddm.StatModel):
     def __init__(self,

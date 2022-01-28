@@ -10,7 +10,6 @@ import typing as ty
 export, __all__ = dddm.exporter()
 
 
-
 @export
 class CombinedInference(MultiNestSampler):
     allow_multiple_detectors = True
