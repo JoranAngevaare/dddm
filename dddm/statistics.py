@@ -135,13 +135,9 @@ class StatModel:
             dm_model.log_mass = self.log_mass
             dm_model.log_cross_section = self.log_cross_section
             dm_model.location = self.spectrum_class.location
-            dm_model.v_0 = self.v_0 * nu.km / nu.s
-            dm_model.v_esc = self.v_esc * nu.km / nu.s
-            dm_model.rho_dm = self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3
-        else:
-            dm_model.v_0 = self.v_0 * nu.km / nu.s
-            dm_model.v_esc = self.v_esc * nu.km / nu.s
-            dm_model.rho_dm = self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3
+        dm_model.v_0 = self.v_0 * nu.km / nu.s
+        dm_model.rho_dm = self.density * nu.GeV / nu.c0 ** 2 / nu.cm ** 3
+        dm_model.v_esc = self.v_esc * nu.km / nu.s
         assert self.spectrum_class.dm_model.v_0 == self.v_0 * nu.km / nu.s
 
     def _fix_parameters(self, _do_evaluate_benchmark=True):
@@ -151,11 +147,9 @@ class StatModel:
         :param _do_evaluate_benchmark: Evaluate the benchmark
         :return: None
         """
-        no_prior_has_been_set = self.config['prior'] is None
-        if no_prior_has_been_set:
+        if no_prior_has_been_set := self.config['prior'] is None:
             raise ValueError
-        no_wimp_mass_set = self.config.get('log_mass') is None
-        if no_wimp_mass_set:
+        if no_wimp_mass_set := self.config.get('log_mass') is None:
             self.set_benchmark()
         elif self.config['log_cross_section'] is None:
             raise ValueError('Someone forgot to set sigma?!')
@@ -290,7 +284,7 @@ class StatModel:
         if isinstance(parameter_names, str):
             raise NotImplementedError(f"Got single param {parameter_names}?")
         if len(parameter_names) not in [2, 5]:
-            raise NotImplementedError(f"Use either 2 or 5 parameters to fit")
+            raise NotImplementedError('Use either 2 or 5 parameters to fit')
         checked_values = check_shape(values)
         log_mass = checked_values[0]
         log_cross_section = checked_values[1]
@@ -425,9 +419,7 @@ def log_flat(a, b, x):
     :return: 0 for x in bound, -np.inf otherwise
     """
     try:
-        if a < x < b:
-            return 0
-        return -np.inf
+        return 0 if a < x < b else -np.inf
     except ValueError:
         result = np.zeros(len(x))
         mask = (x > a) & (x < b)

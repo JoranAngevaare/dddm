@@ -161,8 +161,7 @@ def lindhard_quenching_factor(e_nr, k, atomic_number_z):
     g = _g(e_nr, atomic_number_z)
     a = k * g
     b = 1 + k * g
-    lindhard_factor = a / b
-    return lindhard_factor
+    return a / b
 
 
 @export

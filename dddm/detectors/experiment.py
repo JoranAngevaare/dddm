@@ -49,11 +49,11 @@ class Experiment:
         return f'{self.__class__.__name__}: {self.detector_name}. Hash:{self.detector_hash}'
 
     def _check_class(self):
-        missing = []
-        for att in set(self._required_settings):
-            if getattr(self, att) is None:
-                missing.append(att)
-        if missing:
+        if missing := [
+            att
+            for att in set(self._required_settings)
+            if getattr(self, att) is None
+        ]:
             raise NotImplementedError(f'Missing {missing} for {self}')
         assert self.interaction_type in ['SI', 'migdal_SI'], f'{self.interaction_type} unknown'
         # Should not raise a ValueError
@@ -74,8 +74,7 @@ class Experiment:
 
     @property
     def config(self):
-        config = {name: getattr(self, name) for name in self._required_settings}
-        return config
+        return {name: getattr(self, name) for name in self._required_settings}
 
     @property
     def detector_hash(self):
