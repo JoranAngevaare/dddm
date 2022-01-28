@@ -211,8 +211,7 @@ def _folders_plus_one(root_dir, save_as):
 
     if os.path.exists(root_dir):
         files = os.listdir(root_dir)
-        numbers = [_strip_save_to_int(f, save_as) for f in files]
-        if numbers:
+        if numbers := [_strip_save_to_int(f, save_as) for f in files]:
             n_last = max(numbers)
     return os.path.join(root_dir, save_as + str(n_last + 1))
 

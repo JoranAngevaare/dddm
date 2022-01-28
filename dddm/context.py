@@ -126,7 +126,7 @@ class Context:
                                                       dark_matter_model=halo_model)
         if isinstance(prior, str):
             prior = dddm.get_priors(prior)
-        sampler_instance = sampler_class(wimp_mass=wimp_mass,
+        return sampler_class(wimp_mass=wimp_mass,
                                          cross_section=cross_section,
                                          spectrum_class=spectrum_instance,
                                          prior=prior,
@@ -134,7 +134,6 @@ class Context:
                                          fit_parameters=fit_parameters,
                                          **sampler_kwargs
                                          )
-        return sampler_instance
 
     @property
     def detectors(self):

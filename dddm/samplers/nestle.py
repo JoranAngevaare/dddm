@@ -66,9 +66,6 @@ class NestleSampler(MultiNestSampler):
         )
 
         self.check_did_run()
-        # keep a dictionary of all the results
-        resdict = {}
-
         # Do the import of nestle inside the class such that the package can be
         # loaded without nestle
         try:
@@ -85,13 +82,14 @@ class NestleSampler(MultiNestSampler):
         keepidx = np.where(np.random.rand(len(nweights)) < nweights)[0]
         # get the posterior samples
         samples_nestle = self.result.samples[keepidx, :]
-        # estimate of the statistcal uncertainty on logZ
-        resdict['nestle_nposterior'] = len(samples_nestle)
-        resdict['nestle_time'] = self.config['fit_time']  # run time
-        # log marginalised likelihood
-        resdict['nestle_logZ'] = self.result.logz
-        resdict['nestle_logZerr'] = logZerrnestle  # uncertainty on log(Z)
-        resdict['summary'] = self.result.summary()
+        resdict = {
+            'nestle_nposterior': len(samples_nestle),
+            'nestle_time': self.config['fit_time'],
+            'nestle_logZ': self.result.logz,
+            'nestle_logZerr': logZerrnestle,
+            'summary': self.result.summary(),
+        }
+
         p, cov = nestle.mean_and_cov(
             self.result.samples, self.result.weights)
         for i, key in enumerate(self.config['fit_parameters']):
