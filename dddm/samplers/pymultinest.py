@@ -181,7 +181,7 @@ class MultiNestSampler(dddm.StatModel):
 
         # Open a save-folder after successful running multinest. Move the
         # multinest results there.
-        dddm.context.check_folder_for_file(save_at)
+        dddm.utils.check_folder_for_file(save_at)
         end = datetime.datetime.now()
         dt = (end - start).total_seconds()
         self.log.info(f'fit_done in {dt} s ({dt / 3600} h)')

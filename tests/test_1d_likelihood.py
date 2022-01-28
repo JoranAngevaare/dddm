@@ -66,7 +66,7 @@ class TestLikelihoodMinimum(TestCase):
         for s in tqdm(sigma_scan, desc='Cross-section scan'):
             ll = sampler.sub_classes[0]._log_probability_nested([np.log10(mass), s])
             likelihood_scan.append(ll)
-    
+
         max_likelihood_index = np.argmax(likelihood_scan)
         max_is_close_to_true = np.isclose(
             sigma_scan[max_likelihood_index],
