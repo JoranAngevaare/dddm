@@ -21,16 +21,20 @@ jobs:
     strategy:
       fail-fast: False
       matrix:
-        os: [ "ubuntu-latest", "windows-latest" ]
+        os: [ "ubuntu-latest", "windows-latest"]
         python-version: [ "3.8", "3.9", "3.10" ]
-        test: [ 'coveralls', 'pytest' ]
+        test: [ 'coveralls', 'pytest', "fail-fast" ]
         exclude:
           - os: windows-latest
             test: coveralls
-          - python-version: 3.9
+          - python-version: [3.9, "3.10"]
             test: coveralls
-          - python-version: "3.10"
-            test: coveralls
+#          - python-version: "3.10"
+#            test: coveralls
+          - test: "fail-fast"
+            os: windows-latest
+          - test: "fail-fast"
+            python-version: [3.9, "3.10"]
     steps:
       - name: Setup python
         uses: actions/setup-python@v2.3.1
@@ -68,6 +72,11 @@ jobs:
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
           pytest --verbose --durations 0
+      - name: Test package (linux)
+        if: matrix.os == 'ubuntu-latest' && matrix.test == 'fail-fast'
+        run: |
+          export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
+          pytest --x --durations 0
       - name: Coveralls
         if: matrix.test == 'coveralls'
         env:
