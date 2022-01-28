@@ -2,7 +2,7 @@
 software_dir: path of installation
 """
 
-import logging
+import inspect
 import os
 import warnings
 from socket import getfqdn
@@ -107,9 +107,12 @@ class Context:
                                  ):
         sampler_class = self._samplers[sampler_name]
 
-        sampler_kwargs = {} if not sampler_kwargs else sampler_kwargs
-        halo_kwargs = {} if not halo_kwargs else halo_kwargs
-        detector_kwargs = {} if not detector_kwargs else detector_kwargs
+        # If any class needs any of the paths, provide those here.
+        sampler_kwargs = self._add_folders_to_kwargs(sampler_class, sampler_kwargs)
+        halo_kwargs = self._add_folders_to_kwargs(
+            self._halo_classes.get(halo_name), halo_kwargs)
+        detector_kwargs = self._add_folders_to_kwargs(
+            self._detector_registry.get(detector_name), detector_kwargs)
 
         halo_model = self._halo_classes[halo_name](**halo_kwargs)
         # TODO instead, create a super detector instead of smaller ones
@@ -127,13 +130,24 @@ class Context:
         if isinstance(prior, str):
             prior = dddm.get_priors(prior)
         return sampler_class(wimp_mass=wimp_mass,
-                                         cross_section=cross_section,
-                                         spectrum_class=spectrum_instance,
-                                         prior=prior,
-                                         tmp_folder=self._directories['tmp_folder'],
-                                         fit_parameters=fit_parameters,
-                                         **sampler_kwargs
-                                         )
+                             cross_section=cross_section,
+                             spectrum_class=spectrum_instance,
+                             prior=prior,
+                             tmp_folder=self._directories['tmp_folder'],
+                             fit_parameters=fit_parameters,
+                             **sampler_kwargs
+                             )
+
+    def _add_folders_to_kwargs(self, function, current_kwargs: ty.Union[None, dict]) -> dict:
+        if function is None:
+            return
+        if current_kwargs is None:
+            current_kwargs = {}
+        takes = inspect.getfullargspec(function).args
+        for directory, path in self._directories.items():
+            if directory in takes:
+                current_kwargs.update({directory, path})
+        return current_kwargs
 
     @property
     def detectors(self):
@@ -241,39 +255,39 @@ def get_temp():
 #     set_context(get_default_context())
 
 
-def load_folder_from_context(request):
-    """
-
-    :param request: request a named path from the context
-    :return: the path that is requested
-    """
-    if request in context:
-        folder = context[request]
-    else:
-        raise FileNotFoundError(f'Requesting {request} but that is not in {context.keys()}')
-    if not os.path.exists(folder):
-        raise FileNotFoundError(f'Could not find {folder} (requested was {request}')
-    # Should end up here:
-    return folder
-
-
-def get_result_folder(*args):
-    """
-    bridge to work with old code when context was not yet implemented
-    """
-    if args:
-        log.warning(
-            f'get_result_folder::\tfunctionality deprecated ignoring {args}')
-    log.info(
-        f'get_result_folder::\trequested folder is {context["results_dir"]}')
-    return load_folder_from_context('results_dir')
+# def load_folder_from_context(request):
+#     """
+#
+#     :param request: request a named path from the context
+#     :return: the path that is requested
+#     """
+#     if request in context:
+#         folder = context[request]
+#     else:
+#         raise FileNotFoundError(f'Requesting {request} but that is not in {context.keys()}')
+#     if not os.path.exists(folder):
+#         raise FileNotFoundError(f'Could not find {folder} (requested was {request}')
+#     # Should end up here:
+#     return folder
 
 
-def get_verne_folder():
-    """
-    bridge to work with old code when context was not yet implemented
-    """
-    return load_folder_from_context('verne_files')
+# def get_result_folder(*args):
+#     """
+#     bridge to work with old code when context was not yet implemented
+#     """
+#     if args:
+#         log.warning(
+#             f'get_result_folder::\tfunctionality deprecated ignoring {args}')
+#     log.info(
+#         f'get_result_folder::\trequested folder is {context["results_dir"]}')
+#     return load_folder_from_context('results_dir')
+
+
+# def get_verne_folder():
+#     """
+#     bridge to work with old code when context was not yet implemented
+#     """
+#     return load_folder_from_context('verne_files')
 
 
 def open_save_dir(save_as, base_dir=None, force_index=False, _hash=None):
@@ -290,7 +304,7 @@ def open_save_dir(save_as, base_dir=None, force_index=False, _hash=None):
         some number)
     """
     if base_dir is None:
-        base_dir = get_result_folder()
+        raise ValueError(save_as, base_dir, force_index, _hash)
     if force_index:
         results_path = os.path.join(base_dir, save_as + str(force_index))
     elif _hash is None:

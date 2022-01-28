@@ -6,7 +6,7 @@ import numpy as np
 
 @skipIf(not dddm.utils.is_installed('pymultinest'), 'pymultinest is not installed')
 @skipIf(dddm.utils.is_windows(), "Multinest only works on linux")
-class NestleTest(TestCase):
+class TestPymultinest(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()
 

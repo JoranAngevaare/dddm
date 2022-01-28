@@ -29,8 +29,8 @@ class MultiNestSampler(dddm.StatModel):
                                           dddm.GenSpectrum],
                  prior: dict,
                  tmp_folder: str,
+                 results_dir: str=None,
                  fit_parameters=('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k'),
-
                  detector_name=None,
                  verbose=False,
                  notes='default',
@@ -47,7 +47,7 @@ class MultiNestSampler(dddm.StatModel):
                          verbose=verbose,
                          notes=notes,
                          )
-
+        self.results_dir=results_dir
         self.config.update(
             {'tol': tol,  # Tolerance for sampling
              'nlive': nlive,  # number of live points
@@ -55,7 +55,7 @@ class MultiNestSampler(dddm.StatModel):
         self.log_dict = {
             'did_run': False,
             'saved_in': None,
-            'tmp_dir': './',
+            'tmp_dir': tmp_folder,
         }
 
         self.result = False
@@ -244,6 +244,7 @@ class MultiNestSampler(dddm.StatModel):
             return saved_in
         target_save = dddm.context.open_save_dir(
             f'nes_{self.__class__.__name__}',
+            base_dir=self.results_dir,
             force_index=force_index,
             _hash=_hash)
         self.log_dict['saved_in'] = target_save
