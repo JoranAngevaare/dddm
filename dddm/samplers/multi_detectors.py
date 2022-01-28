@@ -81,7 +81,7 @@ class CombinedInference(MultiNestSampler):
     def _fix_parameters(self):
         """Fix the parameters of the sub classes"""
         super()._fix_parameters(_do_evaluate_benchmark=False)
-        self.copy_config('mw prior sigma _wimp_mass _cross_section'.split())
+        self.copy_config('log_mass log_cross_section _wimp_mass _cross_section'.split())
         for c in self.sub_classes:
             self.log.debug(f'Fixing parameters for {c}')
             c._fix_parameters()
