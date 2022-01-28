@@ -229,6 +229,10 @@ class MultiNestSampler(dddm.StatModel):
                     10. ** col.mean(), 10. ** (col.mean()) * np.log(10.) * col.std())
                 self.log.info(f'\t {name[4:]},'
                               f' {resdict[name[4:] + "_fit_res"]}')
+        resdict['best_fit'] = np.mean(samples.transpose(), axis=1)
+        print(resdict['best_fit'])
+        resdict['cov_matrix'] = np.cov(samples.transpose())
+        print(resdict['cov_matrix'])
         resdict['n_samples'] = len(samples.transpose()[0])
         # Pass the samples to the self.result to be saved.
         self.result['samples'] = samples
