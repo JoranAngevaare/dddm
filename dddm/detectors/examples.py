@@ -12,8 +12,8 @@ class XenonSimple(Experiment):
     interaction_type = 'SI'
     location = 'XENON'
 
-    def __init__(self, n_energy_bins=10, e_min_kev=0, e_max_kev=100,):
-        super().__init__(n_energy_bins=n_energy_bins,e_min_kev=e_min_kev,e_max_kev=e_max_kev)
+    def __init__(self, n_energy_bins=10, e_min_kev=0, e_max_kev=100, ):
+        super().__init__(n_energy_bins=n_energy_bins, e_min_kev=e_min_kev, e_max_kev=e_max_kev)
 
     def resolution(self, energies_in_kev):
         """Simple square root dependency of the energy resolution"""
@@ -34,8 +34,8 @@ class GermaniumSimple(Experiment):
     interaction_type = 'SI'
     location = 'SUF'
 
-    def __init__(self, n_energy_bins=10, e_min_kev=0, e_max_kev=100,):
-        super().__init__(n_energy_bins=n_energy_bins,e_min_kev=e_min_kev,e_max_kev=e_max_kev)
+    def __init__(self, n_energy_bins=10, e_min_kev=0, e_max_kev=100, ):
+        super().__init__(n_energy_bins=n_energy_bins, e_min_kev=e_min_kev, e_max_kev=e_max_kev)
 
     def resolution(self, energies_in_kev):
         """Simple resolution model"""
@@ -56,8 +56,8 @@ class ArgonSimple(Experiment):
     interaction_type = 'SI'
     location = 'XENON'  # Assume also located at LNGS
 
-    def __init__(self, n_energy_bins=10, e_min_kev=0, e_max_kev=100,):
-        super().__init__(n_energy_bins=n_energy_bins,e_min_kev=e_min_kev,e_max_kev=e_max_kev)
+    def __init__(self, n_energy_bins=10, e_min_kev=0, e_max_kev=100, ):
+        super().__init__(n_energy_bins=n_energy_bins, e_min_kev=e_min_kev, e_max_kev=e_max_kev)
 
     def resolution(self, energies_in_kev):
         """Simple square root dependency of the energy resolution"""

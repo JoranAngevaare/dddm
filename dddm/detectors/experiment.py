@@ -41,9 +41,9 @@ class Experiment:
                  e_min_kev=0,
                  e_max_kev=5,
                  ):
-        self.n_energy_bins=n_energy_bins
-        self.e_min_kev=e_min_kev
-        self.e_max_kev=e_max_kev
+        self.n_energy_bins = n_energy_bins
+        self.e_min_kev = e_min_kev
+        self.e_max_kev = e_max_kev
 
     def __repr__(self):
         return f'{self.__class__.__name__}: {self.detector_name}. Hash:{self.detector_hash}'
@@ -60,11 +60,11 @@ class Experiment:
         self.resolution(energies_in_kev=np.array([1]))
         self.background_function(energies_in_kev=np.array([1]))
 
-    def resolution(self, energies_in_kev: np.ndarray)->np.ndarray:
+    def resolution(self, energies_in_kev: np.ndarray) -> np.ndarray:
         """Return resolution at <energies [keV]>"""
         raise NotImplementedError
 
-    def background_function(self, energies_in_kev: np.ndarray)->np.ndarray:
+    def background_function(self, energies_in_kev: np.ndarray) -> np.ndarray:
         """Return background at <energies [keV>"""
         raise NotImplementedError
 

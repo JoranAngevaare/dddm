@@ -6,6 +6,7 @@ import shutil
 import numpy as np
 import dddm
 from .pymultinest import MultiNestSampler, convert_dic_to_savable
+
 export, __all__ = dddm.exporter()
 
 log = logging.getLogger()
@@ -13,7 +14,8 @@ log = logging.getLogger()
 
 @export
 class CombinedInference(MultiNestSampler):
-    allow_multiple_detectors=True
+    allow_multiple_detectors = True
+
     def __init__(self, targets, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

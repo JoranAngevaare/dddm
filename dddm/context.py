@@ -47,7 +47,7 @@ class Context:
         'multinest': dddm.MultiNestSampler,
         'emcee': dddm.MCMCStatModel,
         'multinest_combined': dddm.CombinedInference,
-        })
+    })
     _halo_classes = immutabledict({
         'shm': dddm.SHM,
         'shielded_shm': dddm.ShieldedSHM,
@@ -92,20 +92,20 @@ class Context:
     def get_sampler_for_detector(self,
                                  wimp_mass,
                                  cross_section,
-                                 sampler_name:str,
+                                 sampler_name: str,
                                  detector_name: ty.Union[str, list, tuple],
                                  prior: ty.Union[str, dict],
                                  halo_name='shm',
                                  detector_kwargs: dict = None,
-                                 halo_kwargs:dict=None,
-                                 sampler_kwargs: dict=None,
+                                 halo_kwargs: dict = None,
+                                 sampler_kwargs: dict = None,
                                  fit_parameters=dddm.statistics.get_param_list(),
                                  ):
         sampler_class = self._samplers[sampler_name]
 
-        sampler_kwargs={} if not sampler_kwargs else sampler_kwargs
-        halo_kwargs={} if not halo_kwargs else halo_kwargs
-        detector_kwargs={} if not detector_kwargs else detector_kwargs
+        sampler_kwargs = {} if not sampler_kwargs else sampler_kwargs
+        halo_kwargs = {} if not halo_kwargs else halo_kwargs
+        detector_kwargs = {} if not detector_kwargs else detector_kwargs
 
         halo_model = self._halo_classes[halo_name](**halo_kwargs)
         # TODO instead, create a super detector instead of smaller ones
@@ -125,11 +125,10 @@ class Context:
                                          cross_section=cross_section,
                                          spectrum_class=spectrum_instance,
                                          prior=prior,
-                                         tmp_folder = self._directories['tmp_folder'],
+                                         tmp_folder=self._directories['tmp_folder'],
                                          **sampler_kwargs
                                          )
         return sampler_instance
-
 
     @property
     def detectors(self):

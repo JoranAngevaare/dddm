@@ -64,10 +64,11 @@ def show_ll_function(npoints=1e4, clip_val=-1e4, min_val=0.1):
     plt.ylabel("Nr")
 
 
-def plt_ll_sigma_mass(spec_clas, vary, det_class=dddm.examples.XenonSimple, bins=10, m=50, sig=1e-45):
+def plt_ll_sigma_mass(spec_clas, vary, det_class=dddm.examples.XenonSimple, bins=10, m=50,
+                      sig=1e-45):
     assert vary in ['mass', 'sig'], "use sig or mass"
     use_SHM = dddm.SHM()
-    det=det_class(n_energy_bins = bins)
+    det = det_class(n_energy_bins=bins)
     events = spec_clas(dark_matter_model=use_SHM, experiment=det)
     data = events.get_data(m, sig, poisson=False)
 
