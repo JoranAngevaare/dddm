@@ -44,8 +44,8 @@ class TestLikelihoodMinimum(TestCase):
             sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0, detector_name='test_combined'),
             fit_parameters=fit_params,
         )
-        sampler.set_benchmark(mass, sigma)
-        sampler.set_prior(prior_name)
+        # sampler.set_benchmark(mass, sigma)
+        # sampler.set_prior(prior_name)
         sampler._fix_parameters()
 
         # Check that all the subconfigs are correctly set

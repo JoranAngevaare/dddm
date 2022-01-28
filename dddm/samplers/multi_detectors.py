@@ -68,6 +68,11 @@ class CombinedInference(MultiNestSampler):
         ]
         self.log.debug(f'Sub detectors are set: {self.sub_classes}')
 
+    def set_models(self):
+        for c in self.sub_classes:
+            self.log.debug(f'Printing det config for {c}')
+            c.set_models()
+
     def _print_before_run(self):
         for c in self.sub_classes:
             self.log.debug(f'Printing det config for {c}')

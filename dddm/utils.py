@@ -177,7 +177,7 @@ def is_savable_type(item):
     :param item: input of any type.
     :return: bool if the type is saveable by checking if it is in a limitative list
     """
-    savables = (list, np.ndarray, int, str, np.int32, np.int64, np.float32, bool, np.float64)
+    savables = (list, int, str, bool)
     return isinstance(item, savables)
 
 

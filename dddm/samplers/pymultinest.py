@@ -313,11 +313,17 @@ class MultiNestSampler(dddm.StatModel):
 
 def convert_dic_to_savable(config):
     result = config.copy()
-    for key in result.keys():
-        if dddm.utils.is_savable_type(result[key]):
+    for key, value in result.items():
+        if dddm.utils.is_savable_type(value):
             pass
-        elif isinstance(result[key], dict):
+        elif isinstance(value, dict):
             result[key] = convert_dic_to_savable(result[key])
+        elif isinstance(value, np.ndarray):
+            result[key] = value.tolist()
+        elif isinstance(value, np.integer):
+            result[key] =int(value)
+        elif isinstance(value, np.floating):
+            result[key] =float(value)
         else:
             result[key] = str(result[key])
     return result
@@ -352,7 +358,7 @@ def do_strip_from_pid(string):
 
 
 def _get_info(result, _result_key):
-    info = r"$M_\chi}$=%.2f" % 10. ** np.float(result['config']['mw'])
+    info = r"$M_\chi}$=%.2f" % 10. ** np.float(result['config']['log_mass'])
     for prior_key in result['config']['prior'].keys():
         if (prior_key in result['config']['prior'] and
                 'mean' in result['config']['prior'][prior_key]):

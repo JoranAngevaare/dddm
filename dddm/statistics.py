@@ -77,7 +77,7 @@ class StatModel:
 
             _wimp_mass=wimp_mass,
             _cross_section=cross_section,
-            _spectrum_class=spectrum_class,
+            # _spectrum_class=spectrum_class,
         )
         self.log = dddm.utils.log  # self.get_logger(tmp_folder, verbose)
         self.log.info(f"initialized for {detector_name} detector.")
