@@ -62,12 +62,12 @@ jobs:
       - name: Test package (windows)
         if: matrix.os == 'windows-latest' && matrix.test == 'pytest'
         run: |
-          pytest --verbose
+          pytest --verbose --durations 0
       - name: Test package (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'pytest'
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
-          pytest --verbose
+          pytest --verbose --durations 0
       - name: Coveralls
         if: matrix.test == 'coveralls'
         env:
