@@ -36,7 +36,7 @@ class TestLikelihoodMinimum(TestCase):
             wimp_mass=mass,
             cross_section=sigma,
             sampler_name='multinest_combined',
-            detector_name=detector_name,
+            detector_name='BLA',
             prior=prior_name,
             halo_name='shm',
             detector_kwargs=None,

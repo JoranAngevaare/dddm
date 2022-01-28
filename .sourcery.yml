@@ -1,0 +1,11 @@
+ignore:
+  - data/*
+  - tests/*
+
+# See https://docs.sourcery.ai/refactorings/lift-duplicated-conditional/
+refactor:
+  skip:
+  - inline-immediately-returned-variable
+
+github:
+  request_review: owner
