@@ -111,19 +111,26 @@ class Context:
         sampler_kwargs = self._add_folders_to_kwargs(sampler_class, sampler_kwargs)
         halo_kwargs = self._add_folders_to_kwargs(
             self._halo_classes.get(halo_name), halo_kwargs)
-        detector_kwargs = self._add_folders_to_kwargs(
-            self._detector_registry.get(detector_name), detector_kwargs)
 
         halo_model = self._halo_classes[halo_name](**halo_kwargs)
         # TODO instead, create a super detector instead of smaller ones
         if isinstance(detector_name, (list, tuple)):
             if not sampler_class.allow_multiple_detectors:
                 raise NotImplementedError(f'{sampler_class} does not allow multiple detectors')
-            detector_instance = [self.get_detector(det, **detector_kwargs) for det in detector_name]
-            spectrum_instance = [dddm.DetectorSpectrum(experiment=d,
-                                                       dark_matter_model=halo_model)
-                                 for d in detector_instance]
+
+            detector_instance = [
+                self.get_detector(
+                    det,
+                    **self._add_folders_to_kwargs(self._detector_registry.get(det),
+                                                  detector_kwargs)
+                )
+                for det in detector_name]
+            spectrum_instance = [dddm.DetectorSpectrum(
+                experiment=d, dark_matter_model=halo_model)
+                for d in detector_instance]
         else:
+            detector_kwargs = self._add_folders_to_kwargs(
+                self._detector_registry.get(detector_name), detector_kwargs)
             detector_instance = self.get_detector(detector_name, **detector_kwargs)
             spectrum_instance = dddm.DetectorSpectrum(experiment=detector_instance,
                                                       dark_matter_model=halo_model)
