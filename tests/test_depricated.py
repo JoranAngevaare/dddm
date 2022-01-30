@@ -14,6 +14,6 @@ class TestDepricated(TestCase):
                       'low_mass_fixed').split():
             with self.subTest(prior=prior):
                 self.assertIsInstance(dddm.priors.get_priors(prior), immutabledict)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotImplementedError):
             dddm.priors.get_priors('some typo')
 
