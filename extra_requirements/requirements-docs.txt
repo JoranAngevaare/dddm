@@ -1,0 +1,12 @@
+# File for the requirements of the documentation
+nbsphinx==0.8.8
+recommonmark==0.7.1
+sphinx_rtd_theme==1.0.0
+sphinx==4.4.0
+sphinxcontrib_applehelp==1.0.2
+sphinxcontrib_devhelp==1.0.2
+sphinxcontrib_htmlhelp==2.0.0
+sphinxcontrib_jsmath==1.0.1
+sphinxcontrib_qthelp==1.0.3
+typing-extensions==4.0.1
+
