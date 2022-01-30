@@ -61,6 +61,7 @@ jobs:
         run: |
           pip install -r extra_requirements/requirements-tests.txt
           python setup.py develop
+
       - name: Test package (windows)
         if: matrix.os == 'windows-latest' && matrix.test == 'pytest'
         run: |
@@ -73,9 +74,13 @@ jobs:
           pytest -v --durations 0
       - name: Test package - fail fast (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'fail-fast'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
-          pytest -xv --durations 0
+          export RUN_TEST_EXTENDED=1
+          coverage run --source=dddm -m pytest -vsx --durations 0
+          coveralls --service=github
       - name: Coveralls
         if: matrix.test == 'coveralls'
         env:
