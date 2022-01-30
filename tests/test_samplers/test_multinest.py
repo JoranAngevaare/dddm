@@ -15,10 +15,14 @@ class PymultinestTest(TestCase):
 
     def test_multinest_shielded_full_astrophysics(self, ):
         self.test_multinest(halo_name='shielded_shm',
+                            sampler_kwargs=dict(nlive=10, tol=0.9, verbose=0),
                             fit_parameters=dddm.statistics.get_param_list())
 
     def test_multinest_shielded(self, ):
-        self.test_multinest(halo_name='shielded_shm')
+        self.test_multinest(halo_name='shielded_shm',
+                            sampler_kwargs=dict(nlive=10, tol=0.9, verbose=0),
+                            fit_parameters=dddm.statistics.get_param_list(),
+                            )
 
     def test_multinest(self, halo_name='shm', **kwargs):
         base_config = dict(wimp_mass=50,
