@@ -18,13 +18,22 @@ class TestLikelihoodMinimum(TestCase):
     @settings(deadline=None, max_examples=10)
     @given(strategies.floats(0.1, 50),
            strategies.integers(-47, -43),
-           strategies.integers(0, len(_known_detectors) - 1),
            strategies.integers(0, len(_known_priors) - 1),
            strategies.booleans()
            )
-    def test_likelihood_converges(self, mass, sigma, detector_i, prior_i, include_astrophysics):
+    def test_likeihood_converges(self, mass, sigma,  prior_i, include_astrophysics):
+        for detector_name in _known_detectors:
+            with self.subTest(detector=detector_name):
+                self._likelihood_converges_inner(self,
+                                                 mass,
+                                                 sigma,
+                                                 detector_name,
+                                                 prior_i,
+                                                 include_astrophysics,
+                                                 )
+
+    def _likelihood_converges_inner(self, mass, sigma, detector_name, prior_i, include_astrophysics):
         """Test that a 1D likelihood scan actually returns the maximum at the set value"""
-        detector_name = _known_detectors[detector_i]
         prior_name = _known_priors[prior_i]
         if include_astrophysics:
             fit_params = ('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density',)

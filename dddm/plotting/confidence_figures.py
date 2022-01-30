@@ -107,7 +107,7 @@ class DDDMResult:
 class SeabornPlot:
     def __init__(self, result: DDDMResult):
         self.result = result
-        self.log = dddm.get_logger(self.__class__.__name__)
+        self.log = dddm.utils.get_logger(self.__class__.__name__)
 
     def __repr__(self):
         return f'{self.__class__.__name__}:: {self.result.__repr__()}'
@@ -178,7 +178,7 @@ class ResultsManager:
     result_df: pd.DataFrame = None
 
     def __init__(self, pattern=None):
-        self.log = dddm.get_logger(self.__class__.__name__)
+        self.log = dddm.utils.get_logger(self.__class__.__name__)
         if pattern is not None:
             self.register_pattern(pattern)
 
