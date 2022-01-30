@@ -13,18 +13,18 @@ class PymultinestTest(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()
 
-    def test_multinest_shielded_full_astrophysics(self, ):
-        self.test_multinest(halo_name='shielded_shm',
-                            sampler_kwargs=dict(nlive=10, tol=0.9, verbose=0),
-                            fit_parameters=dddm.statistics.get_param_list())
+    def test_shielded_full_astrophysics(self, ):
+        self.test(halo_name='shielded_shm',
+                  sampler_kwargs=dict(nlive=10, tol=0.9, verbose=0),
+                  fit_parameters=dddm.statistics.get_param_list())
 
-    def test_multinest_shielded(self, ):
-        self.test_multinest(halo_name='shielded_shm',
-                            sampler_kwargs=dict(nlive=10, tol=0.9, verbose=0),
-                            fit_parameters=dddm.statistics.get_param_list(),
-                            )
+    def test_shielded(self, ):
+        self.test(halo_name='shielded_shm',
+                  sampler_kwargs=dict(nlive=10, tol=0.9, verbose=0),
+                  fit_parameters=dddm.statistics.get_param_list(),
+                  )
 
-    def test_multinest(self, halo_name='shm', **kwargs):
+    def test(self, halo_name='shm', **kwargs):
         base_config = dict(wimp_mass=50,
                            cross_section=1e-45,
                            sampler_name='multinest',
@@ -64,16 +64,16 @@ class PymultinestTest(TestCase):
                    halo_name='shm',
                    fit_parameters=('log_mass', 'log_cross_section',),
                    ):
-        sampler = self.test_multinest(detector_name=['Xe_simple', 'Ar_simple', 'Ge_simple'],
-                                      sampler_name='multinest_combined',
-                                      prior="Pato_2010",
-                                      halo_name=halo_name,
-                                      detector_kwargs=None,
-                                      halo_kwargs=None if halo_name == 'shm' else dict(
+        sampler = self.test(detector_name=['Xe_simple', 'Ar_simple', 'Ge_simple'],
+                            sampler_name='multinest_combined',
+                            prior="Pato_2010",
+                            halo_name=halo_name,
+                            detector_kwargs=None,
+                            halo_kwargs=None if halo_name == 'shm' else dict(
                                           location='XENON'),
-                                      sampler_kwargs=dict(nlive=50, tol=0.1, verbose=0,
+                            sampler_kwargs=dict(nlive=50, tol=0.1, verbose=0,
                                                           detector_name='test_combined'),
-                                      fit_parameters=fit_parameters, )
+                            fit_parameters=fit_parameters, )
         sampler.save_results()
         sampler.save_sub_configs()
 
@@ -126,18 +126,18 @@ class PymultinestTest(TestCase):
             raise RuntimeError('No error raised')
         results._add_result('no_such_file', tolerant=True)
 
-    def test_multinest_migdal(self):
-        self.test_multinest(detector_name='XENONnT_Migdal',
-                            prior='migdal_wide',
-                            wimp_mass=5,
-                            cross_section=1e-40,
-                            sampler_kwargs=dict(nlive=30, tol=0.1, verbose=0),
-                            )
+    def test_migdal(self):
+        self.test(detector_name='XENONnT_Migdal',
+                  prior='migdal_wide',
+                  wimp_mass=5,
+                  cross_section=1e-40,
+                  sampler_kwargs=dict(nlive=30, tol=0.1, verbose=0),
+                  )
 
-    def test_multinest_combined(self,
-                                halo_name='shm',
-                                fit_parameters=('log_mass', 'log_cross_section',)):
-        self.test_multinest(
+    def test_combined(self,
+                      halo_name='shm',
+                      fit_parameters=('log_mass', 'log_cross_section',)):
+        self.test(
             wimp_mass=50,
             cross_section=1e-45,
             sampler_name='multinest_combined',

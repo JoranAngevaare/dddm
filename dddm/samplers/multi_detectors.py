@@ -77,7 +77,7 @@ class _CombinedInference:
 
 
 @export
-class CombinedMultinest(MultiNestSampler, _CombinedInference):
+class CombinedMultinest(_CombinedInference, MultiNestSampler):
     def __init__(
             self,
             wimp_mass: ty.Union[float, int],
@@ -100,64 +100,6 @@ class CombinedMultinest(MultiNestSampler, _CombinedInference):
         del spectrum_class
 
         MultiNestSampler.__init__(self,
-                                  wimp_mass=wimp_mass,
-                         cross_section=cross_section,
-                         spectrum_class=spectrum_classes,
-                         prior=prior,
-                         tmp_folder=tmp_folder,
-                         fit_parameters=fit_parameters,
-                         detector_name=detector_name,
-                         verbose=verbose,
-                         results_dir=results_dir,
-                         notes=notes,
-                         nlive=nlive,
-                         tol=tol,
-                         )
-        if len(spectrum_classes) < 2:
-            self.log.warning(
-                "Don't use this class for single experiments! Use NestedSamplerStatModel instead")
-        self.sub_detectors = spectrum_classes
-        self.config['sub_sets'] = [str(sp) for sp in spectrum_classes]
-        self.sub_classes = [
-            MultiNestSampler(wimp_mass=wimp_mass,
-                             cross_section=cross_section,
-                             spectrum_class=one_class,
-                             prior=prior,
-                             tmp_folder=tmp_folder,
-                             fit_parameters=fit_parameters,
-                             detector_name=one_class.detector_name,
-                             verbose=verbose,
-                             notes=notes,
-                             )
-            for one_class in self.sub_detectors
-        ]
-        self.log.debug(f'Sub detectors are set: {self.sub_classes}')
-
-
-@export
-class CombinedNestle(NestleSampler, _CombinedInference):
-    def __init__(
-            self,
-            wimp_mass: ty.Union[float, int],
-            cross_section: ty.Union[float, int],
-            spectrum_class: ty.List[ty.Union[dddm.DetectorSpectrum, dddm.GenSpectrum]],
-            prior: dict,
-            tmp_folder: str,
-            results_dir: str = None,
-            fit_parameters=('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k'),
-
-            detector_name=None,
-            verbose=False,
-            notes='default',
-            nlive=1024,
-            tol=0.1,
-    ):
-        assert detector_name is not None
-        # Make list explicit
-        spectrum_classes = spectrum_class
-        del spectrum_class
-
-        NestleSampler.__init__(self,
                                   wimp_mass=wimp_mass,
                                   cross_section=cross_section,
                                   spectrum_class=spectrum_classes,
@@ -191,3 +133,60 @@ class CombinedNestle(NestleSampler, _CombinedInference):
         ]
         self.log.debug(f'Sub detectors are set: {self.sub_classes}')
 
+
+@export
+class CombinedNestle(_CombinedInference, NestleSampler):
+    def __init__(
+            self,
+            wimp_mass: ty.Union[float, int],
+            cross_section: ty.Union[float, int],
+            spectrum_class: ty.List[ty.Union[dddm.DetectorSpectrum, dddm.GenSpectrum]],
+            prior: dict,
+            tmp_folder: str,
+            results_dir: str = None,
+            fit_parameters=('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k'),
+
+            detector_name=None,
+            verbose=False,
+            notes='default',
+            nlive=1024,
+            tol=0.1,
+    ):
+        assert detector_name is not None
+        # Make list explicit
+        spectrum_classes = spectrum_class
+        del spectrum_class
+
+        NestleSampler.__init__(self,
+                               wimp_mass=wimp_mass,
+                               cross_section=cross_section,
+                               spectrum_class=spectrum_classes,
+                               prior=prior,
+                               tmp_folder=tmp_folder,
+                               fit_parameters=fit_parameters,
+                               detector_name=detector_name,
+                               verbose=verbose,
+                               results_dir=results_dir,
+                               notes=notes,
+                               nlive=nlive,
+                               tol=tol,
+                               )
+        if len(spectrum_classes) < 2:
+            self.log.warning(
+                "Don't use this class for single experiments! Use NestedSamplerStatModel instead")
+        self.sub_detectors = spectrum_classes
+        self.config['sub_sets'] = [str(sp) for sp in spectrum_classes]
+        self.sub_classes = [
+            MultiNestSampler(wimp_mass=wimp_mass,
+                             cross_section=cross_section,
+                             spectrum_class=one_class,
+                             prior=prior,
+                             tmp_folder=tmp_folder,
+                             fit_parameters=fit_parameters,
+                             detector_name=one_class.detector_name,
+                             verbose=verbose,
+                             notes=notes,
+                             )
+            for one_class in self.sub_detectors
+        ]
+        self.log.debug(f'Sub detectors are set: {self.sub_classes}')

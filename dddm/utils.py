@@ -322,23 +322,23 @@ def get_logger(name, level='INFO', path=None) -> logging.Logger:
     :param path: where to save the log files
     :return: logger
     """
-    logging.basicConfig(filename='./bla.log',
-                        filemode='a',
-                        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                        datefmt='%H:%M:%S',
-                        level=logging.DEBUG)
-
-    logging.info("Running Urban Planning")
-
-    return logging.getLogger('urbanGUI')
+    # logging.basicConfig(filename='./bla.log',
+    #                     filemode='a',
+    #                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+    #                     datefmt='%H:%M:%S',
+    #                     level=logging.DEBUG)
     #
-    # level = level.upper()
-    # new_log = logging.getLogger(name)
-    # if not hasattr(logging, level):
-    #     raise ValueError(f'{level} is invalid for logging')
-    # new_log.setLevel(getattr(logging, level))
-    # new_log.handlers = [FormattedHandler(path=path)]
-    # return new_log
+    # logging.info("Running Urban Planning")
+    #
+    # return logging.getLogger('urbanGUI')
+    #
+    level = level.upper()
+    new_log = logging.getLogger(name)
+    if not hasattr(logging, level):
+        raise ValueError(f'{level} is invalid for logging')
+    new_log.setLevel(getattr(logging, level))
+    new_log.handlers = [FormattedHandler(path=path)]
+    return new_log
 
 
 class FormattedHandler(logging.Handler):
@@ -350,7 +350,7 @@ class FormattedHandler(logging.Handler):
         m = self.formatted_message(record)
         self.write(m)
         # Strip \n
-        # print(m[:-1])
+        print(m[:-1])
 
     def write(self, m):
         if self.path is None:
