@@ -174,7 +174,7 @@ class Context:
         assert wimp_mass < 200 and wimp_mass > 0.001, f'{wimp_mass} invalid'
         assert np.log10(cross_section) < -20 and np.log10(cross_section) > -60, f'{cross_section} invalid'
         assert sampler_name in self._samplers, f'choose from {self._samplers}, got {sampler_name}'
-        assert isinstance(prior, (dict, immutabledict)), f'invalid {prior}'
+        assert isinstance(prior, (str, dict, immutabledict)), f'invalid {prior}'
         assert halo_name in self._halo_classes, f'invalid {halo_name}'
 
     def _add_folders_to_kwargs(self, function, current_kwargs: ty.Union[None, dict]) -> dict:
@@ -226,107 +226,6 @@ def get_temp():
     else:
         raise FileNotFoundError('No temp folder available')
     return tmp_folder
-
-
-# def get_default_context():
-#     log.info(f'Host: {_host}')
-#
-#     # Generally people will end up here
-#     log.info(f'context.py::\tunknown host {_host} be careful here')
-#     installation_folder = dddm.__path__[0]
-#     verne_folder = os.path.join(os.path.split(verne.__path__[0])[0], 'results')
-#     default_context = {
-#         'software_dir': installation_folder,
-#         'results_dir': os.path.join(installation_folder, 'DD_DM_targets_data'),
-#         'spectra_files': os.path.join(installation_folder, 'DD_DM_targets_spectra'),
-#         'verne_folder': verne_folder,
-#         'verne_files': verne_folder,
-#     }
-#
-#     tmp_folder = get_temp()
-#     log.debug(f"Setting tmp folder to {tmp_folder}")
-#     assert os.path.exists(tmp_folder), f"No tmp folder at {tmp_folder}"
-#     default_context['tmp_folder'] = tmp_folder
-#     for name in ['results_dir', 'spectra_files']:
-#         log.debug(f'context.py::\tlooking for {name} in {default_context}')
-#         if not os.path.exists(default_context[name]):
-#             try:
-#                 os.mkdir(default_context[name])
-#             except Exception as e:
-#                 log.warning(
-#                     f'Could not find nor make {default_context[name]}. Tailor '
-#                     f'context.py to your needs. Could not initialize folders '
-#                     f'correctly because of {e}.')
-#     for key, path in default_context.items():
-#         if not os.path.exists(path):
-#             log.warning(f'No folder at {path}')
-#     return default_context
-#
-#
-# def get_stbc_context(check=True):
-#     UserWarning('Hardcoding context is deprecated and will be removed soon')
-#     log.info(f'Host: {_host}')
-#
-#     stbc_context = {
-#         'software_dir': '/project/xenon/jorana/software/DD_DM_targets/',
-#         'results_dir': '/data/xenon/joranang/dddm/results/',
-#         'spectra_files': '/dcache/xenon/jorana/dddm/spectra/',
-#         'verne_folder': '/project/xenon/jorana/software/verne/',
-#         'verne_files': '/dcache/xenon/jorana/dddm/verne/'}
-#
-#     tmp_folder = get_temp()
-#     if not os.path.exists(tmp_folder) and check:
-#         raise FileNotFoundError(f"Cannot find tmp folder at {tmp_folder}")
-#     stbc_context['tmp_folder'] = tmp_folder
-#     for key, path in stbc_context.items():
-#         if not os.path.exists(path) and check:
-#             raise FileNotFoundError(f'No folder at {path}')
-#     return stbc_context
-#
-#
-# def set_context(config: ty.Union[dict, immutabledict]):
-#     context.update(config)
-#
-#
-# if 'stbc' in _host or 'nikhef' in _host:
-#     set_context(get_stbc_context())
-# else:
-#     set_context(get_default_context())
-
-
-# def load_folder_from_context(request):
-#     """
-#
-#     :param request: request a named path from the context
-#     :return: the path that is requested
-#     """
-#     if request in context:
-#         folder = context[request]
-#     else:
-#         raise FileNotFoundError(f'Requesting {request} but that is not in {context.keys()}')
-#     if not os.path.exists(folder):
-#         raise FileNotFoundError(f'Could not find {folder} (requested was {request}')
-#     # Should end up here:
-#     return folder
-
-
-# def get_result_folder(*args):
-#     """
-#     bridge to work with old code when context was not yet implemented
-#     """
-#     if args:
-#         log.warning(
-#             f'get_result_folder::\tfunctionality deprecated ignoring {args}')
-#     log.info(
-#         f'get_result_folder::\trequested folder is {context["results_dir"]}')
-#     return load_folder_from_context('results_dir')
-
-
-# def get_verne_folder():
-#     """
-#     bridge to work with old code when context was not yet implemented
-#     """
-#     return load_folder_from_context('verne_files')
 
 
 def open_save_dir(save_as, base_dir=None, force_index=False, _hash=None):
