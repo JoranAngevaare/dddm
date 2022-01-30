@@ -313,7 +313,6 @@ def get_bins(a, b, n) -> np.ndarray:
     return np.transpose(result)
 
 
-# TODO fix this
 def get_logger(name, level='INFO', path=None) -> logging.Logger:
     """
     Get logger with handler in nice format
@@ -322,16 +321,6 @@ def get_logger(name, level='INFO', path=None) -> logging.Logger:
     :param path: where to save the log files
     :return: logger
     """
-    # logging.basicConfig(filename='./bla.log',
-    #                     filemode='a',
-    #                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-    #                     datefmt='%H:%M:%S',
-    #                     level=logging.DEBUG)
-    #
-    # logging.info("Running Urban Planning")
-    #
-    # return logging.getLogger('urbanGUI')
-    #
     level = level.upper()
     new_log = logging.getLogger(name)
     if not hasattr(logging, level):
