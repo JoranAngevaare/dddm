@@ -16,6 +16,8 @@ import numpy as np
 from scipy import special as spsp
 import dddm
 import typing as ty
+from immutabledict import immutabledict
+
 
 export, __all__ = dddm.exporter()
 
@@ -313,10 +315,12 @@ class MultiNestSampler(dddm.StatModel):
 
 def convert_dic_to_savable(config):
     result = config.copy()
+    if isinstance(config, immutabledict):
+        result = {k: v for k, v in config.items()}
     for key, value in result.items():
         if dddm.utils.is_savable_type(value):
             pass
-        elif isinstance(value, dict):
+        elif isinstance(value, (dict, immutabledict)):
             result[key] = convert_dic_to_savable(result[key])
         elif isinstance(value, np.ndarray):
             result[key] = value.tolist()

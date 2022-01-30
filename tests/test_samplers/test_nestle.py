@@ -11,7 +11,7 @@ class NestleTest(TestCase):
     def test_nestle_shielded_full_astrophysics(self, ):
         self.test_nestle(halo_name='shielded_shm')
 
-    def test_nestle(self, halo_name='shm', fit_parameters=('log_mass', 'log_cross_section',)):
+    def test_nestle(self, max_sigma_off=4, halo_name='shm', fit_parameters=('log_mass', 'log_cross_section',)):
         mw = 50
         cross_section = 1e-45
         sampler = self.ct.get_sampler_for_detector(
@@ -38,7 +38,7 @@ class NestleTest(TestCase):
             std = np.sqrt(results['cov_matrix'][i][i])
             nsigma_off = np.abs(expected - avg) / std
             message = f'For {thing}: expected {expected:.2f} yielded different results {avg:.2f} +/- {std:.2f}. Off by {nsigma_off:.1f} sigma'
-            self.assertTrue(nsigma_off < 4, message)
+            self.assertTrue(nsigma_off < max_sigma_off, message)
 
         sampler.save_results()
         print('Show corner')
