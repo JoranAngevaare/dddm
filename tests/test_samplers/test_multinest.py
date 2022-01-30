@@ -25,7 +25,7 @@ class PymultinestTest(TestCase):
                   fit_parameters=dddm.statistics.get_param_list(),
                   )
 
-    def test(self, halo_name='shm', **kwargs):
+    def test(self, halo_name='shm', max_sigma_off=5, **kwargs,):
         base_config = dict(wimp_mass=50,
                            cross_section=1e-45,
                            sampler_name='multinest',
@@ -52,9 +52,9 @@ class PymultinestTest(TestCase):
             std = np.sqrt(results['cov_matrix'][i][i])
             nsigma_off = np.abs(expected - avg) / std
             message = (f'For {thing}: expected {expected:.2f} yielded '
-                       f'different results {avg:.2f} +/- {std:.2f}. Off '
+                       f'{avg:.2f} +/- {std:.2f}. Off '
                        f'by {nsigma_off:.1f} sigma')
-            if nsigma_off > 4:
+            if nsigma_off > 5:
                 fails += [message]
             print(message)
 
@@ -72,7 +72,7 @@ class PymultinestTest(TestCase):
                             detector_kwargs=None,
                             halo_kwargs=None if halo_name == 'shm' else dict(
                                 location='XENON'),
-                            sampler_kwargs=dict(nlive=50, tol=0.1, verbose=0,
+                            sampler_kwargs=dict(nlive=50, tol=0.1, verbose=1,
                                                 detector_name='test_combined'),
                             fit_parameters=fit_parameters, )
         sampler.save_results()
@@ -132,9 +132,9 @@ class PymultinestTest(TestCase):
     def test_migdal(self):
         self.test(detector_name='XENONnT_Migdal',
                   prior='migdal_wide',
-                  wimp_mass=5,
+                  wimp_mass=1,
                   cross_section=1e-40,
-                  sampler_kwargs=dict(nlive=30, tol=0.1, verbose=0),
+                  sampler_kwargs=dict(nlive=30, tol=0.9, verbose=1),
                   )
 
     @skipIf(*dddm.test_utils.skip_long_test())
@@ -150,6 +150,6 @@ class PymultinestTest(TestCase):
             halo_name=halo_name,
             detector_kwargs=None,
             halo_kwargs=None if halo_name == 'shm' else dict(location='XENON'),
-            sampler_kwargs=dict(nlive=50, tol=0.1, verbose=0, detector_name='test_combined'),
+            sampler_kwargs=dict(nlive=50, tol=0.1, verbose=1, detector_name='test_combined'),
             fit_parameters=fit_parameters,
         )
