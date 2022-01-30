@@ -58,7 +58,6 @@ class PymultinestTest(TestCase):
 
     def test_chain(self):
         sampler = self.test_multinest()
-        sampler.run()
         sampler.save_results()
         sampler.save_sub_configs()
 
