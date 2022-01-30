@@ -200,7 +200,7 @@ class Context:
 def base_context():
     context = Context()
     installation_folder = dddm.__path__[0]
-    
+
     default_context = {
         'software_dir': installation_folder,
         'results_dir': os.path.join(installation_folder, 'DD_DM_targets_data'),
