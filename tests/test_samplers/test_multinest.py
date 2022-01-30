@@ -65,6 +65,7 @@ class PymultinestTest(TestCase):
                    fit_parameters=('log_mass', 'log_cross_section',),
                    ):
         sampler = self.test_multinest(detector_name=['Xe_simple', 'Ar_simple', 'Ge_simple'],
+                                      sampler_name='multinest_combined',
                                       prior="Pato_2010",
                                       halo_name=halo_name,
                                       detector_kwargs=None,
@@ -139,7 +140,7 @@ class PymultinestTest(TestCase):
         self.test_multinest(
             wimp_mass=50,
             cross_section=1e-45,
-            sampler_name='multinest',
+            sampler_name='multinest_combined',
             detector_name=['Xe_simple', 'Ar_simple', 'Ge_simple'],
             prior="Pato_2010",
             halo_name=halo_name,
