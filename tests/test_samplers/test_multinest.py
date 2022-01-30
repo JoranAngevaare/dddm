@@ -34,7 +34,7 @@ class PymultinestTest(TestCase):
                            halo_name=halo_name,
                            detector_kwargs=None,
                            halo_kwargs=None if halo_name == 'shm' else dict(location='XENON'),
-                           sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0),
+                           sampler_kwargs=dict(nlive=100, tol=0.1, verbose=1),
                            fit_parameters=('log_mass', 'log_cross_section',),
                            )
         config = {**base_config, **kwargs}

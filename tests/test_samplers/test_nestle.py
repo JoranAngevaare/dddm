@@ -11,7 +11,12 @@ class NestleTest(TestCase):
 
     @skipIf(*dddm.test_utils.skip_long_test())
     def test_shielded_full_astrophysics(self, ):
-        self.test(halo_name='shielded_shm')
+        self.test(halo_name='shielded_shm',
+                  fit_parameters=dddm.statistics.get_param_list()
+                  )
+
+    def test_full_astrophysics(self):
+        self.test(fit_parameters=dddm.statistics.get_param_list())
 
     def test(self, max_sigma_off=4, halo_name='shm', **kwargs):
         base_config = dict(wimp_mass=50,
@@ -22,7 +27,7 @@ class NestleTest(TestCase):
                            halo_name=halo_name,
                            detector_kwargs=None,
                            halo_kwargs=None if halo_name == 'shm' else dict(location='XENON'),
-                           sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0),
+                           sampler_kwargs=dict(nlive=100, tol=0.1, verbose=1),
                            fit_parameters=('log_mass', 'log_cross_section',),
                            )
         config = {**base_config, **kwargs}
