@@ -19,7 +19,7 @@ jobs:
     name: "(${{ matrix.os }}, ${{ matrix.python-version }}, ${{ matrix.test }})"
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: False
+      fail-fast: True # temporary # TODO
       matrix:
         os: [ "ubuntu-latest", "windows-latest" ]
         python-version: [ "3.8", ] #  "3.9", "3.10"
@@ -42,10 +42,6 @@ jobs:
         uses: actions/setup-python@v2.3.1
         with:
           python-version: ${{ matrix.python-version }}
-      #      - uses: conda-incubator/setup-miniconda@v2.1.1
-      #        with:
-      #          auto-activate-base: true
-      #          activate-environment: dddm
       - name: Checkout repo
         uses: actions/checkout@v2.4.0
       - name: Make installation linux
@@ -68,17 +64,17 @@ jobs:
       - name: Test package (windows)
         if: matrix.os == 'windows-latest' && matrix.test == 'pytest'
         run: |
-          pytest -x --durations 0
+          pytest -v --durations 0
       - name: Test package (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'pytest'
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
-          pytest -x --durations 0
+          pytest -v --durations 0
       - name: Test package - fail fast (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'fail-fast'
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
-          pytest -x --durations 0
+          pytest -xv --durations 0
       - name: Coveralls
         if: matrix.test == 'coveralls'
         env:
