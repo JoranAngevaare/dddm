@@ -8,6 +8,7 @@ import numpy as np
 import dddm
 from glob import glob
 from tqdm import tqdm
+import traceback
 
 export, __all__ = dddm.exporter()
 
@@ -203,7 +204,7 @@ class ResultsManager:
             if not tolerant:
                 raise e
             self.log.debug(e)
-            self.log.warning(f'loading {path} lead to {e}')
+            self.log.warning(f'loading {path} lead to {e}, {traceback.format_exc()}')
             return
         self.result_cache.append(result)
 
@@ -218,7 +219,7 @@ class ResultsManager:
         self.log.info(f'Opening {len(matches)} matches')
         for path in tqdm(matches, disable=not show_tqdm):
             self.log.debug(f'open {path}')
-            self._add_result(path, tolerant=True)
+            self._add_result(path, tolerant=False)
         self.log.info('Opening done, build df')
         self.build_df()
 
