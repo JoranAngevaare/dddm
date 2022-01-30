@@ -16,4 +16,3 @@ class TestDepricated(TestCase):
                 self.assertIsInstance(dddm.priors.get_priors(prior), immutabledict)
         with self.assertRaises(NotImplementedError):
             dddm.priors.get_priors('some typo')
-

@@ -13,7 +13,6 @@ readme = open('README.md').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 requirements = open_requirements('requirements.txt')
 
-
 setuptools.setup(
     name='dddm',
     version='2.1.1',

@@ -35,7 +35,6 @@ class _CombinedInference:
         return np.sum([c._log_probability_nested(theta)
                        for c in self.sub_classes])
 
-
     def save_sub_configs(self, force_index=False):
         save_dir = self.get_save_dir(force_index=force_index)
         self.log.info(

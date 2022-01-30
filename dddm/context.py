@@ -132,7 +132,8 @@ class Context:
                 for det in detector_name]
             if halo_name == 'shielded_shm':
                 if len(locations := {d.location for d in detector_instance}) > 1:
-                    raise ValueError(f'Running with multiple locations for shielded_shm is not allowed. Got {locations}')
+                    raise ValueError(
+                        f'Running with multiple locations for shielded_shm is not allowed. Got {locations}')
                 halo_kwargs.setdefault('log_mass', np.log10(wimp_mass))
                 halo_kwargs.setdefault('log_cross_section', np.log10(cross_section))
                 halo_kwargs.setdefault('location', list(locations)[0])
@@ -170,7 +171,11 @@ class Context:
                             ):
         for det in dddm.utils.to_str_tuple(detector_name):
             assert det in self._detector_registry, f'{det} is unknown'
-        # TODO
+        assert wimp_mass < 200 and wimp_mass > 0.001, f'{wimp_mass} invalid'
+        assert np.log10(cross_section) < -20 and np.log10(cross_section) > -60, f'{cross_section} invalid'
+        assert sampler_name in self._samplers, f'choose from {self._samplers}, got {sampler_name}'
+        assert isinstance(prior, (dict, immutabledict)), f'invalid {prior}'
+        assert halo_name in self._halo_classes, f'invalid {halo_name}'
 
     def _add_folders_to_kwargs(self, function, current_kwargs: ty.Union[None, dict]) -> dict:
         if function is None:

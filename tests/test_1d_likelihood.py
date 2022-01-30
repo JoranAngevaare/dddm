@@ -75,7 +75,7 @@ class TestLikelihoodMinimum(TestCase):
                                          include_astrophysics=include_astrophysics,
                                          detector_name=['Xe_simple'],
                                          halo_name='shielded_shm',
-                                         halo_kwargs = {'location': 'XENON'},
+                                         halo_kwargs={'location': 'XENON'},
                                          nbins=30,
                                          )
 

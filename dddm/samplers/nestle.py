@@ -31,7 +31,8 @@ class NestleSampler(MultiNestSampler):
         tol = self.config['tol']  # the stopping criterion
 
         assert_str = f"Unknown configuration of fit pars: {self.config['fit_parameters']}"
-        assert tuple(self.config["fit_parameters"]) == tuple(self.known_parameters[:ndim]), assert_str
+        assert tuple(self.config["fit_parameters"]) == tuple(
+            self.known_parameters[:ndim]), assert_str
 
         self.log.warning(f'run_nestle::\tstart_fit for {ndim} parameters')
 

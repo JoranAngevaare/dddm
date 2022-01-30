@@ -254,7 +254,6 @@ class MultiNestSampler(dddm.StatModel):
         self.log.info(f'get_save_dir\tsave_dir = {target_save}')
         return target_save
 
-
     def save_results(self, force_index=False):
         self.log.info('Saving results after checking we did run')
         # save fit parameters to config
