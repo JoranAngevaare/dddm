@@ -1,4 +1,4 @@
-import DirectDmTargets as dddm
+import dddm
 import unittest
 import numpy as np
 from hypothesis import given, settings, strategies

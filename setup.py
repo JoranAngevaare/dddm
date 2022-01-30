@@ -14,17 +14,17 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 requirements = open_requirements('requirements.txt')
 
 setuptools.setup(
-    name='DirectDmTargets',
-    version='2.1.0',
-    description='Probing the complementarity of several targets used in '
-                'Direct Detection Experiments for Dark Matter',
+    name='dddm',
+    version='2.1.1',
+    description='Direct Detection of Dark Matter: '
+                'Probing the complementarity of several targets for dark matter detection',
     long_description=readme + '\n\n' + history,
     author='Joran Angevaare',
     url='https://github.com/jorana/DD_DM_targets',
     packages=setuptools.find_packages() + ['extra_requirements'],
-    package_dir={'DirectDmTargets': 'DirectDmTargets',
+    package_dir={'dddm': 'dddm',
                  'extra_requirements': 'extra_requirements'},
-    package_data={'DirectDmTargets': ['data/*'],
+    package_data={'dddm': ['data/*'],
                   'extra_requirements': ['requirements-tests.txt'],
                   },
     setup_requires=['pytest-runner'],
@@ -42,6 +42,7 @@ setuptools.setup(
                  'Natural Language :: English',
                  'Programming Language :: Python :: 3.8',
                  'Programming Language :: Python :: 3.9',
+                 'Programming Language :: Python :: 3.10',
                  'Intended Audience :: Science/Research',
                  'Programming Language :: Python :: Implementation :: CPython',
                  'Topic :: Scientific/Engineering :: Physics',

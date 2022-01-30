@@ -1,10 +1,11 @@
 #!/usr/bin/python
 # J. Angevaare 21-10-2019 <j.angevaare@nikhef.nl>
 
-# from DirectDmTargets import context
+import dddm
 import subprocess
 import os
 import argparse
+
 print("write_script.py::\tstart writing script and submit it to the queue")
 
 #
