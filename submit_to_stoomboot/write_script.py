@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # J. Angevaare 21-10-2019 <j.angevaare@nikhef.nl>
 
-# from DirectDmTargets import context
+import dddm
 import subprocess
 import os
 import argparse

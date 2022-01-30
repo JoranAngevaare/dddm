@@ -13,10 +13,10 @@ readme = open('README.md').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 requirements = open_requirements('requirements.txt')
 
+
 setuptools.setup(
-    version='2.1.1',
     name='dddm',
-    version='2.1.0',
+    version='2.1.1',
     description='Direct Detection of Dark Matter: '
                 'Probing the complementarity of several targets for dark matter detection',
     long_description=readme + '\n\n' + history,

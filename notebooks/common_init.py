@@ -15,7 +15,7 @@ from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-import DirectDmTargets as dddm
+import dddm
 
 print('Start import')
 
