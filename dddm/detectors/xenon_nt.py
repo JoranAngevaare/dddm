@@ -16,8 +16,8 @@ class XenonNtNr(_BaseXenonNt):
     detector_name = 'XENONnT_NR'
     __version__ = '0.0.0'
 
-    # Slightly lower than https://journals.aps.org/prd/abstract/10.1103/PhysRevD.99.112009
-    energy_threshold_kev = 2.5  # keVnr
+    # Use https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.126.091301
+    energy_threshold_kev = 1.6  # keVnr
 
     # Combined cut & detection efficiency as in
     # https://arxiv.org/pdf/2007.08796.pdf
