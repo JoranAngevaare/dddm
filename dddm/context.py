@@ -131,14 +131,11 @@ class Context:
                 )
                 for det in detector_name]
             if halo_name == 'shielded_shm':
-                if len(
-                        locations := set(d.location for d in detector_instance)
-                ) > 1:
+                if len(locations := {d.location for d in detector_instance}) > 1:
                     raise ValueError(f'Running with multiple locations for shielded_shm is not allowed. Got {locations}')
-                else:
-                    halo_kwargs.setdefault('log_mass', np.log10(wimp_mass))
-                    halo_kwargs.setdefault('log_cross_section', np.log10(cross_section))
-                    halo_kwargs.setdefault('location', list(locations)[0])
+                halo_kwargs.setdefault('log_mass', np.log10(wimp_mass))
+                halo_kwargs.setdefault('log_cross_section', np.log10(cross_section))
+                halo_kwargs.setdefault('location', list(locations)[0])
 
             spectrum_instance = [dddm.DetectorSpectrum(
                 experiment=d, dark_matter_model=halo_model)
