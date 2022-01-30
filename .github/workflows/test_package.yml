@@ -64,11 +64,15 @@ jobs:
       # Do the tests
       - name: Test package (windows)
         if: matrix.os == 'windows-latest' && matrix.test == 'pytest'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           coverage run --source=dddm -m pytest -vsx --durations 0
           coveralls --service=github
       - name: Test package (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'pytest'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
           export RUN_TEST_EXTENDED=1
