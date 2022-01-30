@@ -254,15 +254,6 @@ class MultiNestSampler(dddm.StatModel):
         self.log.info(f'get_save_dir\tsave_dir = {target_save}')
         return target_save
 
-    def get_tmp_dir(self, force_index=False, _hash=None):
-        if (not self.log_dict['tmp_dir']) or force_index:
-            self.log_dict['tmp_dir'] = dddm.context.open_save_dir(
-                f'{self.__class__.__name__}',
-                base_dir=self.config['tmp_folder'],
-                force_index=force_index,
-                _hash=_hash)
-        self.log.info(f'get_tmp_dir\ttmp_dir = {self.log_dict["tmp_dir"]}')
-        return self.log_dict['tmp_dir']
 
     def save_results(self, force_index=False):
         self.log.info('Saving results after checking we did run')

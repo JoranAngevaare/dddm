@@ -30,31 +30,11 @@ class _CombinedInference:
             self.log.debug(f'Fixing parameters for {c}')
             c._fix_parameters()
         super()._fix_parameters(_do_evaluate_benchmark=False)
-        # self.copy_config('log_mass log_cross_section _wimp_mass _cross_section'.split())
 
     def _log_probability_nested(self, theta):
         return np.sum([c._log_probability_nested(theta)
                        for c in self.sub_classes])
 
-    def copy_config(self, keys):
-        for k in keys:
-            if k not in self.config:
-                raise ValueError(
-                    f'One or more of keys not in config: '
-                    f'{np.setdiff1d(keys, list(self.config.keys()))}')
-            values = [s.config[k] for s in self.sub_classes]
-            values.append(self.config[k])
-            assert len(set(values)) == 1, f'Got inconsistent configs {values} for {k}'
-        # for k in keys:
-        #     if k not in self.config:
-        #         raise ValueError(
-        #             f'One or more of keys not in config: '
-        #             f'{np.setdiff1d(keys, list(self.config.keys()))}')
-        # copy_of_config = {k: self.config[k] for k in keys}
-        # self.log.info(f'update config with {copy_of_config}')
-        # for c in self.sub_classes:
-        #     self.log.debug(f'{c} with config {c.config}')
-        #     c.config.update(copy_of_config)
 
     def save_sub_configs(self, force_index=False):
         save_dir = self.get_save_dir(force_index=force_index)

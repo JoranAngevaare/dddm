@@ -121,11 +121,6 @@ class StatModel:
         self.log.info(f'NestedSamplersetting fit parameters to {params}')
         if not isinstance(params, (list, tuple)):
             raise TypeError("Set the parameter names in a list of strings")
-        for param in params:
-            if param not in self.known_parameters:
-                err_message = f"{param} does not match any of the known parameters try " \
-                              f"any of {self.known_parameters}"
-                raise NotImplementedError(err_message)
         known_params = self.known_parameters[:len(params)]
         if tuple(params) != tuple(known_params):
             err_message = f"The parameters are not input in the correct order. Please" \

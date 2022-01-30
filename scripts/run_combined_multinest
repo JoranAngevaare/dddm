@@ -19,7 +19,7 @@ def main():
         rank = get_multiprocessing_rank()
     time.sleep(5)
 
-    print(f"run_dddm_multinest.py::\tstart for mw = {args.mw}, sigma = "
+    print(f"run_dddm_multinest.py::\tstart for mw = {args.mw}, log-cross-section = "
           f"{args.cross_section}. Fitting {args.nparams} parameters")
     set_context(args)
 
@@ -37,7 +37,6 @@ def main():
 
     if args.multicore_hash != "":
         stats.get_save_dir(_hash=args.multicore_hash)
-        stats.get_tmp_dir(_hash=args.multicore_hash)
     if stats.config['sampler'] == 'multinest':
         stats.run_multinest()
     elif stats.config['sampler'] == 'nestle':

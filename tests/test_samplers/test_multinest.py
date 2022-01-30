@@ -77,7 +77,7 @@ class PymultinestTest(TestCase):
                             fit_parameters=fit_parameters, )
         sampler.save_results()
         sampler.save_sub_configs()
-
+        sampler.show_corner()
         print('opening results')
         print(os.listdir(sampler.results_dir))
         results = dddm.ResultsManager(os.path.join(sampler.results_dir,

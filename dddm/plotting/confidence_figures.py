@@ -137,15 +137,6 @@ class SeabornPlot:
     def samples(self) -> np.ndarray:
         return self.result.get_samples()
 
-    def _prior_to_kwargs(self, kwargs) -> dict:
-        UserWarning('_prior_to_kwargs is deprecated')
-        if 'range' not in kwargs:
-            prior = self.result.get_from_config('prior')
-            r = prior['log_mass']['range']
-            r += prior['log_cross_section']['range']
-            kwargs.setdefault('range', r)
-        return kwargs
-
     def best_fit(self) -> tuple:
         best = np.mean(self.samples, axis=1)
         std = np.std(self.samples, axis=1)

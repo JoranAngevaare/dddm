@@ -76,6 +76,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'fail-fast'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBA_DISABLE_JIT: 1
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
           coverage run --source=dddm -m pytest -vsx --durations 0

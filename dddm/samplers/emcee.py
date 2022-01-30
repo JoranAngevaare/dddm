@@ -195,19 +195,6 @@ class MCMCStatModel(statistics.StatModel):
         self.config['save_dir'] = save_dir
         self.log.info("save_results::\tdone_saving")
 
-    @property
-    def mw(self):
-        """Lazy alias"""
-        warn('Use log_mass instead', DeprecationWarning)
-        return self.log_mass
-
-    @property
-    def sigma(self):
-        """Lazy alias"""
-        warn('Use log_mass instead', DeprecationWarning)
-        return self.log_cross_section
-
-
 def load_chain_emcee(load_from,
                      item='latest'):
     files = os.listdir(load_from)
