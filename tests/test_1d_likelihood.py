@@ -22,12 +22,13 @@ class TestLikelihoodMinimum(TestCase):
            strategies.integers(0, len(_known_priors) - 1),
            strategies.booleans()
            )
-    def test_likeihood_converges_all_dets(self, mass, sigma,  prior_i, include_astrophysics):
+    def test_all_detectors(self, mass, sigma, prior_i, include_astrophysics):
         self._likelihood_converges_inner(mass=mass,
                                          sigma=sigma,
                                          prior_i=prior_i,
                                          include_astrophysics=include_astrophysics,
                                          detector_name=_known_detectors,
+                                         nbins=10,
                                          )
 
     @settings(deadline=None, max_examples=3)
@@ -36,7 +37,7 @@ class TestLikelihoodMinimum(TestCase):
            strategies.integers(0, len(_known_priors) - 1),
            strategies.booleans()
            )
-    def test_likeihood_converges_examples(self, mass, sigma,  prior_i, include_astrophysics):
+    def test_examples(self, mass, sigma, prior_i, include_astrophysics):
         self._likelihood_converges_inner(mass=mass,
                                          sigma=sigma,
                                          prior_i=prior_i,
@@ -51,7 +52,7 @@ class TestLikelihoodMinimum(TestCase):
            strategies.integers(0, len(_known_priors) - 1),
            strategies.booleans()
            )
-    def test_likeihood_converges_nr(self, mass, sigma,  prior_i, include_astrophysics):
+    def test_nr(self, mass, sigma, prior_i, include_astrophysics):
         self._likelihood_converges_inner(mass=mass,
                                          sigma=sigma,
                                          prior_i=prior_i,
@@ -66,7 +67,7 @@ class TestLikelihoodMinimum(TestCase):
            strategies.integers(0, len(_known_priors) - 1),
            strategies.booleans()
            )
-    def test_likeihood_converges_migdal(self, mass, sigma,  prior_i, include_astrophysics):
+    def test_migdal(self, mass, sigma, prior_i, include_astrophysics):
         self._likelihood_converges_inner(mass=mass,
                                          sigma=sigma,
                                          prior_i=prior_i,

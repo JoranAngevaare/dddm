@@ -28,7 +28,7 @@ class DDDMResult:
         self.log = dddm.utils.get_logger(self.__class__.__name__)
 
     def setup(self):
-        self.result = dddm.load_multinest_samples_from_file(self.path)
+        self.result = dddm.samplers.pymultinest.load_multinest_samples_from_file(self.path)
 
     def __repr__(self):
         # Can we avoid duplication with config summary or make a property factory?

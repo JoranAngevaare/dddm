@@ -15,7 +15,7 @@ def test_context():
 
 
 def skip_long_test():
-    do = os.environ.get('RUN_TEST_EXTENDED', True)
+    do = os.environ.get('RUN_TEST_EXTENDED', False)
     skip = not do
     why = 'running quick test, set "export RUN_TEST_EXTENDED=1" to activate'
     return skip, why
