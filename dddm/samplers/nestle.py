@@ -173,4 +173,4 @@ def load_nestle_samples_from_file(load_dir):
 
 
 def nestle_corner(result, save=False):
-    multinest_corner(result, save, _result_key='samples', _weights=True)
+    multinest_corner(result, save)

@@ -2,7 +2,7 @@ from unittest import TestCase, skipIf
 import dddm
 import numpy as np
 import os
-import tqdm
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 
