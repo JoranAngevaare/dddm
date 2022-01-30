@@ -5,8 +5,8 @@ ignore:
 # See https://docs.sourcery.ai/refactorings/lift-duplicated-conditional/
 refactor:
   skip:
-  - inline-immediately-returned-variable
-  - use-named-expression  # This is for code clarity
+    - inline-immediately-returned-variable
+    - use-named-expression  # This is for code clarity
 
 github:
   request_review: owner

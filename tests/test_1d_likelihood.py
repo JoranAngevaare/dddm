@@ -32,7 +32,7 @@ class TestLikelihoodMinimum(TestCase):
             fit_params = ('log_mass', 'log_cross_section')
         sampler = self.ct.get_sampler_for_detector(
             wimp_mass=mass,
-            cross_section=10**sigma,
+            cross_section=10 ** sigma,
             sampler_name='multinest_combined',
             detector_name=[detector_name],
             prior=prior_name,
@@ -52,7 +52,7 @@ class TestLikelihoodMinimum(TestCase):
             assert c.log_mass == np.log10(mass)
             assert c.config['prior'] == dddm.get_priors(prior_name)
             assert c.benchmark_values is not None
-        benchmark_all_zero=not np.any(sampler.sub_classes[0].benchmark_values)
+        benchmark_all_zero = not np.any(sampler.sub_classes[0].benchmark_values)
         if benchmark_all_zero:
             print('If everything is zero, I don\'t have to check if we converge')
             return

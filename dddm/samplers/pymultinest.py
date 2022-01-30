@@ -29,7 +29,7 @@ class MultiNestSampler(dddm.StatModel):
                                           dddm.GenSpectrum],
                  prior: dict,
                  tmp_folder: str,
-                 results_dir: str=None,
+                 results_dir: str = None,
                  fit_parameters=('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k'),
                  detector_name=None,
                  verbose=False,
@@ -47,7 +47,7 @@ class MultiNestSampler(dddm.StatModel):
                          verbose=verbose,
                          notes=notes,
                          )
-        self.results_dir=results_dir
+        self.results_dir = results_dir
         self.config.update(
             {'tol': tol,  # Tolerance for sampling
              'nlive': nlive,  # number of live points
@@ -321,9 +321,9 @@ def convert_dic_to_savable(config):
         elif isinstance(value, np.ndarray):
             result[key] = value.tolist()
         elif isinstance(value, np.integer):
-            result[key] =int(value)
+            result[key] = int(value)
         elif isinstance(value, np.floating):
-            result[key] =float(value)
+            result[key] = float(value)
         else:
             result[key] = str(result[key])
     return result

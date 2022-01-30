@@ -64,7 +64,8 @@ class StatModel:
                     detector_spectrum.GenSpectrum):
                 pass
             else:
-                raise ValueError(f'{spectrum_class}, {spectrum_class.__class__} is not the right class')
+                raise ValueError(
+                    f'{spectrum_class}, {spectrum_class.__class__} is not the right class')
 
         self.spectrum_class = spectrum_class
         if isinstance(prior, str):
