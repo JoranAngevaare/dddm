@@ -1,7 +1,7 @@
 from warnings import warn
 import os.path
 import tempfile
-from unittest import TestCase
+from unittest import TestCase, skipIf
 import dddm
 import matplotlib.pyplot as plt
 import numpy as np
@@ -58,6 +58,6 @@ class MCMCTests(TestCase):
                 return
             self.assertFalse(fails, fails)
 
-    @dddm.test_utils.skif_if_quick_test
+    @skipIf(*dddm.test_utils.skip_long_test())
     def test_emcee_astrophysics_prior(self):
         self.test_emcee(fit_parameters=dddm.statistics.get_param_list())

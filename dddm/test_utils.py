@@ -1,5 +1,4 @@
 import dddm
-from unittest import skipIf
 import os
 
 export, __all__ = dddm.exporter()
@@ -15,5 +14,8 @@ def test_context():
     return ct
 
 
-def skif_if_quick_test():
-    return skipIf(os.environ.get('RUN_TEST_EXTENDED', False), 'running quick test, set "export RUN_TEST_EXTENDED=1" to activate')
+def skip_long_test():
+    do = os.environ.get('RUN_TEST_EXTENDED', True)
+    skip = not do
+    why = 'running quick test, set "export RUN_TEST_EXTENDED=1" to activate'
+    return skip, why

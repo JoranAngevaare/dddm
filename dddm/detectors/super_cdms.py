@@ -99,7 +99,7 @@ class SuperCdmsIzipSiNr(_BaseSuperCdms):
 
 @export
 class SuperCdmsHvGeMigdal(_BaseSuperCdms):
-    detector_name = 'SuperCDMS_HV_Ge_migdal'
+    detector_name = 'SuperCDMS_HV_Ge_Migdal'
     target_material = 'Ge'
     interaction_type = 'migdal_SI'
     __version__ = '0.0.0'
@@ -121,7 +121,7 @@ class SuperCdmsHvGeMigdal(_BaseSuperCdms):
 
 @export
 class SuperCdmsHvSiMigdal(_BaseSuperCdms):
-    detector_name = 'SuperCDMS_HV_Si_migdal'
+    detector_name = 'SuperCDMS_HV_Si_Migdal'
     target_material = 'Si'
     interaction_type = 'migdal_SI'
     __version__ = '0.0.0'
@@ -143,7 +143,7 @@ class SuperCdmsHvSiMigdal(_BaseSuperCdms):
 
 @export
 class SuperCdmsIzipGeMigdal(_BaseSuperCdms):
-    detector_name = 'SuperCDMS_iZIP_Ge_migdal'
+    detector_name = 'SuperCDMS_iZIP_Ge_Migdal'
     target_material = 'Ge'
     interaction_type = 'migdal_SI'
     __version__ = '0.0.0'
@@ -165,7 +165,7 @@ class SuperCdmsIzipGeMigdal(_BaseSuperCdms):
 
 @export
 class SuperCdmsIzipSiMigdal(_BaseSuperCdms):
-    detector_name = 'SuperCDMS_iZIP_Si_migdal'
+    detector_name = 'SuperCDMS_iZIP_Si_Migdal'
     target_material = 'Si'
     interaction_type = 'migdal_SI'
     __version__ = '0.0.0'

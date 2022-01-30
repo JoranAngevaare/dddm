@@ -4,7 +4,7 @@ Test if the 1D likelihood returns a value that is close to the set benchmark val
 import dddm
 import numpy as np
 from hypothesis import given, settings, strategies
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from tqdm import tqdm
 
 _known_detectors = dddm.test_context().detectors
@@ -15,7 +15,7 @@ class TestLikelihoodMinimum(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()
 
-    @dddm.test_utils.skif_if_quick_test
+    @skipIf(*dddm.test_utils.skip_long_test())
     @settings(deadline=None, max_examples=3)
     @given(strategies.floats(0.1, 50),
            strategies.integers(-47, -43),
@@ -23,11 +23,11 @@ class TestLikelihoodMinimum(TestCase):
            strategies.booleans()
            )
     def test_likeihood_converges_all_dets(self, mass, sigma,  prior_i, include_astrophysics):
-        self._likelihood_converges_inner(mass,
-                                         sigma,
-                                         list(_known_detectors),
-                                         prior_i,
-                                         include_astrophysics,
+        self._likelihood_converges_inner(mass=mass,
+                                         sigma=sigma,
+                                         prior_i=prior_i,
+                                         include_astrophysics=include_astrophysics,
+                                         detector_name=_known_detectors,
                                          )
 
     @settings(deadline=None, max_examples=3)
@@ -37,14 +37,14 @@ class TestLikelihoodMinimum(TestCase):
            strategies.booleans()
            )
     def test_likeihood_converges_examples(self, mass, sigma,  prior_i, include_astrophysics):
-        self._likelihood_converges_inner(mass,
-                                         sigma,
-                                         prior_i,
-                                         include_astrophysics,
+        self._likelihood_converges_inner(mass=mass,
+                                         sigma=sigma,
+                                         prior_i=prior_i,
+                                         include_astrophysics=include_astrophysics,
                                          detector_name = ['Xe_simple', 'Ar_simple', 'Ge_simple'],
                                          )
 
-    @dddm.test_utils.skif_if_quick_test
+    @skipIf(*dddm.test_utils.skip_long_test())
     @settings(deadline=None, max_examples=1)
     @given(strategies.floats(0.1, 50),
            strategies.integers(-47, -43),
@@ -52,14 +52,14 @@ class TestLikelihoodMinimum(TestCase):
            strategies.booleans()
            )
     def test_likeihood_converges_nr(self, mass, sigma,  prior_i, include_astrophysics):
-        self._likelihood_converges_inner(mass,
-                                         sigma,
-                                         prior_i,
-                                         include_astrophysics,
+        self._likelihood_converges_inner(mass=mass,
+                                         sigma=sigma,
+                                         prior_i=prior_i,
+                                         include_astrophysics=include_astrophysics,
                                          detector_name = ['SuperCDMS_HV_Ge_NR', 'SuperCDMS_HV_Si_NR', 'SuperCDMS_iZIP_Ge_NR', 'SuperCDMS_iZIP_Si_NR', 'XENONnT_NR'],
                                          )
 
-    @dddm.test_utils.skif_if_quick_test
+    @skipIf(*dddm.test_utils.skip_long_test())
     @settings(deadline=None, max_examples=1)
     @given(strategies.floats(0.1, 50),
            strategies.integers(-47, -43),
@@ -67,11 +67,11 @@ class TestLikelihoodMinimum(TestCase):
            strategies.booleans()
            )
     def test_likeihood_converges_migdal(self, mass, sigma,  prior_i, include_astrophysics):
-        self._likelihood_converges_inner(mass,
-                                         sigma,
-                                         prior_i,
-                                         include_astrophysics,
-                                         detector_name = ['SuperCDMS_HV_Ge_migdal', 'SuperCDMS_HV_Si_migdal', 'SuperCDMS_iZIP_Ge_migdal', 'SuperCDMS_iZIP_Si_migdal', 'XENONnT_migdal'],
+        self._likelihood_converges_inner(mass=mass,
+                                         sigma=sigma,
+                                         prior_i=prior_i,
+                                         include_astrophysics=include_astrophysics,
+                                         detector_name = ['SuperCDMS_HV_Ge_Migdal', 'SuperCDMS_HV_Si_Migdal', 'SuperCDMS_iZIP_Ge_Migdal', 'SuperCDMS_iZIP_Si_Migdal', 'XENONnT_Migdal'],
                                          nbins=10
                                          )
 
@@ -87,7 +87,7 @@ class TestLikelihoodMinimum(TestCase):
             wimp_mass=mass,
             cross_section=10 ** sigma,
             sampler_name='multinest_combined',
-            detector_name=[detector_name],
+            detector_name=detector_name,
             prior=prior_name,
             halo_name='shm',
             detector_kwargs=None,

@@ -106,6 +106,7 @@ class Context:
                                  sampler_kwargs: dict = None,
                                  fit_parameters=dddm.statistics.get_param_list(),
                                  ):
+        self._check_sampler_args(wimp_mass,cross_section,sampler_name,detector_name, prior, halo_name,detector_kwargs,halo_kwargs,sampler_kwargs,fit_parameters)
         sampler_class = self._samplers[sampler_name]
 
         # If any class needs any of the paths, provide those here.
@@ -144,6 +145,22 @@ class Context:
                              fit_parameters=fit_parameters,
                              **sampler_kwargs
                              )
+
+    def _check_sampler_args(self,
+                            wimp_mass,
+                            cross_section,
+                            sampler_name: str,
+                            detector_name: ty.Union[str, list, tuple],
+                            prior: ty.Union[str, dict],
+                            halo_name='shm',
+                            detector_kwargs: dict = None,
+                            halo_kwargs: dict = None,
+                            sampler_kwargs: dict = None,
+                            fit_parameters=dddm.statistics.get_param_list(),
+                            ):
+        for det in dddm.utils.to_str_tuple(detector_name):
+            assert det in self._detector_registry, f'{det} is unknown'
+        # TODO
 
     def _add_folders_to_kwargs(self, function, current_kwargs: ty.Union[None, dict]) -> dict:
         if function is None:

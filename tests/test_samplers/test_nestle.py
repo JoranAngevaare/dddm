@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skipIf
 import dddm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,7 +9,7 @@ class NestleTest(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()
 
-    @dddm.test_utils.skif_if_quick_test
+    @skipIf(*dddm.test_utils.skip_long_test())
     def test_shielded_full_astrophysics(self, ):
         self.test(halo_name='shielded_shm')
 

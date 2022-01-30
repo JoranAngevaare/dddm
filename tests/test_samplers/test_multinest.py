@@ -1,5 +1,4 @@
-from unittest import skipIf
-from unittest import TestCase
+from unittest import TestCase, skipIf
 import dddm
 import numpy as np
 import os
@@ -13,13 +12,13 @@ class PymultinestTest(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()
 
-    @dddm.test_utils.skif_if_quick_test
+    @skipIf(*dddm.test_utils.skip_long_test())
     def test_shielded_full_astrophysics(self, ):
         self.test(halo_name='shielded_shm',
                   sampler_kwargs=dict(nlive=10, tol=0.9, verbose=0),
                   fit_parameters=dddm.statistics.get_param_list())
 
-    @dddm.test_utils.skif_if_quick_test
+    @skipIf(*dddm.test_utils.skip_long_test())
     def test_shielded(self):
         self.test(halo_name='shielded_shm',
                   sampler_kwargs=dict(nlive=10, tol=0.9, verbose=0),
@@ -128,7 +127,7 @@ class PymultinestTest(TestCase):
             raise RuntimeError('No error raised')
         results._add_result('no_such_file', tolerant=True)
 
-    @dddm.test_utils.skif_if_quick_test
+    @skipIf(*dddm.test_utils.skip_long_test())
     def test_migdal(self):
         self.test(detector_name='XENONnT_Migdal',
                   prior='migdal_wide',
@@ -137,7 +136,7 @@ class PymultinestTest(TestCase):
                   sampler_kwargs=dict(nlive=30, tol=0.1, verbose=0),
                   )
 
-    @dddm.test_utils.skif_if_quick_test
+    @skipIf(*dddm.test_utils.skip_long_test())
     def test_combined(self,
                       halo_name='shm',
                       fit_parameters=('log_mass', 'log_cross_section',)):
