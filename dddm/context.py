@@ -8,7 +8,6 @@ import warnings
 from socket import getfqdn
 from immutabledict import immutabledict
 import typing as ty
-import verne
 import dddm
 import numpy as np
 
@@ -201,13 +200,13 @@ class Context:
 def base_context():
     context = Context()
     installation_folder = dddm.__path__[0]
-    verne_folder = os.path.join(os.path.split(verne.__path__[0])[0], 'results')
+    
     default_context = {
         'software_dir': installation_folder,
         'results_dir': os.path.join(installation_folder, 'DD_DM_targets_data'),
         'spectra_files': os.path.join(installation_folder, 'DD_DM_targets_spectra'),
-        'verne_folder': verne_folder,
-        'verne_files': verne_folder,
+        'verne_folder': _get_verne_folder(),
+        'verne_files': _get_verne_folder(),
         'tmp_folder': get_temp(),
     }
     context.set_paths(default_context)
@@ -215,6 +214,14 @@ def base_context():
         context.register(detector)
     return context
 
+
+def _get_verne_folder():
+    if dddm.utils.is_installed('verne'):
+        import verne
+        verne_folder = os.path.join(os.path.split(verne.__path__[0])[0], 'results')
+    else:
+        verne_folder='./verne'
+    return verne_folder
 
 def get_temp():
     if 'TMPDIR' in os.environ and os.access(os.environ['TMPDIR'], os.W_OK):
