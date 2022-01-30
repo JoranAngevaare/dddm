@@ -6,7 +6,8 @@ ignore:
 refactor:
   skip:
     - inline-immediately-returned-variable
-    - use-named-expression  # This is for code clarity
+    # This is for code clarity
+    - use-named-expression
 
 github:
   request_review: owner
