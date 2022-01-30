@@ -103,6 +103,8 @@ class NestleSampler(MultiNestSampler):
                     f'\t, {key[4:]}, {resdict[key[4:] + "_fit_res"]}')
         resdict['best_fit'] = p
         resdict['cov_matrix'] = cov
+        # Will remove later in self.save_results!
+        resdict['weighted_samples'] = samples_nestle
         self.log.info('Alright we got all the info we need')
         return resdict
 
@@ -119,9 +121,10 @@ class NestleSampler(MultiNestSampler):
             json.dump(convert_dic_to_savable(self.config), file, indent=4)
         with open(os.path.join(save_dir, f'{pid_id}res_dict.json'), 'w') as file:
             json.dump(convert_dic_to_savable(fit_summary), file, indent=4)
-        np.save(
-            os.path.join(save_dir, f'{pid_id}config.npy'),
-            convert_dic_to_savable(self.config))
+        np.save(os.path.join(save_dir, f'{pid_id}config.npy'),
+                convert_dic_to_savable(self.config))
+        np.save(os.path.join(save_dir, f'{pid_id}weighted_samples.npy'),
+                fit_summary.pop('weighted_samples'))
         np.save(os.path.join(save_dir, f'{pid_id}res_dict.npy'),
                 convert_dic_to_savable(fit_summary))
 

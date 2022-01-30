@@ -17,7 +17,7 @@ class DDDMResult:
     """Parse results from fitting from nested sampling"""
     result: dict = None
 
-    def __init__(self, path):
+    def __init__(self, path, sampler='multinest'):
         """
         Open a class for organizing the results from running an optimization
         :param path: Path to the base dir of the results to open
@@ -26,6 +26,7 @@ class DDDMResult:
         self.path = path
         self.setup()
         self.log = dddm.utils.get_logger(self.__class__.__name__)
+        self.sampler=sampler
 
     def setup(self):
         self.result = dddm.samplers.pymultinest.load_multinest_samples_from_file(self.path)
@@ -65,7 +66,12 @@ class DDDMResult:
         return self.result.get('config', {}).get(to_get, if_not_available)
 
     def get_samples(self):
-        return self.result.get('weighted_samples').T[:2]
+        if self.sampler == 'multinest':
+            return self.result.get('weighted_samples').T[:2]
+        elif self.sampler == 'nestle':
+            return self.result.get('weighted_samples').T[:2]
+        else:
+            raise RuntimeError
 
     @property
     def detector(self):
@@ -177,8 +183,9 @@ class ResultsManager:
     result_cache: list = None
     result_df: pd.DataFrame = None
 
-    def __init__(self, pattern=None):
+    def __init__(self, pattern=None, sampler='multinest'):
         self.log = dddm.utils.get_logger(self.__class__.__name__)
+        self.sampler=sampler
         if pattern is not None:
             self.register_pattern(pattern)
 
@@ -189,7 +196,7 @@ class ResultsManager:
         if self.result_cache is None:
             self.result_cache = []
         try:
-            result = DDDMResult(path)
+            result = DDDMResult(path, sampler=self.sampler)
         except KeyboardInterrupt as interrupt:
             raise interrupt
         except Exception as e:
@@ -227,10 +234,10 @@ class ResultsManager:
 
     def build_df(self):
         dfs = [r.summary() for r in self.result_cache]
-        if len(dfs)>1:
-            self.result_df = pd.concat(dfs)
-        else:
-            self.result_df = dfs[0]
+        if len(dfs) < 0:
+            raise ValueError('No files?!')
+        self.result_df = pd.concat(dfs)
+
 
     @property
     def df(self):
