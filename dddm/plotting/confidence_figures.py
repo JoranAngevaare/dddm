@@ -213,6 +213,8 @@ class ResultsManager:
 
     def register_pattern(self, pattern, show_tqdm=True):
         matches = glob(pattern)
+        if len(matches) == 0:
+            raise ValueError(f'No matches for {pattern}')
         self.log.info(f'Opening {len(matches)} matches')
         for path in tqdm(matches, disable=not show_tqdm):
             self.log.debug(f'open {path}')
