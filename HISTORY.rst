@@ -1,5 +1,14 @@
 .. :changelog:
 
+2.1.1 / 2022-01-39
+------------------
+patch:
+ - try upping coverage (#131)
+ - Sourcery refactored master branch (#141)
+ - fix line endings (#142)
+ - Increase testing stability (#145)
+
+
 2.1.0 / 2021-11-23
 ------------------
 minor:
