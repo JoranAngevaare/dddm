@@ -24,8 +24,7 @@ class TestLikelihoodMinimum(TestCase):
     def test_likeihood_converges(self, mass, sigma,  prior_i, include_astrophysics):
         for detector_name in _known_detectors:
             with self.subTest(detector=detector_name):
-                self._likelihood_converges_inner(self,
-                                                 mass,
+                self._likelihood_converges_inner(mass,
                                                  sigma,
                                                  detector_name,
                                                  prior_i,
