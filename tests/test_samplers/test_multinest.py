@@ -128,15 +128,14 @@ class PymultinestTest(TestCase):
             raise RuntimeError('No error raised')
         results._add_result('no_such_file', tolerant=True)
 
-    # Takes too long
-    # @skipIf(*dddm.test_utils.skip_long_test())
-    # def test_migdal(self):
-    #     self.test(detector_name='XENONnT_Migdal',
-    #               prior='migdal_wide',
-    #               wimp_mass=1,
-    #               cross_section=1e-40,
-    #               sampler_kwargs=dict(nlive=30, tol=0.9, verbose=1),
-    #               )
+    @skipIf(*dddm.test_utils.skip_long_test())
+    def test_migdal(self):
+        self.test(detector_name='XENONnT_Migdal',
+                  prior='migdal_wide',
+                  wimp_mass=5,
+                  cross_section=1e-40,
+                  sampler_kwargs=dict(nlive=30, tol=0.99, verbose=1),
+                  )
 
     @skipIf(*dddm.test_utils.skip_long_test())
     def test_combined(self,
