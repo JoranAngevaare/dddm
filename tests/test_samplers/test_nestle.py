@@ -8,31 +8,31 @@ class NestleTest(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()
 
-    def test_nestle_shielded_full_astrophysics(self, ):
-        self.test_nestle(halo_name='shielded_shm')
+    def test_shielded_full_astrophysics(self, ):
+        self.test(halo_name='shielded_shm')
 
-    def test_nestle(self, max_sigma_off=4, halo_name='shm', fit_parameters=('log_mass', 'log_cross_section',)):
-        mw = 50
-        cross_section = 1e-45
-        sampler = self.ct.get_sampler_for_detector(
-            wimp_mass=mw,
-            cross_section=cross_section,
-            sampler_name='nestle',
-            detector_name='Xe_simple',
-            prior="Pato_2010",
-            halo_name=halo_name,
-            detector_kwargs=None,
-            halo_kwargs=None if halo_name == 'shm' else dict(location='XENON'),
-            sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0),
-            fit_parameters=fit_parameters,
-        )
+    def test(self, max_sigma_off=4, halo_name='shm', **kwargs):
+        base_config = dict(wimp_mass=50,
+                           cross_section=1e-45,
+                           sampler_name='nestle',
+                           detector_name='Xe_simple',
+                           prior="Pato_2010",
+                           halo_name=halo_name,
+                           detector_kwargs=None,
+                           halo_kwargs=None if halo_name == 'shm' else dict(location='XENON'),
+                           sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0),
+                           fit_parameters=('log_mass', 'log_cross_section',),
+                           )
+        config = {**base_config, **kwargs}
+        sampler = self.ct.get_sampler_for_detector(**config)
+
         sampler.run()
         results = sampler.get_summary()
 
         for i, (thing, expected, avg) in enumerate(
                 zip(
-                    fit_parameters,
-                    [getattr(sampler, f) for f in fit_parameters],
+                    base_config.get('fit_parameters'),
+                    [getattr(sampler, f) for f in base_config.get('fit_parameters')],
                     results['best_fit']
                 )):
             std = np.sqrt(results['cov_matrix'][i][i])
@@ -51,3 +51,20 @@ class NestleTest(TestCase):
             raise e
         plt.close()
         plt.clf()
+
+    def test_combined(self,
+                      halo_name='shm',
+                      fit_parameters=('log_mass', 'log_cross_section',)):
+        self.test(
+            wimp_mass=50,
+            cross_section=1e-45,
+            sampler_name='nestle_combined',
+            detector_name=['Xe_simple', 'Ar_simple', 'Ge_simple'],
+            prior="Pato_2010",
+            halo_name=halo_name,
+            detector_kwargs=None,
+            halo_kwargs=None if halo_name == 'shm' else dict(location='XENON'),
+            sampler_kwargs=dict(nlive=50, tol=0.1, verbose=0, detector_name='test_combined'),
+            fit_parameters=fit_parameters,
+        )
+

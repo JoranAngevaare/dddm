@@ -81,7 +81,7 @@ class StatModel:
             _cross_section=cross_section,
             # _spectrum_class=spectrum_class,
         )
-        self.log = dddm.utils.log  # self.get_logger(tmp_folder, verbose)
+        self.log = self.get_logger(tmp_folder, verbose)
         self.log.info(f"initialized for {detector_name} detector.")
         self.set_fit_parameters(fit_parameters)
 
