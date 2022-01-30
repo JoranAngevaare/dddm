@@ -52,7 +52,7 @@ class CombinedInference(MultiNestSampler):
             self.log.warning(
                 "Don't use this class for single experiments! Use NestedSamplerStatModel instead")
         self.sub_detectors = spectrum_classes
-        self.config['sub_sets'] = spectrum_classes
+        self.config['sub_sets'] = [str(sp) for sp in spectrum_classes]
         self.sub_classes = [
             MultiNestSampler(wimp_mass=wimp_mass,
                              cross_section=cross_section,
