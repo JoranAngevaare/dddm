@@ -1,26 +1,15 @@
 # ignore pychache
-DirectDmTargets/__pycache__/*
+dddm/__pycache__/*
 *.pyc
 2019*
 notebooks/old/*
-DirectDmTargets/__*
-DirectDmTargets/DD_DM_targets_data
+dddm/__*
+dddm/DD_DM_targets_data
 backups/*
 # submit_to_stoomboot*
 build/
 dist/
 finished_sims.csv
-notebooks/2020_02_02_figs/
-notebooks/2020_02_24_sanity_checks/
-submit_to_stoomboot/.ipynb_checkpoints/
-submit_to_stoomboot/cleanup-spectra.ipynb
-submit_to_stoomboot/example.txt
-submit_to_stoomboot/kill_all.py
-submit_to_stoomboot/profiles/
-submit_to_stoomboot/scripts/
-submit_to_stoomboot/some_script.py
-submit_to_stoomboot/submit_test.sh
-submit_to_stoomboot/test_submit.sh
 *.ipynb
 Untitled*
 
@@ -35,8 +24,9 @@ notebooks/.ipynb_checkpoints/*
 notebooks/.ipynb_checkpoints*
 .idea*
 .eggs/*
-DirectDmTargets.egg-info/*
-DirectDmTargets/archive.py
+dddm.egg-info/*
+dddm/archive.py
 *.png
 .hypothesis
 .coverage
+verne_files/*

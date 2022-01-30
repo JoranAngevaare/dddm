@@ -1,4 +1,4 @@
-import DirectDmTargets as dddm
+import dddm
 
 
 def test_utils():

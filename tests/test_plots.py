@@ -1,6 +1,6 @@
 import tempfile
 
-import DirectDmTargets as dddm
+import dddm
 import matplotlib.pyplot as plt
 import numpy as np
 from hypothesis import given, strategies
@@ -42,3 +42,11 @@ def test_simple_hist():
        )
 def test_get_color(a):
     dddm.plot_basics.get_color_from_range(a, _range=(0, max(1, a)))
+
+
+def test_plt_ll_sigma_det():
+    dddm.plot_basics.plt_ll_sigma_det()
+
+
+def test_plt_ll_mass_det():
+    dddm.plot_basics.plt_ll_mass_det()

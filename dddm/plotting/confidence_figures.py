@@ -5,27 +5,37 @@ import seaborn as sns
 import os
 import pandas as pd
 import numpy as np
-import DirectDmTargets as dddm
+import dddm
 from glob import glob
 from tqdm import tqdm
+import traceback
+
+export, __all__ = dddm.exporter()
 
 
+@export
 class DDDMResult:
     """Parse results from fitting from nested sampling"""
     result: dict = None
 
-    def __init__(self, path):
+    def __init__(self, path, sampler='multinest'):
         """
         Open a class for organizing the results from running an optimization
         :param path: Path to the base dir of the results to open
         """
         assert os.path.exists(path)
         self.path = path
+        self.log = dddm.utils.get_logger(self.__class__.__name__)
+        self.sampler = sampler
         self.setup()
-        self.log = dddm.get_logger(self.__class__.__name__)
 
     def setup(self):
-        self.result = dddm.load_multinest_samples_from_file(self.path)
+        if self.sampler == 'multinest':
+            self.result = dddm.samplers.pymultinest.load_multinest_samples_from_file(self.path)
+        elif self.sampler == 'nestle':
+            self.result = dddm.samplers.nestle.load_nestle_samples_from_file(self.path)
+        else:
+            raise RuntimeError(f'{self.sampler} is invalid')
 
     def __repr__(self):
         # Can we avoid duplication with config summary or make a property factory?
@@ -37,13 +47,13 @@ class DDDMResult:
 
     def config_summary(self,
                        get_props=(
-                           'detector',
-                           'mass',
-                           'sigma',
-                           'nlive',
-                           'halo_model',
-                           'notes',
-                           'n_parameters',
+                               'detector',
+                               'mass',
+                               'sigma',
+                               'nlive',
+                               'halo_model',
+                               'notes',
+                               'n_parameters',
                        )
                        ) -> pd.DataFrame:
         df = {k: [getattr(self, k)] for k in get_props}
@@ -78,7 +88,7 @@ class DDDMResult:
 
     @property
     def mass(self):
-        log_mass = self.get_from_config('mw', None)
+        log_mass = self.get_from_config('log_mass', None)
         if log_mass is None:
             return -1
         return round(np.power(10, log_mass), 3)
@@ -100,10 +110,11 @@ class DDDMResult:
         return len(param)
 
 
+@export
 class SeabornPlot:
     def __init__(self, result: DDDMResult):
         self.result = result
-        self.log = dddm.get_logger(self.__class__.__name__)
+        self.log = dddm.utils.get_logger(self.__class__.__name__)
 
     def __repr__(self):
         return f'{self.__class__.__name__}:: {self.result.__repr__()}'
@@ -116,7 +127,7 @@ class SeabornPlot:
         plt.scatter(*self.samples, **kwargs)
 
     def plot_bench(self, c='cyan', **kwargs):
-        plt.scatter(self.result.get_from_config('mw'),
+        plt.scatter(self.result.get_from_config('log_mass'),
                     self.result.sigma,
                     s=10 ** 2,
                     edgecolors='black',
@@ -125,15 +136,6 @@ class SeabornPlot:
     @property
     def samples(self) -> np.ndarray:
         return self.result.get_samples()
-
-    def _prior_to_kwargs(self, kwargs) -> dict:
-        UserWarning('_prior_to_kwargs is deprecated')
-        if 'range' not in kwargs:
-            prior = self.result.get_from_config('prior')
-            r = prior['log_mass']['range']
-            r += prior['log_cross_section']['range']
-            kwargs.setdefault('range', r)
-        return kwargs
 
     def best_fit(self) -> tuple:
         best = np.mean(self.samples, axis=1)
@@ -168,12 +170,14 @@ class SeabornPlot:
         self.plot_sigma_contours(**kwargs)
 
 
+@export
 class ResultsManager:
     result_cache: list = None
     result_df: pd.DataFrame = None
 
-    def __init__(self, pattern=None):
-        self.log = dddm.get_logger(self.__class__.__name__)
+    def __init__(self, pattern=None, sampler='multinest'):
+        self.sampler = sampler
+        self.log = dddm.utils.get_logger(self.__class__.__name__)
         if pattern is not None:
             self.register_pattern(pattern)
 
@@ -184,14 +188,14 @@ class ResultsManager:
         if self.result_cache is None:
             self.result_cache = []
         try:
-            result = DDDMResult(path)
+            result = DDDMResult(path, sampler=self.sampler)
         except KeyboardInterrupt as interrupt:
             raise interrupt
         except Exception as e:
             if not tolerant:
                 raise e
             self.log.debug(e)
-            self.log.warning(f'loading {path} lead to {e}')
+            self.log.warning(f'loading {path} lead to {e}, {traceback.format_exc()}')
             return
         self.result_cache.append(result)
 
@@ -201,6 +205,8 @@ class ResultsManager:
 
     def register_pattern(self, pattern, show_tqdm=True):
         matches = glob(pattern)
+        if len(matches) == 0:
+            raise ValueError(f'No matches for {pattern}')
         self.log.info(f'Opening {len(matches)} matches')
         for path in tqdm(matches, disable=not show_tqdm):
             self.log.debug(f'open {path}')
@@ -222,6 +228,8 @@ class ResultsManager:
 
     def build_df(self):
         dfs = [r.summary() for r in self.result_cache]
+        if len(dfs) < 0:
+            raise ValueError('No files!')
         self.result_df = pd.concat(dfs)
 
     @property
@@ -230,26 +238,35 @@ class ResultsManager:
         return self.result_df
 
 
-def pow10(x):
+def _pow10(x):
     return 10 ** x
 
 
-def set_xticks_top(only_lines=False):
-    xlim = plt.xlim()
-
+def set_xticks_top(show_lines=False,
+                   rotation=0,
+                   x_label=r"$M_{\chi}$ $[GeV/c^{2}]$"):
     ax = plt.gca()
-    x_ticks = [0.1, 0.5, 1, 5, 50, 1000]
-    x_ticks = [x for x in x_ticks if (xlim[1] >= np.log10(x) >= xlim[0])]
-    for x_tick in x_ticks:
-        ax.axvline(np.log10(x_tick), alpha=0.1)
-    if only_lines:
-        return
+    bin_range = ax.get_xlim()
+    secax = ax.secondary_xaxis('top', functions=(_pow10, np.log10))
 
-    secax = ax.secondary_xaxis('top', functions=(pow10, np.log10))
-    secax.set_ticks(x_ticks)
-    secax.set_xticklabels([str(x) for x in x_ticks])
-    secax.xaxis.set_tick_params(rotation=45)
-    secax.set_xlabel(r"$M_{\chi}$ $[GeV/c^{2}]$")
+    x_ticks = [0.001, 0.01, 0.1, 0.5, 1, 5, 10, 100, 1000, 10_000]
+    x_ticks = [t for t in x_ticks if t > 10 ** bin_range[0] and t < 10 ** bin_range[1]]
+    if show_lines:
+        for x_tick in x_ticks:
+            ax.axvline(np.log10(x_tick), alpha=0.1)
+
+    def str_fmt(x):
+        if isinstance(x, (list, tuple, np.ndarray)):
+            return [str_fmt(x) for x in x]
+        if x <= 0.1:
+            return f'{x:.2f}'
+        if x <= 1:
+            return f'{x:.1f}'
+        return f'{int(x)}'
+
+    secax.set_ticks(x_ticks, labels=str_fmt(x_ticks))
+    secax.xaxis.set_tick_params(rotation=rotation)
+    secax.set_xlabel(x_label)
 
 
 def x_label():

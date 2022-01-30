@@ -9,18 +9,19 @@ MCMC is:
 Nevertheless, the walkers give great insight in how the likelihood-function is
 felt by the steps that the walkers make
 """
-
+from warnings import warn
 import datetime
 import json
-import logging
-import multiprocessing
 import os
 import corner
 import matplotlib.pyplot as plt
 import numpy as np
-from DirectDmTargets import statistics, utils
+from dddm import statistics, utils
+import dddm
+import typing as ty
 
-log = logging.getLogger()
+export, __all__ = dddm.exporter()
+log = dddm.utils.log
 
 
 def default_emcee_save_dir():
@@ -28,17 +29,45 @@ def default_emcee_save_dir():
     return 'emcee'
 
 
+@export
 class MCMCStatModel(statistics.StatModel):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.nwalkers = 50
-        self.nsteps = 100
-        self.config['fit_parameters'] = ['log_mass', 'log_cross_section']
+
+    def __init__(
+            self,
+            wimp_mass: ty.Union[float, int],
+            cross_section: ty.Union[float, int],
+            spectrum_class: ty.Union[dddm.DetectorSpectrum,
+                                     dddm.GenSpectrum],
+            prior: dict,
+            tmp_folder: str,
+            fit_parameters=('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k'),
+
+            detector_name=None,
+            verbose=False,
+            notes='default',
+            nwalkers=50,
+            nsteps=100,
+            remove_frac=0.2,
+            emcee_thin=15
+
+    ):
+        super().__init__(wimp_mass=wimp_mass,
+                         cross_section=cross_section,
+                         spectrum_class=spectrum_class,
+                         prior=prior,
+                         tmp_folder=tmp_folder,
+                         fit_parameters=fit_parameters,
+                         detector_name=detector_name,
+                         verbose=verbose,
+                         notes=notes)
+        self.nwalkers = nwalkers
+        self.nsteps = nsteps
+        # self.config['fit_parameters'] = ['log_mass', 'log_cross_section']
         self.sampler = None
         self.pos = None
         self.log_dict = {'sampler': False, 'did_run': False, 'pos': False}
-        self.remove_frac = 0.2
-        self.thin = 15
+        self.remove_frac = remove_frac
+        self.emcee_thin = emcee_thin
 
     def _set_pos(self, use_pos=None):
         """Set the starting position of the walkers"""
@@ -75,14 +104,13 @@ class MCMCStatModel(statistics.StatModel):
             raise ModuleNotFoundError('package emcee not found. See README')
 
         ndim = len(self.config['fit_parameters'])
-        kwargs = {"threads": multiprocessing.cpu_count()} if mult else {}
         self.sampler = emcee.EnsembleSampler(self.nwalkers, ndim,
                                              self.log_probability,
                                              args=([self.config['fit_parameters']]),
-                                             **kwargs)
+                                             )
         self.log_dict['sampler'] = True
 
-    def run_emcee(self):
+    def run(self):
         self._fix_parameters()
 
         if not self.log_dict['sampler']:
@@ -103,11 +131,13 @@ class MCMCStatModel(statistics.StatModel):
         self.log_dict['did_run'] = True
         dt = (end - start).total_seconds()
         self.log.info(f"fit_done in {dt} s ({dt / 3600} h)")
+        # Release config for writing!
+        self.config = utils._immutable_to_dict(self.config)
         self.config['fit_time'] = dt
 
     def show_walkers(self):
         if not self.log_dict['did_run']:
-            self.run_emcee()
+            self.run()
         labels = self.config['fit_parameters']
         fig, axes = plt.subplots(len(labels), figsize=(10, 7), sharex=True)
         samples = self.sampler.get_chain()
@@ -121,19 +151,21 @@ class MCMCStatModel(statistics.StatModel):
 
     def show_corner(self):
         if not self.log_dict['did_run']:
-            self.run_emcee()
+            self.run()
         self.log.info(
             f"Removing a fraction of {self.remove_frac} of the samples, total"
             f"number of removed samples = {self.nsteps * self.remove_frac}")
-        flat_samples = self.sampler.get_chain(
-            discard=int(self.nsteps * self.remove_frac),
-            thin=self.thin,
-            flat=True
-        )
+        flat_samples = self._get_chain_flat_chain()
         truths = [getattr(self, prior_name) for prior_name in
                   statistics.get_prior_list()[:len(self.config['fit_parameters'])]]
 
         corner.corner(flat_samples, labels=self.config['fit_parameters'], truths=truths)
+
+    def _get_chain_flat_chain(self):
+        return self.sampler.get_chain(
+            discard=int(self.nsteps * self.remove_frac),
+            thin=self.emcee_thin, flat=True
+        )
 
     def save_results(
             self,
@@ -142,9 +174,9 @@ class MCMCStatModel(statistics.StatModel):
         # save fit parameters to config
         self.config['fit_parameters'] = self.config['fit_parameters']
         if not self.log_dict['did_run']:
-            self.run_emcee()
+            self.run()
         # open a folder where to save to results
-        save_dir = utils.open_save_dir(
+        save_dir = dddm.context.open_save_dir(
             default_emcee_save_dir(),
             base_dir=save_to_dir,
             force_index=force_index)
@@ -158,33 +190,15 @@ class MCMCStatModel(statistics.StatModel):
         np.save(save_at, self.sampler.get_chain())
 
         save_at = os.path.join(save_dir, 'flat_chain.npy')
-        flat_chain = self.sampler.get_chain(
-            discard=int(self.nsteps * self.remove_frac),
-            thin=self.thin, flat=True
-        )
+        flat_chain = self._get_chain_flat_chain()
         np.save(save_at, flat_chain)
         self.config['save_dir'] = save_dir
         self.log.info("save_results::\tdone_saving")
 
-    @property
-    def mw(self):
-        """Lazy alias"""
-        return self.log_mass
 
-    @property
-    def sigma(self):
-        """Lazy alias"""
-        return self.log_cross_section
-
-
-def load_chain_emcee(load_from=default_emcee_save_dir(),
-                     override_load_from=None,
+def load_chain_emcee(load_from,
                      item='latest'):
-    base = utils.get_result_folder()
-    save = load_from
-    if override_load_from is not None:
-        base = override_load_from
-    files = os.listdir(base)
+    files = os.listdir(load_from)
     if item == 'latest':
         try:
             item = files[-1]
@@ -192,10 +206,7 @@ def load_chain_emcee(load_from=default_emcee_save_dir(),
             log.warning(files)
             item = 0
     result = {}
-    if override_load_from is not None:
-        load_dir = override_load_from
-    else:
-        load_dir = os.path.join(os.path.join(base, save), str(item))
+    load_dir = os.path.join(load_from, str(item))
     if not os.path.exists(load_dir):
         raise FileNotFoundError(f"Cannot find {load_dir} specified by arg: "
                                 f"{item}")
@@ -218,7 +229,7 @@ def load_chain_emcee(load_from=default_emcee_save_dir(),
 def emcee_plots(result, save=False, plot_walkers=True, show=False):
     if not isinstance(save, bool):
         assert os.path.exists(save), f"invalid path '{save}'"
-    info = r"$M_\chi}$=%.2f" % 10 ** np.float64(result['config']['mw'])
+    info = r"$M_\chi}$=%.2f" % 10 ** np.float64(result['config']['log_mass'])
     for prior_key in result['config']['prior'].keys():
         try:
             mean = result['config']['prior'][prior_key]['mean']
@@ -227,8 +238,7 @@ def emcee_plots(result, save=False, plot_walkers=True, show=False):
             pass
     nsteps, nwalkers, ndim = np.shape(result['full_chain'])
 
-    for str_inf in ['notes', 'start', 'fit_time', 'poisson',
-                    'nwalkers', 'nsteps', 'n_energy_bins']:
+    for str_inf in ['notes', 'start', 'fit_time', 'poisson', 'nwalkers', 'nsteps', 'n_energy_bins']:
         try:
             info += f"\n{str_inf} = %s" % result['config'][str_inf]
             if str_inf == 'start':
@@ -253,29 +263,32 @@ def emcee_plots(result, save=False, plot_walkers=True, show=False):
         show_titles=True)
     fig.axes[1].set_title(f"{result['config']['detector']}", loc='left')
     fig.axes[1].text(0, 1, info, verticalalignment='top')
+
+    if plot_walkers:
+        _plot_walkers(result, truths, labels, save, show)
+    _plt_cleanup(f"{save}corner.png", save, show)
+
+
+def _plot_walkers(result, truths, labels, save, show):
+    fig, axes = plt.subplots(len(labels), figsize=(10, 5), sharex=True)
+    for i, label_i in enumerate(labels):
+        ax = axes[i]
+        ax.plot(result['full_chain'][:, :, i], "k", alpha=0.3)
+        ax.axhline(truths[i])
+        ax.set_xlim(0, len(result['full_chain']))
+        ax.set_ylabel(label_i)
+        ax.yaxis.set_label_coords(-0.1, 0.5)
+
+    axes[-1].set_xlabel("step number")
+
+    _plt_cleanup(f"{save}flat_chain.png", save, show)
+
+
+def _plt_cleanup(name, save, show):
     if save:
-        plt.savefig(f"{save}corner.png", dpi=200)
+        plt.savefig(name, dpi=200)
     if show:
         plt.show()
     else:
         plt.clf()
         plt.close()
-
-    if plot_walkers:
-        fig, axes = plt.subplots(len(labels), figsize=(10, 5), sharex=True)
-        for i, label_i in enumerate(labels):
-            ax = axes[i]
-            ax.plot(result['full_chain'][:, :, i], "k", alpha=0.3)
-            ax.axhline(truths[i])
-            ax.set_xlim(0, len(result['full_chain']))
-            ax.set_ylabel(label_i)
-            ax.yaxis.set_label_coords(-0.1, 0.5)
-
-        axes[-1].set_xlabel("step number")
-        if save:
-            plt.savefig(f"{save}flat_chain.png", dpi=200)
-        if show:
-            plt.show()
-        else:
-            plt.clf()
-            plt.close()
