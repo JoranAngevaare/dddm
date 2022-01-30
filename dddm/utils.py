@@ -312,7 +312,8 @@ def get_bins(a, b, n) -> np.ndarray:
     result = np.vstack((bin_edges(a, b, n)[:-1], bin_edges(a, b, n)[1:]))
     return np.transpose(result)
 
-#TODO fix this
+
+# TODO fix this
 def get_logger(name, level='INFO', path=None) -> logging.Logger:
     """
     Get logger with handler in nice format

@@ -8,7 +8,7 @@ class NestleTest(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()
 
-    def test_nestle_shielded_full_astrophysics(self,):
+    def test_nestle_shielded_full_astrophysics(self, ):
         self.test_nestle(halo_name='shielded_shm')
 
     def test_nestle(self, halo_name='shm', fit_parameters=('log_mass', 'log_cross_section',)):

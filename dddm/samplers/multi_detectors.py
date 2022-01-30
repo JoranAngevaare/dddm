@@ -21,7 +21,7 @@ class CombinedInference(MultiNestSampler):
             spectrum_class: ty.List[ty.Union[dddm.DetectorSpectrum, dddm.GenSpectrum]],
             prior: dict,
             tmp_folder: str,
-            results_dir: str=None,
+            results_dir: str = None,
             fit_parameters=('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density', 'k'),
 
             detector_name=None,
