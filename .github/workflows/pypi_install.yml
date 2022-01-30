@@ -1,5 +1,3 @@
-# Let's upload reprox to PyPi to make it pip installable
-# Mostly based on https://github.com/marketplace/actions/pypi-publish
 name: Pipy
 on:
   workflow_dispatch:
