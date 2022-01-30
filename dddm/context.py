@@ -6,6 +6,8 @@ import inspect
 import os
 import warnings
 from socket import getfqdn
+
+import pandas as pd
 from immutabledict import immutabledict
 import typing as ty
 import dddm
@@ -88,6 +90,7 @@ class Context:
         result['exists'] = [os.path.exists(p) for p in result['path']]
         result['n_files'] = [(len(os.listdir(p)) if os.path.exists(p) else 0) for p in
                              result['path']]
+        return pd.DataFrame(result)
 
     def get_detector(self, detector: str, **kwargs):
         if detector not in self._detector_registry:

@@ -111,7 +111,7 @@ def smear_signal(rate: np.ndarray,
     resolution of the detector. The rate, energy and resolution should be arrays
     of equal length. The the bin_width
     """
-    if np.any(sigma < bin_width):
+    if np.mean(sigma) < np.mean(bin_width):
         warnings.warn(f'Resolution {np.mean(sigma)} smaller than bin_width {bin_width}!',
                       UserWarning)
         return rate
@@ -126,6 +126,9 @@ def _smear_signal(rate, energy, sigma, bin_width, result_buffer):
         res = 0.
         # pylint: disable=consider-using-enumerate
         for j in range(len(rate)):
+            # if i == j and sigma[i] < bin_width[i]:
+            #     # When the resolution at the bin of interest, just assume infinite resolution
+            #     res = bin_width[j] * rate[j]
             # see formula (5) in https://arxiv.org/abs/1012.3458
             res = res + (bin_width[j] * rate[j] *
                          (1. / (np.sqrt(2. * np.pi) * sigma[j])) *
