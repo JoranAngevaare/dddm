@@ -61,17 +61,19 @@ jobs:
         run: |
           pip install -r extra_requirements/requirements-tests.txt
           python setup.py develop
-
+      # Do the tests
       - name: Test package (windows)
         if: matrix.os == 'windows-latest' && matrix.test == 'pytest'
         run: |
-          pytest -v --durations 0
+          coverage run --source=dddm -m pytest -vsx --durations 0
+          coveralls --service=github
       - name: Test package (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'pytest'
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
           export RUN_TEST_EXTENDED=1
-          pytest -vs --durations 0
+          coverage run --source=dddm -m pytest -vsx --durations 0
+          coveralls --service=github
       - name: Test package - fail fast (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'fail-fast'
         env:
