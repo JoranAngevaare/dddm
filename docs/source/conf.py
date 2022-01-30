@@ -18,12 +18,13 @@
 
 
 # -- Project information -----------------------------------------------------
+from unittest.mock import MagicMock
+import dddm
 import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
-import dddm
 
 project = 'dddm'
 # pylint: disable=redefined-builtin
@@ -53,8 +54,6 @@ extensions = [
 ]
 
 # ADDED MANUALLY
-import sys
-from unittest.mock import MagicMock
 
 
 class Mock(MagicMock):
