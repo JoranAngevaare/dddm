@@ -71,7 +71,7 @@ jobs:
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
           export RUN_TEST_EXTENDED=1
-          pytest -v --durations 0
+          pytest -vs --durations 0
       - name: Test package - fail fast (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'fail-fast'
         env:
