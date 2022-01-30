@@ -62,15 +62,17 @@ class PymultinestTest(TestCase):
 
     def test_chain(self,
                    halo_name='shm',
-                   fit_parameters=('log_mass', 'log_cross_section',).
+                   fit_parameters=('log_mass', 'log_cross_section',),
                    ):
-        sampler = self.test_multinest( detector_name=['Xe_simple', 'Ar_simple', 'Ge_simple'],
-                                       prior="Pato_2010",
-                                       halo_name=halo_name,
-                                       detector_kwargs=None,
-                                       halo_kwargs=None if halo_name == 'shm' else dict(location='XENON'),
-                                       sampler_kwargs=dict(nlive=50, tol=0.1, verbose=0, detector_name='test_combined'),
-                                       fit_parameters=fit_parameters,)
+        sampler = self.test_multinest(detector_name=['Xe_simple', 'Ar_simple', 'Ge_simple'],
+                                      prior="Pato_2010",
+                                      halo_name=halo_name,
+                                      detector_kwargs=None,
+                                      halo_kwargs=None if halo_name == 'shm' else dict(
+                                          location='XENON'),
+                                      sampler_kwargs=dict(nlive=50, tol=0.1, verbose=0,
+                                                          detector_name='test_combined'),
+                                      fit_parameters=fit_parameters, )
         sampler.save_results()
         sampler.save_sub_configs()
 
