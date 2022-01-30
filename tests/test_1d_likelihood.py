@@ -15,24 +15,69 @@ class TestLikelihoodMinimum(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()
 
-    @settings(deadline=None, max_examples=10)
+    @dddm.test_utils.skif_if_quick_test
+    @settings(deadline=None, max_examples=3)
     @given(strategies.floats(0.1, 50),
            strategies.integers(-47, -43),
            strategies.integers(0, len(_known_priors) - 1),
            strategies.booleans()
            )
-    def test_likeihood_converges(self, mass, sigma,  prior_i, include_astrophysics):
-        for detector_name in _known_detectors:
-            with self.subTest(detector=detector_name):
-                self._likelihood_converges_inner(mass,
-                                                 sigma,
-                                                 detector_name,
-                                                 prior_i,
-                                                 include_astrophysics,
-                                                 )
+    def test_likeihood_converges_all_dets(self, mass, sigma,  prior_i, include_astrophysics):
+        self._likelihood_converges_inner(mass,
+                                         sigma,
+                                         list(_known_detectors),
+                                         prior_i,
+                                         include_astrophysics,
+                                         )
 
-    def _likelihood_converges_inner(self, mass, sigma, detector_name, prior_i, include_astrophysics):
+    @settings(deadline=None, max_examples=3)
+    @given(strategies.floats(0.1, 50),
+           strategies.integers(-47, -43),
+           strategies.integers(0, len(_known_priors) - 1),
+           strategies.booleans()
+           )
+    def test_likeihood_converges_examples(self, mass, sigma,  prior_i, include_astrophysics):
+        self._likelihood_converges_inner(mass,
+                                         sigma,
+                                         prior_i,
+                                         include_astrophysics,
+                                         detector_name = ['Xe_simple', 'Ar_simple', 'Ge_simple'],
+                                         )
+
+    @dddm.test_utils.skif_if_quick_test
+    @settings(deadline=None, max_examples=1)
+    @given(strategies.floats(0.1, 50),
+           strategies.integers(-47, -43),
+           strategies.integers(0, len(_known_priors) - 1),
+           strategies.booleans()
+           )
+    def test_likeihood_converges_nr(self, mass, sigma,  prior_i, include_astrophysics):
+        self._likelihood_converges_inner(mass,
+                                         sigma,
+                                         prior_i,
+                                         include_astrophysics,
+                                         detector_name = ['SuperCDMS_HV_Ge_NR', 'SuperCDMS_HV_Si_NR', 'SuperCDMS_iZIP_Ge_NR', 'SuperCDMS_iZIP_Si_NR', 'XENONnT_NR'],
+                                         )
+
+    @dddm.test_utils.skif_if_quick_test
+    @settings(deadline=None, max_examples=1)
+    @given(strategies.floats(0.1, 50),
+           strategies.integers(-47, -43),
+           strategies.integers(0, len(_known_priors) - 1),
+           strategies.booleans()
+           )
+    def test_likeihood_converges_migdal(self, mass, sigma,  prior_i, include_astrophysics):
+        self._likelihood_converges_inner(mass,
+                                         sigma,
+                                         prior_i,
+                                         include_astrophysics,
+                                         detector_name = ['SuperCDMS_HV_Ge_migdal', 'SuperCDMS_HV_Si_migdal', 'SuperCDMS_iZIP_Ge_migdal', 'SuperCDMS_iZIP_Si_migdal', 'XENONnT_migdal'],
+                                         nbins=10
+                                         )
+
+    def _likelihood_converges_inner(self, mass, sigma, detector_name, prior_i, include_astrophysics, nbins=30):
         """Test that a 1D likelihood scan actually returns the maximum at the set value"""
+        print(detector_name)
         prior_name = _known_priors[prior_i]
         if include_astrophysics:
             fit_params = ('log_mass', 'log_cross_section', 'v_0', 'v_esc', 'density',)
@@ -69,7 +114,7 @@ class TestLikelihoodMinimum(TestCase):
         # Do the parameter scan
         likelihood_scan = []
         # Hard-coding the range of parameters to scan for reproducibility
-        sigma_scan = np.linspace(sigma - 0.2, sigma + 0.2, 30)
+        sigma_scan = np.linspace(sigma - 0.2, sigma + 0.2, nbins)
 
         for s in tqdm(sigma_scan, desc='Cross-section scan'):
             ll = sampler.sub_classes[0]._log_probability_nested([np.log10(mass), s])

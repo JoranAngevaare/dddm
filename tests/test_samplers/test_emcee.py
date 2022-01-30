@@ -58,5 +58,6 @@ class MCMCTests(TestCase):
                 return
             self.assertFalse(fails, fails)
 
+    @dddm.test_utils.skif_if_quick_test
     def test_emcee_astrophysics_prior(self):
         self.test_emcee(fit_parameters=dddm.statistics.get_param_list())

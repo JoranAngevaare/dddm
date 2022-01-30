@@ -9,6 +9,7 @@ class NestleTest(TestCase):
     def setUp(self) -> None:
         self.ct = dddm.test_context()
 
+    @dddm.test_utils.skif_if_quick_test
     def test_shielded_full_astrophysics(self, ):
         self.test(halo_name='shielded_shm')
 
