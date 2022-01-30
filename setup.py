@@ -14,6 +14,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 requirements = open_requirements('requirements.txt')
 
 setuptools.setup(
+    version='2.1.1',
     name='dddm',
     version='2.1.0',
     description='Direct Detection of Dark Matter: '
