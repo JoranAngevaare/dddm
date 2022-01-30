@@ -42,7 +42,7 @@ class TestLikelihoodMinimum(TestCase):
                                          sigma=sigma,
                                          prior_i=prior_i,
                                          include_astrophysics=include_astrophysics,
-                                         detector_name = ['Xe_simple', 'Ar_simple', 'Ge_simple'],
+                                         detector_name=['Xe_simple', 'Ar_simple', 'Ge_simple'],
                                          )
 
     @skipIf(*dddm.test_utils.skip_long_test())
@@ -57,7 +57,9 @@ class TestLikelihoodMinimum(TestCase):
                                          sigma=sigma,
                                          prior_i=prior_i,
                                          include_astrophysics=include_astrophysics,
-                                         detector_name = ['SuperCDMS_HV_Ge_NR', 'SuperCDMS_HV_Si_NR', 'SuperCDMS_iZIP_Ge_NR', 'SuperCDMS_iZIP_Si_NR', 'XENONnT_NR'],
+                                         detector_name=['SuperCDMS_HV_Ge_NR', 'SuperCDMS_HV_Si_NR',
+                                                        'SuperCDMS_iZIP_Ge_NR',
+                                                        'SuperCDMS_iZIP_Si_NR', 'XENONnT_NR'],
                                          )
 
     @skipIf(*dddm.test_utils.skip_long_test())
@@ -72,11 +74,16 @@ class TestLikelihoodMinimum(TestCase):
                                          sigma=sigma,
                                          prior_i=prior_i,
                                          include_astrophysics=include_astrophysics,
-                                         detector_name = ['SuperCDMS_HV_Ge_Migdal', 'SuperCDMS_HV_Si_Migdal', 'SuperCDMS_iZIP_Ge_Migdal', 'SuperCDMS_iZIP_Si_Migdal', 'XENONnT_Migdal'],
+                                         detector_name=['SuperCDMS_HV_Ge_Migdal',
+                                                        'SuperCDMS_HV_Si_Migdal',
+                                                        'SuperCDMS_iZIP_Ge_Migdal',
+                                                        'SuperCDMS_iZIP_Si_Migdal',
+                                                        'XENONnT_Migdal'],
                                          nbins=10
                                          )
 
-    def _likelihood_converges_inner(self, mass, sigma, detector_name, prior_i, include_astrophysics, nbins=30):
+    def _likelihood_converges_inner(self, mass, sigma, detector_name, prior_i, include_astrophysics,
+                                    nbins=30):
         """Test that a 1D likelihood scan actually returns the maximum at the set value"""
         print(detector_name)
         prior_name = _known_priors[prior_i]

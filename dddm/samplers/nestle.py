@@ -103,7 +103,6 @@ class NestleSampler(MultiNestSampler):
                     f'\t, {key[4:]}, {resdict[key[4:] + "_fit_res"]}')
         resdict['best_fit'] = p
         resdict['cov_matrix'] = cov
-        # Will remove later in self.save_results!
         resdict['weighted_samples'] = samples_nestle
         self.log.info('Alright we got all the info we need')
         return resdict
@@ -124,7 +123,7 @@ class NestleSampler(MultiNestSampler):
         np.save(os.path.join(save_dir, f'{pid_id}config.npy'),
                 convert_dic_to_savable(self.config))
         np.save(os.path.join(save_dir, f'{pid_id}weighted_samples.npy'),
-                fit_summary.pop('weighted_samples'))
+                fit_summary.get('weighted_samples'))
         np.save(os.path.join(save_dir, f'{pid_id}res_dict.npy'),
                 convert_dic_to_savable(fit_summary))
 
@@ -154,7 +153,7 @@ class NestleSampler(MultiNestSampler):
 def load_nestle_samples_from_file(load_dir):
     log.info(f'load_nestle_samples::\tloading {load_dir}')
     keys = ['config', 'res_dict', 'h', 'logl', 'logvol', 'logz', 'logzerr',
-            'ncall', 'niter', 'samples', 'weights']
+            'ncall', 'niter', 'samples', 'weights', 'weighted_samples']
     result = {}
     files_in_dir = os.listdir(load_dir)
     for key in keys:

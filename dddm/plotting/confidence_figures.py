@@ -17,18 +17,24 @@ class DDDMResult:
     """Parse results from fitting from nested sampling"""
     result: dict = None
 
-    def __init__(self, path):
+    def __init__(self, path, sampler='multinest'):
         """
         Open a class for organizing the results from running an optimization
         :param path: Path to the base dir of the results to open
         """
         assert os.path.exists(path)
         self.path = path
-        self.setup()
         self.log = dddm.utils.get_logger(self.__class__.__name__)
+        self.sampler = sampler
+        self.setup()
 
     def setup(self):
-        self.result = dddm.samplers.pymultinest.load_multinest_samples_from_file(self.path)
+        if self.sampler == 'pymultinest':
+            self.result = dddm.samplers.pymultinest.load_multinest_samples_from_file(self.path)
+        elif self.sampler == 'nestle':
+            self.result = dddm.samplers.nestle.load_nestle_samples_from_file(self.path)
+        else:
+            raise RuntimeError
 
     def __repr__(self):
         # Can we avoid duplication with config summary or make a property factory?
@@ -177,7 +183,8 @@ class ResultsManager:
     result_cache: list = None
     result_df: pd.DataFrame = None
 
-    def __init__(self, pattern=None):
+    def __init__(self, pattern=None, sampler='multinest'):
+        self.sampler = sampler
         self.log = dddm.utils.get_logger(self.__class__.__name__)
         if pattern is not None:
             self.register_pattern(pattern)
@@ -189,7 +196,7 @@ class ResultsManager:
         if self.result_cache is None:
             self.result_cache = []
         try:
-            result = DDDMResult(path)
+            result = DDDMResult(path, sampler=self.sampler)
         except KeyboardInterrupt as interrupt:
             raise interrupt
         except Exception as e:
@@ -230,7 +237,6 @@ class ResultsManager:
         if len(dfs) < 0:
             raise ValueError('No files!')
         self.result_df = pd.concat(dfs)
-
 
     @property
     def df(self):

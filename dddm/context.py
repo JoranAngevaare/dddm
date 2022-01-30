@@ -106,7 +106,9 @@ class Context:
                                  sampler_kwargs: dict = None,
                                  fit_parameters=dddm.statistics.get_param_list(),
                                  ):
-        self._check_sampler_args(wimp_mass,cross_section,sampler_name,detector_name, prior, halo_name,detector_kwargs,halo_kwargs,sampler_kwargs,fit_parameters)
+        self._check_sampler_args(wimp_mass, cross_section, sampler_name, detector_name, prior,
+                                 halo_name, detector_kwargs, halo_kwargs, sampler_kwargs,
+                                 fit_parameters)
         sampler_class = self._samplers[sampler_name]
 
         # If any class needs any of the paths, provide those here.

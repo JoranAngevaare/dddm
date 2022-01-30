@@ -71,9 +71,9 @@ class PymultinestTest(TestCase):
                             halo_name=halo_name,
                             detector_kwargs=None,
                             halo_kwargs=None if halo_name == 'shm' else dict(
-                                          location='XENON'),
+                                location='XENON'),
                             sampler_kwargs=dict(nlive=50, tol=0.1, verbose=0,
-                                                          detector_name='test_combined'),
+                                                detector_name='test_combined'),
                             fit_parameters=fit_parameters, )
         sampler.save_results()
         sampler.save_sub_configs()
