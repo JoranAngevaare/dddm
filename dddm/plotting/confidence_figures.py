@@ -227,7 +227,10 @@ class ResultsManager:
 
     def build_df(self):
         dfs = [r.summary() for r in self.result_cache]
-        self.result_df = pd.concat(dfs)
+        if len(dfs)>1:
+            self.result_df = pd.concat(dfs)
+        else:
+            self.result_df = dfs[0]
 
     @property
     def df(self):
