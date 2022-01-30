@@ -62,6 +62,23 @@ class TestLikelihoodMinimum(TestCase):
                                                         'SuperCDMS_iZIP_Si_NR', 'XENONnT_NR'],
                                          )
 
+    @settings(deadline=None, max_examples=5)
+    @given(strategies.floats(0.1, 50),
+           strategies.integers(-40, -30),
+           strategies.integers(0, len(_known_priors) - 1),
+           strategies.booleans()
+           )
+    def test_examples_shielded(self, mass, sigma, prior_i, include_astrophysics):
+        self._likelihood_converges_inner(mass=mass,
+                                         sigma=sigma,
+                                         prior_i=prior_i,
+                                         include_astrophysics=include_astrophysics,
+                                         detector_name=['Xe_simple'],
+                                         halo_name='shielded_shm',
+                                         halo_kwargs = {'location': 'XENON'},
+                                         nbins=30,
+                                         )
+
     @skipIf(*dddm.test_utils.skip_long_test())
     @settings(deadline=None, max_examples=1)
     @given(strategies.floats(0.1, 50),
@@ -83,7 +100,7 @@ class TestLikelihoodMinimum(TestCase):
                                          )
 
     def _likelihood_converges_inner(self, mass, sigma, detector_name, prior_i, include_astrophysics,
-                                    nbins=30):
+                                    nbins=30, **kwargs):
         """Test that a 1D likelihood scan actually returns the maximum at the set value"""
         print(detector_name)
         prior_name = _known_priors[prior_i]
@@ -92,19 +109,19 @@ class TestLikelihoodMinimum(TestCase):
         else:
             fit_params = ('log_mass', 'log_cross_section')
         sampler = self.ct.get_sampler_for_detector(
-            wimp_mass=mass,
-            cross_section=10 ** sigma,
-            sampler_name='multinest_combined',
-            detector_name=detector_name,
-            prior=prior_name,
-            halo_name='shm',
-            detector_kwargs=None,
-            halo_kwargs=None,
-            sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0, detector_name='test_combined'),
-            fit_parameters=fit_params,
+            **{**dict(
+                wimp_mass=mass,
+                cross_section=10 ** sigma,
+                sampler_name='multinest_combined',
+                detector_name=detector_name,
+                prior=prior_name,
+                halo_name='shm',
+                detector_kwargs=None,
+                halo_kwargs=None,
+                sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0, detector_name='test_combined'),
+                fit_parameters=fit_params,
+            ), **kwargs, }
         )
-        # sampler.set_benchmark(mass, sigma)
-        # sampler.set_prior(prior_name)
         sampler._fix_parameters()
 
         # Check that all the subconfigs are correctly set

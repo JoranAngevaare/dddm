@@ -33,7 +33,6 @@ class ShieldedSHM:
                  rho_dm=None,
                  log_cross_section=None,
                  log_mass=None,
-
                  ):
         v_0_nodim = 230 if v_0 is None else v_0 / (nu.km / nu.s)
         v_esc_nodim = 544 if v_esc is None else v_esc / (nu.km / nu.s)
