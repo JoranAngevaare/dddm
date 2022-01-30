@@ -351,7 +351,7 @@ def do_strip_from_pid(string):
 
 
 def _get_info(result, _result_key):
-    info = r"$M_\chi}$=%.2f" % 10. ** np.float(result['config']['log_mass'])
+    info = r"$M_\chi}$=%.2f" % 10. ** np.float64(result['config']['log_mass'])
     for prior_key in result['config']['prior'].keys():
         if (prior_key in result['config']['prior'] and
                 'mean' in result['config']['prior'][prior_key]):
