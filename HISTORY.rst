@@ -1,6 +1,15 @@
 .. :changelog:
 
-2.1.1 / 2022-01-39
+3.0.0 / 2022-01-30
+------------------
+major:
+ - Refactor dddm (#158)
+patch:
+ - pipy install (#175)
+ - Write documentation(#169)
+
+
+2.1.1 / 2022-01-30
 ------------------
 patch:
  - try upping coverage (#131)
