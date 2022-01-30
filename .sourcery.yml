@@ -6,7 +6,6 @@ ignore:
 refactor:
   skip:
     - inline-immediately-returned-variable
-    # This is for code clarity
     - use-named-expression
 
 github:
