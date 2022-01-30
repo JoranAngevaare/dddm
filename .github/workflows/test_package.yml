@@ -19,7 +19,7 @@ jobs:
     name: "(${{ matrix.os }}, ${{ matrix.python-version }}, ${{ matrix.test }})"
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: True # temporary # TODO
+      fail-fast: False
       matrix:
         os: [ "ubuntu-latest", "windows-latest" ]
         python-version: [ "3.8", ] #  "3.9", "3.10"
