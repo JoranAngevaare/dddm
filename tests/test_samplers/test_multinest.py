@@ -28,14 +28,14 @@ class PymultinestTest(TestCase):
                            detector_kwargs=None,
                            halo_kwargs=None if halo_name == 'shm' else dict(location='XENON'),
                            sampler_kwargs=dict(nlive=100, tol=0.1, verbose=0),
-                           fit_parameters=('log_mass', 'log_cross_section',))
-        base_config.update(**kwargs)
-        sampler = self.ct.get_sampler_for_detector(**kwargs
-        )
+                           fit_parameters=('log_mass', 'log_cross_section',),
+                           )
+        config = {**base_config, **kwargs}
+        sampler = self.ct.get_sampler_for_detector(**config)
 
         sampler.run()
         results = sampler.get_summary()
-
+        fails = []
         for i, (thing, expected, avg) in enumerate(
                 zip(
                     base_config.get('fit_parameters'),
@@ -44,8 +44,14 @@ class PymultinestTest(TestCase):
                 )):
             std = np.sqrt(results['cov_matrix'][i][i])
             nsigma_off = np.abs(expected - avg) / std
-            message = f'For {thing}: expected {expected:.2f} yielded different results {avg:.2f} +/- {std:.2f}. Off by {nsigma_off:.1f} sigma'
-            self.assertTrue(nsigma_off < 4, message)
+            message = (f'For {thing}: expected {expected:.2f} yielded '
+                       f'different results {avg:.2f} +/- {std:.2f}. Off '
+                       f'by {nsigma_off:.1f} sigma')
+            if nsigma_off > 4:
+                fails += [message]
+            print(message)
+
+        self.assertFalse(fails, fails)
 
     def test_multinest_migdal(self):
         self.test_multinest(detector_name = 'XENONnT_Migdal',
