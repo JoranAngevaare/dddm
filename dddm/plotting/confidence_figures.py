@@ -30,12 +30,12 @@ class DDDMResult:
         self.setup()
 
     def setup(self):
-        if self.sampler == 'pymultinest':
+        if self.sampler == 'multinest':
             self.result = dddm.samplers.pymultinest.load_multinest_samples_from_file(self.path)
         elif self.sampler == 'nestle':
             self.result = dddm.samplers.nestle.load_nestle_samples_from_file(self.path)
         else:
-            raise RuntimeError
+            raise RuntimeError(f'{self.sampler} is invalid')
 
     def __repr__(self):
         # Can we avoid duplication with config summary or make a property factory?
