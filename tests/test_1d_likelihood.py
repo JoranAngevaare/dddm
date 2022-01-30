@@ -52,8 +52,9 @@ class TestLikelihoodMinimum(TestCase):
             assert c.log_mass == np.log10(mass)
             assert c.config['prior'] == dddm.get_priors(prior_name)
             assert c.benchmark_values is not None
-        benchmark_all_zero=not np.any(sampler.sub_classes[0].benchmark_values)
-        if benchmark_all_zero:
+        if benchmark_all_zero := not np.any(
+            sampler.sub_classes[0].benchmark_values
+        ):
             print('If everything is zero, I don\'t have to check if we converge')
             return
 
