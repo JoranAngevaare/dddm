@@ -3,6 +3,7 @@ ignore:
   - tests/*
 
 # See https://docs.sourcery.ai/refactorings/lift-duplicated-conditional/
+# Excluded use-named-expression -> It's for clear code that this is useful
 refactor:
   skip:
     - inline-immediately-returned-variable
