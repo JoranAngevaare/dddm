@@ -216,12 +216,10 @@ def base_context():
 
 
 def _get_verne_folder():
-    if dddm.utils.is_installed('verne'):
-        import verne
-        verne_folder = os.path.join(os.path.split(verne.__path__[0])[0], 'results')
-    else:
-        verne_folder='./verne'
-    return verne_folder
+    if not dddm.utils.is_installed('verne'):
+        return './verne'
+    import verne
+    return os.path.join(os.path.split(verne.__path__[0])[0], 'results')
 
 def get_temp():
     if 'TMPDIR' in os.environ and os.access(os.environ['TMPDIR'], os.W_OK):
