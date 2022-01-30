@@ -25,7 +25,7 @@ class DDDMResult:
         assert os.path.exists(path)
         self.path = path
         self.setup()
-        self.log = dddm.get_logger(self.__class__.__name__)
+        self.log = dddm.utils.get_logger(self.__class__.__name__)
 
     def setup(self):
         self.result = dddm.load_multinest_samples_from_file(self.path)
