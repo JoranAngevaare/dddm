@@ -78,7 +78,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
-          export RUN_TEST_EXTENDED=1
           coverage run --source=dddm -m pytest -vsx --durations 0
           coveralls --service=github
       - name: Coveralls
