@@ -155,7 +155,7 @@ class GenSpectrum:
     def set_negative_to_zero(self, counts: np.ndarray):
         mask = counts < 0
         if np.any(mask):
-            self.log.warning('Finding negative rates. Doing hard override!')
+            dddm.log.warning('Finding negative rates. Doing hard override!')
             counts[mask] = 0
             return counts
         return counts

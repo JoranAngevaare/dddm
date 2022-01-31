@@ -5,6 +5,8 @@ import numpy as np
 import dddm
 from .spectrum import GenSpectrum
 import typing as ty
+from functools import partial
+from scipy.interpolate import interp1d
 
 export, __all__ = dddm.exporter()
 
@@ -46,12 +48,13 @@ class DetectorSpectrum(GenSpectrum):
         rates += self.background_function(bin_centers) * (self.exposure_tonne_year /
                                                           self.effective_exposure)
 
-        # Smear the rates with the detector resolution
+        # Smear the rates with the detector resolution.
+        # NB: this does take into account the bin width!
         sigma = self.resolution(bin_centers)
         rates = np.array(smear_signal(rates, bin_centers, sigma, bin_width))
 
         # Set the rate to zero for energies smaller than the threshold
-        rates = self.above_threshold(rates, bin_edges, self.energy_threshold_kev)
+        rates = self.above_threshold(rates, bin_edges, float(self.energy_threshold_kev))
 
         # Calculate the total number of events per bin
         rates = rates * bin_width * self.effective_exposure
@@ -111,10 +114,6 @@ def smear_signal(rate: np.ndarray,
     resolution of the detector. The rate, energy and resolution should be arrays
     of equal length. The the bin_width
     """
-    if np.any(sigma < bin_width):
-        warnings.warn(f'Resolution {np.mean(sigma)} smaller than bin_width {bin_width}!',
-                      UserWarning)
-        return rate
     result_buffer = np.zeros(len(rate), dtype=np.float64)
     return _smear_signal(rate, energy, sigma, bin_width, result_buffer)
 
@@ -126,11 +125,24 @@ def _smear_signal(rate, energy, sigma, bin_width, result_buffer):
         res = 0.
         # pylint: disable=consider-using-enumerate
         for j in range(len(rate)):
+
             # see formula (5) in https://arxiv.org/abs/1012.3458
-            res = res + (bin_width[j] * rate[j] *
-                         (1. / (np.sqrt(2. * np.pi) * sigma[j])) *
-                         np.exp(-(((energy[i] - energy[j]) ** 2.) / (2. * sigma[j] ** 2.)))
-                         )
+            this_bin = (bin_width[j] * rate[j] *
+                        (1. / (np.sqrt(2. * np.pi) * sigma[j])) *
+                        np.exp(-(((energy[i] - energy[j]) ** 2.) / (2. * sigma[j] ** 2.)))
+                        )
+
+            if i == j:
+                # This is a tricky case, if we consider a bin where the
+                # bin width is larger than the resolution, we can center
+                # all it's content at the energy considered here. We
+                # could end up with artifficaly high number of counts if
+                # we do bin_width * bin_height. Therefore, we need to
+                # assure that this bin cannot get a contribution from
+                # itself artifficaly enhanced by a small bin width.
+                # See tests/test_smearing.py
+                this_bin = min(rate[i], this_bin)
+            res += this_bin
             # TODO
             #  # at the end of the spectrum the bg-rate drops as the convolution does
             #  # not take into account the higher energies.
@@ -138,46 +150,3 @@ def _smear_signal(rate, energy, sigma, bin_width, result_buffer):
             #  res = res * weight
         result_buffer[i] = res
     return result_buffer
-
-
-def _epsilon(e_nr, atomic_number_z):
-    return 11.5 * e_nr * (atomic_number_z ** (-7 / 3))
-
-
-def _g(e_nr, atomic_number_z):
-    eps = _epsilon(e_nr, atomic_number_z)
-    a = 3 * (eps ** 0.15)
-    b = 0.7 * (eps ** 0.6)
-    return a + b + eps
-
-
-@export
-def lindhard_quenching_factor(e_nr, k, atomic_number_z):
-    """
-    https://arxiv.org/pdf/1608.05381.pdf
-    """
-    if isinstance(e_nr, (list, tuple)):
-        e_nr = np.array(e_nr)
-    g = _g(e_nr, atomic_number_z)
-    a = k * g
-    b = 1 + k * g
-    return a / b
-
-
-@export
-def lindhard_quenching_factor_xe(e_nr):
-    """
-    Xenon Lindhard nuclear quenching factor
-
-    """
-    return lindhard_quenching_factor(e_nr=e_nr, k=0.1735, atomic_number_z=54)
-
-
-@export
-def lindhard_quenching_factor_ge(e_nr):
-    return lindhard_quenching_factor(e_nr=e_nr, k=0.162, atomic_number_z=32)
-
-
-@export
-def lindhard_quenching_factor_si(e_nr):
-    return lindhard_quenching_factor(e_nr=e_nr, k=0.161, atomic_number_z=14)
