@@ -2,11 +2,12 @@ from .experiment import Experiment, lindhard_quenching_factor, _get_nr_resolutio
 import dddm
 import numpy as np
 from functools import partial
+from abc import ABC
 
 export, __all__ = dddm.exporter()
 
 
-class _BaseXenonNt(Experiment):
+class _BaseXenonNt(Experiment, ABC):
     target_material = 'Xe'
     exposure_tonne_year = 20  # https://arxiv.org/pdf/2007.08796.pdf
     location = "XENON"
@@ -61,9 +62,9 @@ class XenonNtNr(_BaseXenonNt):
         energy_res_ee = xenon_1t_er_resolution(energy_ee)
 
         return _get_nr_resolution(energies_in_kev,
-                                           energy_nr_to_energy_ee_function,
-                                           base_resolution=energy_res_ee,
-                                           )
+                                  energy_nr_to_energy_ee_function,
+                                  base_resolution=energy_res_ee,
+                                  )
 
 
 @export

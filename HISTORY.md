@@ -5,6 +5,7 @@ major:
 - Refactor dddm (#158)
 
 patch:
+
 - pipy install (#175)
 - Write documentation(#169)
 

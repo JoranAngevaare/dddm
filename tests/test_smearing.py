@@ -31,14 +31,14 @@ class TestSmearing(unittest.TestCase):
         raw, widths = np.array(counts_and_bin_widths)
         energies = np.cumsum(widths)
         smeared = np.zeros(len(raw))
-        res = np.ones(len(raw))*resolution  # just one is easier for debugging
+        res = np.ones(len(raw)) * resolution  # just one is easier for debugging
         detector_spectrum._smear_signal(raw, energies, res, widths, smeared)
 
         numeric_tolerance = 1.01  # one shouldn't trust floats for this kind of operations
         self.assertLessEqual(np.sum(smeared),
-                             np.sum(raw*widths)*numeric_tolerance,
+                             np.sum(raw * widths) * numeric_tolerance,
                              f"Somehow got more events? {smeared}")
-        if np.sum(raw*widths) > 0:
+        if np.sum(raw * widths) > 0:
             self.assertGreaterEqual(np.sum(smeared),
                                     0,
                                     f"Lost all events? {smeared}")
