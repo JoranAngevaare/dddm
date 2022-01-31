@@ -42,5 +42,3 @@ class TestSmearing(unittest.TestCase):
             self.assertGreaterEqual(np.sum(smeared),
                                     0,
                                     f"Lost all events? {smeared}")
-
-
