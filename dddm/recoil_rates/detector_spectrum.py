@@ -51,13 +51,13 @@ class DetectorSpectrum(GenSpectrum):
         # Smear the rates with the detector resolution.
         # NB: this does take into account the bin width!
         sigma = self.resolution(bin_centers)
-        rates = np.array(smear_signal_and_integrate_bins(rates, bin_centers, sigma, bin_width))
+        rates = np.array(smear_signal(rates, bin_centers, sigma, bin_width))
 
         # Set the rate to zero for energies smaller than the threshold
         rates = self.above_threshold(rates, bin_edges, float(self.energy_threshold_kev))
 
         # Calculate the total number of events per bin
-        rates = rates * self.effective_exposure
+        rates = rates * bin_width * self.effective_exposure
         return rates
 
     @staticmethod
@@ -96,11 +96,11 @@ class DetectorSpectrum(GenSpectrum):
         return rates
 
 
-def smear_signal_and_integrate_bins(rate: np.ndarray,
-                                    energy: np.ndarray,
-                                    sigma: np.ndarray,
-                                    bin_width: np.ndarray
-                                    ):
+def smear_signal(rate: np.ndarray,
+                 energy: np.ndarray,
+                 sigma: np.ndarray,
+                 bin_width: np.ndarray
+                 ):
     """
 
     :param rate: counts/bin
@@ -141,7 +141,7 @@ def _smear_signal(rate, energy, sigma, bin_width, result_buffer):
                 # assure that this bin cannot get a contribution from
                 # itself artifficaly enhanced by a small bin width.
                 # See tests/test_smearing.py
-                this_bin = min(bin_width[i] * rate[i], this_bin)
+                this_bin = min(rate[i]*bin_width[j], this_bin)
             res += this_bin
             # TODO
             #  # at the end of the spectrum the bg-rate drops as the convolution does
