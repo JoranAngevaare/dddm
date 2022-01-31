@@ -1,5 +1,4 @@
-from .experiment import Experiment
-from dddm.recoil_rates.detectror_spectrum import lindhard_quenching_factor
+from .experiment import Experiment, lindhard_quenching_factor
 import numpy as np
 import dddm
 from functools import partial

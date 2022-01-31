@@ -1,4 +1,4 @@
-from .experiment import Experiment
+from .experiment import Experiment, lindhard_quenching_factor
 import dddm
 import numpy as np
 
