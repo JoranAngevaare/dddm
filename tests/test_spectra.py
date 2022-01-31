@@ -33,7 +33,8 @@ def test_simple_spectrum():
     plt.close()
 
 
-def plt_ll_sigma_mass(spec_clas, vary, det_class=dddm.examples.XenonSimple, bins=10, m=50,
+def plt_ll_sigma_mass(spec_clas, vary,
+                      det_class=dddm.examples.XenonSimple, bins=10, m=50,
                       sig=1e-45):
     assert vary in ['mass', 'sig'], "use sig or mass"
     use_SHM = dddm.SHM()
@@ -79,6 +80,6 @@ def test_detector_spectra():
     for det, det_class in ct._detector_registry.items():
         _galactic_spectrum_inner(
             use_SHM,
-            det_class=det_class,
+            det_class=det_class(),
             event_class=dddm.DetectorSpectrum,
             nbins=5)

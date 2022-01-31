@@ -54,7 +54,7 @@ class DetectorSpectrum(GenSpectrum):
         rates = np.array(smear_signal_and_integrate_bins(rates, bin_centers, sigma, bin_width))
 
         # Set the rate to zero for energies smaller than the threshold
-        rates = self.above_threshold(rates, bin_edges, self.energy_threshold_kev)
+        rates = self.above_threshold(rates, bin_edges, float(self.energy_threshold_kev))
 
         # Calculate the total number of events per bin
         rates = rates * self.effective_exposure
