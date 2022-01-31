@@ -23,11 +23,9 @@ class TestSmearing(unittest.TestCase):
     @settings(deadline=None, max_examples=1000)
     @given(same_len_list(),
            st.floats(min_value=0.01, max_value=10),
-           # st.floats(min_value=0.01, max_value=10),
            )
     def test_smearing(self, counts_and_bin_widths, resolution):
         raw, widths = np.array(counts_and_bin_widths)
-        # widths=np.ones(len(raw))*width
         energies = np.cumsum(widths)
         smeared = np.zeros(len(raw))
         res = np.ones(len(raw)) * resolution  # just one is easier for debugging
@@ -35,6 +33,7 @@ class TestSmearing(unittest.TestCase):
 
         numeric_tolerance = 1.25  # one shouldn't trust floats for this kind of operations
         if np.sum(smeared) > np.sum(raw) * numeric_tolerance:
+            print(np.sum(smeared), np.sum(raw))
             print(raw)
             print(energies)
             print(res)
