@@ -60,11 +60,10 @@ class XenonNtNr(_BaseXenonNt):
         energy_ee = energy_nr_to_energy_ee_function(energies_in_kev)
         energy_res_ee = xenon_1t_er_resolution(energy_ee)
 
-        energy_res_nr = _get_nr_resolution(energies_in_kev,
+        return _get_nr_resolution(energies_in_kev,
                                            energy_nr_to_energy_ee_function,
                                            base_resolution=energy_res_ee,
                                            )
-        return energy_res_nr
 
 
 @export
