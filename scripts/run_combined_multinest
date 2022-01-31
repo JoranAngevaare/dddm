@@ -15,12 +15,12 @@ def main():
     print("run_dddm_multinest.py::\tstart")
     args = parse_arguments()
 
-    if args.sampler == 'multinest':
+    if 'multinest' in args.sampler:
         rank = get_multiprocessing_rank()
     time.sleep(5)
 
     print(f"run_dddm_multinest.py::\tstart for mw = {args.mw}, log-cross-section = "
-          f"{args.cross_section}. Fitting {args.nparams} parameters")
+          f"{args.log_cross_section}. Fitting {args.nparams} parameters")
     cx = get_context(args)
 
     stats = cx.get_sampler_for_detector(
@@ -32,7 +32,7 @@ def main():
         halo_name='shm' if not args.shielding else 'shielded_shm',
         detector_kwargs = dict(n_energy_bins=args.bins),
         halo_kwargs = None,
-        sampler_kwargs = dict(nline=args.nlive,
+        sampler_kwargs = dict(nlive=args.nlive,
                               tol=args.tol,
                               notes=args.notes,
                               verbose=args.verbose,
@@ -46,14 +46,14 @@ def main():
     if args.multicore_hash != "":
         stats.get_save_dir(_hash=args.multicore_hash)
     stats.run()
-    if args.multicore_hash == "" or (args.sampler == 'multinest' and rank == 0):
+    if args.multicore_hash == "" or ('multinest' in args.sampler and rank == 0):
         log.info('saving the results')
         stats.save_results()
         stats.save_sub_configs()
     assert stats.log_dict['did_run']
 
     log.info(f"run_dddm_multinest::\t"
-             f"finished for mw = {args.mw}, sigma = {args.cross_section}")
+             f"finished for mw = {args.mw}, sigma = {args.log_cross_section}")
     print("finished, bye bye")
 
 
@@ -89,7 +89,7 @@ def get_prior(args):
             'range': [int(np.log10(args.mw)) - 2.5, int(np.log10(args.mw)) + 3.5],
             'prior_type': 'flat'}
         prior['log_cross_section'] = {
-            'range': [int(args.cross_section) - 7, int(args.cross_section) + 5],
+            'range': [int(args.log_cross_section) - 7, int(args.log_cross_section) + 5],
             'prior_type': 'flat'}
     prior['log_mass']['param'] = prior['log_mass']['range']
     prior['log_cross_section']['param'] = prior['log_cross_section']['range']
