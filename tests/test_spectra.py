@@ -80,6 +80,6 @@ def test_detector_spectra():
     for det, det_class in ct._detector_registry.items():
         _galactic_spectrum_inner(
             use_SHM,
-            det_class=det_class(),
+            det_class=det_class,
             event_class=dddm.DetectorSpectrum,
             nbins=5)

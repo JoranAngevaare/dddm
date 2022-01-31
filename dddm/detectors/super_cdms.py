@@ -205,7 +205,7 @@ class SuperCdmsHvGeMigdal(_BaseSuperCdms):
 
     @property
     def energy_threshold_kev(self):
-        return self.get_energy_thr_ee_from_phonon_thr
+        return self.get_energy_thr_ee_from_phonon_thr()
 
     def resolution(self, energies_in_kev):
         """Flat resolution"""
@@ -230,7 +230,7 @@ class SuperCdmsHvSiMigdal(_BaseSuperCdms):
 
     @property
     def energy_threshold_kev(self):
-        return self.get_energy_thr_ee_from_phonon_thr
+        return self.get_energy_thr_ee_from_phonon_thr()
 
     def resolution(self, energies_in_kev):
         """Flat resolution"""
@@ -255,7 +255,7 @@ class SuperCdmsIzipGeMigdal(_BaseSuperCdms):
 
     @property
     def energy_threshold_kev(self):
-        return self.get_energy_thr_ee_from_phonon_thr
+        return self.get_energy_thr_ee_from_phonon_thr()
 
     def resolution(self, energies_in_kev):
         """Flat resolution"""
@@ -280,7 +280,7 @@ class SuperCdmsIzipSiMigdal(_BaseSuperCdms):
 
     @property
     def energy_threshold_kev(self):
-        return self.get_energy_thr_ee_from_phonon_thr
+        return self.get_energy_thr_ee_from_phonon_thr()
 
     def resolution(self, energies_in_kev):
         """Flat resolution"""
