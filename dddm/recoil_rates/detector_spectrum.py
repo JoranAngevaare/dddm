@@ -48,15 +48,16 @@ class DetectorSpectrum(GenSpectrum):
         rates += self.background_function(bin_centers) * (self.exposure_tonne_year /
                                                           self.effective_exposure)
 
-        # Smear the rates with the detector resolution
+        # Smear the rates with the detector resolution. NB: this does
+        # take into account the bin width
         sigma = self.resolution(bin_centers)
-        rates = np.array(smear_signal(rates, bin_centers, sigma, bin_width))
+        rates = np.array(smear_signal_and_integrate_bins(rates, bin_centers, sigma, bin_width))
 
         # Set the rate to zero for energies smaller than the threshold
         rates = self.above_threshold(rates, bin_edges, self.energy_threshold_kev)
 
         # Calculate the total number of events per bin
-        rates = rates * bin_width * self.effective_exposure
+        rates = rates * self.effective_exposure
         return rates
 
     @staticmethod
@@ -95,11 +96,11 @@ class DetectorSpectrum(GenSpectrum):
         return rates
 
 
-def smear_signal(rate: np.ndarray,
-                 energy: np.ndarray,
-                 sigma: np.ndarray,
-                 bin_width: np.ndarray
-                 ):
+def smear_signal_and_integrate_bins(rate: np.ndarray,
+                                    energy: np.ndarray,
+                                    sigma: np.ndarray,
+                                    bin_width: np.ndarray
+                                    ):
     """
 
     :param rate: counts/bin
@@ -113,10 +114,6 @@ def smear_signal(rate: np.ndarray,
     resolution of the detector. The rate, energy and resolution should be arrays
     of equal length. The the bin_width
     """
-    if np.mean(sigma) < np.mean(bin_width):
-        warnings.warn(f'Resolution {np.mean(sigma)} smaller than bin_width {bin_width}!',
-                      UserWarning)
-        return rate
     result_buffer = np.zeros(len(rate), dtype=np.float64)
     return _smear_signal(rate, energy, sigma, bin_width, result_buffer)
 
@@ -128,14 +125,24 @@ def _smear_signal(rate, energy, sigma, bin_width, result_buffer):
         res = 0.
         # pylint: disable=consider-using-enumerate
         for j in range(len(rate)):
-            # if i == j and sigma[i] < bin_width[i]:
-            #     # When the resolution at the bin of interest, just assume infinite resolution
-            #     res = bin_width[j] * rate[j]
+
             # see formula (5) in https://arxiv.org/abs/1012.3458
-            res = res + (bin_width[j] * rate[j] *
-                         (1. / (np.sqrt(2. * np.pi) * sigma[j])) *
-                         np.exp(-(((energy[i] - energy[j]) ** 2.) / (2. * sigma[j] ** 2.)))
-                         )
+            this_bin = (bin_width[j] * rate[j] *
+                        (1. / (np.sqrt(2. * np.pi) * sigma[j])) *
+                        np.exp(-(((energy[i] - energy[j]) ** 2.) / (2. * sigma[j] ** 2.)))
+                        )
+
+            if i == j:
+                # This is a tricky case, if we consider a bin where the
+                # bin width is larger than the resolution, we can center
+                # all it's content at the energy considered here. We
+                # could end up with artifficaly high number of counts if
+                # we do bin_width * bin_height. Therefore, we need to
+                # assure that this bin cannot get a contribution from
+                # itself artifficaly enhanced by a small bin width.
+                # See tests/test_smearing.py
+                this_bin = min(bin_width[i] * rate[i], this_bin)
+            res += this_bin
             # TODO
             #  # at the end of the spectrum the bg-rate drops as the convolution does
             #  # not take into account the higher energies.
