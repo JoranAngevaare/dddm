@@ -9,6 +9,8 @@ class _BaseXenonNt(Experiment):
     target_material = 'Xe'
     exposure_tonne_year = 20  # https://arxiv.org/pdf/2007.08796.pdf
     location = "XENON"
+    # https://arxiv.org/abs/1608.05381
+    _energy_parameters = {'k': 0.1735, 'Z': 54}
 
 
 @export
