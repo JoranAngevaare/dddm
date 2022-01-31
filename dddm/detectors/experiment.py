@@ -1,6 +1,8 @@
 import typing as ty
 import dddm
 import numpy as np
+from scipy.interpolate import interp1d
+from functools import partial
 
 export, __all__ = dddm.exporter()
 
@@ -90,11 +92,14 @@ class Experiment:
         """Return a background for n_bins in units of  1/(keV * t * yr)"""
         return np.full(n_bins, events_per_kev_tonne_year)
 
+
 def _epsilon(e_nr, atomic_number_z):
+    """For lindhard factor"""
     return 11.5 * e_nr * (atomic_number_z ** (-7 / 3))
 
 
 def _g(e_nr, atomic_number_z):
+    """For lindhard factor"""
     eps = _epsilon(e_nr, atomic_number_z)
     a = 3 * (eps ** 0.15)
     b = 0.7 * (eps ** 0.6)
@@ -112,15 +117,6 @@ def lindhard_quenching_factor(e_nr, k, atomic_number_z):
     a = k * g
     b = 1 + k * g
     return a / b
-
-
-@export
-def lindhard_quenching_factor_xe(e_nr):
-    """
-    Xenon Lindhard nuclear quenching factor
-
-    """
-    return lindhard_quenching_factor(e_nr=e_nr, k=0.1735, atomic_number_z=54)
 
 
 def _get_nr_resolution(energy_nr: np.ndarray,
@@ -144,15 +140,15 @@ def _get_nr_resolution(energy_nr: np.ndarray,
     :param base_resolution: the resolution of energy_X
     :return: res_nr evaluated at energies energy_nr
     """
-    dummy_e_nr = np.logspace(int(np.log10(energy_nr.min())-2),
-                             int(np.log10(energy_nr.max())+2),
+    dummy_e_nr = np.logspace(int(np.log10(energy_nr.min()) - 2),
+                             int(np.log10(energy_nr.max()) + 2),
                              1000)
     # Need to have dummy_e_x with large sampling
-    dummy_e_x=energy_func(dummy_e_nr)
+    dummy_e_x = energy_func(dummy_e_nr)
 
     energy_func_inverse = interp1d(dummy_e_x, dummy_e_nr, bounds_error=False)
     denergy_nr_denergy_x = partial(_derivative, energy_func_inverse)
-    result=denergy_nr_denergy_x(a=energy_func_inverse(energy_nr))*base_resolution
+    result = denergy_nr_denergy_x(a=energy_func_inverse(energy_nr)) * base_resolution
     return result
 
 
@@ -184,10 +180,10 @@ def _derivative(f, a, method='central', h=0.01):
             backward: f(a) - f(a-h))/h
     """
     if method == 'central':
-        return (f(a + h) - f(a - h))/(2*h)
+        return (f(a + h) - f(a - h)) / (2 * h)
     elif method == 'forward':
-        return (f(a + h) - f(a))/h
+        return (f(a + h) - f(a)) / h
     elif method == 'backward':
-        return (f(a) - f(a - h))/h
+        return (f(a) - f(a - h)) / h
     else:
         raise ValueError("Method must be 'central', 'forward' or 'backward'.")

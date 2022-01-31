@@ -1,7 +1,7 @@
-from .experiment import Experiment, lindhard_quenching_factor
+from .experiment import Experiment, lindhard_quenching_factor, _get_nr_resolution
 import dddm
 import numpy as np
-
+from functools import partial
 export, __all__ = dddm.exporter()
 
 
@@ -9,6 +9,7 @@ class _BaseXenonNt(Experiment):
     target_material = 'Xe'
     exposure_tonne_year = 20  # https://arxiv.org/pdf/2007.08796.pdf
     location = "XENON"
+
     # https://arxiv.org/abs/1608.05381
     _energy_parameters = {'k': 0.1735, 'Z': 54}
 
@@ -43,8 +44,26 @@ class XenonNtNr(_BaseXenonNt):
         return self._flat_background(len(energies_in_kev), bg_rate)
 
     def resolution(self, energies_in_kev):
-        energies_in_kevee = dddm.lindhard_quenching_factor_xe(energies_in_kev) * energies_in_kev
-        return xenon_1t_er_resolution(energies_in_kevee)
+        """
+        Use _get_nr_resolution to calculate the energy resolution.
+
+        :param energies_in_kev: NR energies to evaluate the resolution
+            function at
+        :return:
+        """
+        energy_nr_to_energy_ee_function = partial(energy_nr_to_energy_ee,
+                                                  **self._energy_parameters)
+
+        # Now get e_ee and sigma_ee based on that we can calculate the
+        # energy resolution for the NRs
+        energy_ee = energy_nr_to_energy_ee_function(energies_in_kev)
+        energy_res_ee = xenon_1t_er_resolution(energy_ee)
+
+        energy_res_nr = _get_nr_resolution(energies_in_kev,
+                                           energy_nr_to_energy_ee_function,
+                                           base_resolution=energy_res_ee,
+                                           )
+        return energy_res_nr
 
 
 @export
@@ -91,3 +110,7 @@ def xenon_1t_er_resolution(energies_in_kev_ee):
     a = 0.310
     b = 0.0037
     return a * np.sqrt(energies_in_kev_ee) + b * energies_in_kev_ee
+
+
+def energy_nr_to_energy_ee(energy_nr, k, Z):
+    return energy_nr*lindhard_quenching_factor(energy_nr, k=k, Z=Z)

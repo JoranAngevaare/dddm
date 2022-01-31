@@ -22,6 +22,9 @@ _naive_tmp = '/tmp/'
 _host = getfqdn()
 
 base_detectors = [
+    dddm.detectors.examples.XenonSimple,
+    dddm.detectors.examples.ArgonSimple,
+    dddm.detectors.examples.GermaniumSimple,
     dddm.detectors.xenon_nt.XenonNtNr,
     dddm.detectors.xenon_nt.XenonNtMigdal,
     dddm.detectors.super_cdms.SuperCdmsHvGeNr,
@@ -174,7 +177,8 @@ class Context:
         for det in dddm.utils.to_str_tuple(detector_name):
             assert det in self._detector_registry, f'{det} is unknown'
         assert wimp_mass < 200 and wimp_mass > 0.001, f'{wimp_mass} invalid'
-        assert np.log10(cross_section) < -20 and np.log10(cross_section) > -60, f'{cross_section} invalid'
+        assert np.log10(cross_section) < -20 and np.log10(
+            cross_section) > -60, f'{cross_section} invalid'
         assert sampler_name in self._samplers, f'choose from {self._samplers}, got {sampler_name}'
         assert isinstance(prior, (str, dict, immutabledict)), f'invalid {prior}'
         assert halo_name in self._halo_classes, f'invalid {halo_name}'
@@ -223,6 +227,7 @@ def _get_verne_folder():
         return './verne'
     import verne
     return os.path.join(os.path.split(verne.__path__[0])[0], 'results')
+
 
 def get_temp():
     if 'TMPDIR' in os.environ and os.access(os.environ['TMPDIR'], os.W_OK):
