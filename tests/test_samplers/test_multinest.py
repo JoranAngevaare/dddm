@@ -136,6 +136,8 @@ class PymultinestTest(TestCase):
                   cross_section=1e-40,
                   detector_kwargs=dict(n_energy_bins=10),
                   sampler_kwargs=dict(nlive=30, tol=0.99, verbose=1),
+                  # We are massively undersampling so we might get very inaccurate results
+                  max_sigma_off=10,
                   )
 
     @skipIf(*dddm.test_utils.skip_long_test())
