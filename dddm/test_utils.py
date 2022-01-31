@@ -12,7 +12,7 @@ def test_context():
     return ct
 
 
-def skip_long_test()->ty.Tuple[bool, str]:
+def skip_long_test() -> ty.Tuple[bool, str]:
     """
     Wrapper for checking and mentioning if a test gets skipped because
     we are doing a short test.

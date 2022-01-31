@@ -2,6 +2,7 @@ from .experiment import Experiment, lindhard_quenching_factor, _get_nr_resolutio
 import dddm
 import numpy as np
 from functools import partial
+
 export, __all__ = dddm.exporter()
 
 
@@ -113,4 +114,4 @@ def xenon_1t_er_resolution(energies_in_kev_ee):
 
 
 def energy_nr_to_energy_ee(energy_nr, k, Z):
-    return energy_nr*lindhard_quenching_factor(energy_nr, k=k, Z=Z)
+    return energy_nr * lindhard_quenching_factor(energy_nr, k=k, Z=Z)
