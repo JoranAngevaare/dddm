@@ -12,7 +12,7 @@ class _BaseXenonNt(Experiment):
     location = "XENON"
 
     # https://arxiv.org/abs/1608.05381
-    _energy_parameters = {'k': 0.1735, 'Z': 54}
+    _energy_parameters = {'k': 0.1735, 'atomic_number_z': 54}
 
 
 @export
