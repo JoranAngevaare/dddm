@@ -207,8 +207,7 @@ def _get_nr_resolution(energy_nr: np.ndarray,
 
     energy_func_inverse = interp1d(dummy_e_x, dummy_e_nr, bounds_error=False)
     denergy_nr_denergy_x = partial(_derivative, energy_func_inverse)
-    result=denergy_nr_denergy_x(a=energy_func_inverse(energy_nr))*base_resolution
-    return result
+    return denergy_nr_denergy_x(a=energy_func_inverse(energy_nr))*base_resolution
 
 
 def _derivative(f, a, method='central', h=0.01):

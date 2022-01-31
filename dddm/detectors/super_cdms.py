@@ -253,8 +253,7 @@ class SuperCdmsIzipSiMigdal(_BaseSuperCdms):
 def energy_ee_from_energy_phonon(e_ph, e_delta_v, epsilon):
     """Eq. 4 in https://arxiv.org/abs/1610.00006 rewritten to ee
     (`y`=1) and `eta`=1"""
-    e_ee = e_ph / (1 + e_delta_v / epsilon)
-    return e_ee
+    return e_ph / (1 + e_delta_v / epsilon)
 
 
 def energy_phonon_from_energy_nr(e_r_nr, Z, k, e_delta_v, epsilon):
