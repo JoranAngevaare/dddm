@@ -13,7 +13,7 @@ class _BaseXenonNt(Experiment, ABC):
     location = "XENON"
 
     # https://arxiv.org/abs/1608.05381
-    _energy_parameters = {'k': 0.1735, 'atomic_number_z': 54}
+    _energy_parameters = {'k': 0.1735, 'Z': 54}
 
 
 @export
@@ -114,4 +114,4 @@ def xenon_1t_er_resolution(energies_in_kev_ee):
 
 
 def energy_nr_to_energy_ee(energy_nr, k, Z):
-    return energy_nr * lindhard_quenching_factor(energy_nr, k=k, Z=Z)
+    return energy_nr * lindhard_quenching_factor(energy_nr, k=k, atomic_number_z=Z)

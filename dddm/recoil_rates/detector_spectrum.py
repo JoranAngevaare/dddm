@@ -48,8 +48,8 @@ class DetectorSpectrum(GenSpectrum):
         rates += self.background_function(bin_centers) * (self.exposure_tonne_year /
                                                           self.effective_exposure)
 
-        # Smear the rates with the detector resolution. NB: this does
-        # take into account the bin width
+        # Smear the rates with the detector resolution.
+        # NB: this does take into account the bin width!
         sigma = self.resolution(bin_centers)
         rates = np.array(smear_signal_and_integrate_bins(rates, bin_centers, sigma, bin_width))
 
