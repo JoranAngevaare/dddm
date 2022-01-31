@@ -141,7 +141,7 @@ def _smear_signal(rate, energy, sigma, bin_width, result_buffer):
                 # assure that this bin cannot get a contribution from
                 # itself artifficaly enhanced by a small bin width.
                 # See tests/test_smearing.py
-                this_bin = min(rate[i]*bin_width[j], this_bin)
+                this_bin = min(rate[i], this_bin)
             res += this_bin
             # TODO
             #  # at the end of the spectrum the bg-rate drops as the convolution does
