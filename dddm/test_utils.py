@@ -8,8 +8,7 @@ export, __all__ = dddm.exporter()
 @export
 def test_context():
     """just returns the base contexts, might be different one day"""
-    ct = dddm.base_context()
-    return ct
+    return dddm.base_context()
 
 
 def skip_long_test() -> ty.Tuple[bool, str]:
