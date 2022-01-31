@@ -15,7 +15,7 @@ base_dir = "/project/xenon/jorana/software/DD_DM_targets/"
 log_dir = "/data/xenon/joranang/log_files/dddm/"
 prof_dir = base_dir + "/submit_to_stoomboot/profiles/"
 default_conda = "/project/xenon/jorana/software/miniconda3/bin:$PATH"
-default_envr = "dddm2"
+default_envr = "dddm_2021"
 
 #
 # parse the arguments
