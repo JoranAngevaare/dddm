@@ -1,3 +1,10 @@
+3.0.1 / 2022-02-01
+------------------
+minor:
+- Fix submission to stoomboot (#179)
+- Fixes to the energy resolution / threshold (#176)
+
+
 3.0.0 / 2022-01-30
 ------------------
 major:
