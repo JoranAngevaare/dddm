@@ -84,7 +84,11 @@ class DDDMResult:
 
     @property
     def sigma(self):
-        return float(self.get_from_config('sigma', 0))
+        sigma=float(self.get_from_config('sigma', 0))
+        if sigma == 0:
+            sigma=float(self.get_from_config('log_cross_section', 0))
+        return sigma
+            
 
     @property
     def mass(self):
