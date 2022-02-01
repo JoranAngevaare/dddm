@@ -142,12 +142,13 @@ def _get_nr_resolution(energy_nr: np.ndarray,
     """
     low = max(np.log10(energy_nr.min()), -5)
     high = min(np.log10(energy_nr.max()), 5)
-    dummy_e_nr = np.logspace(np.int64(low)-2, np.int64(high)+2,
+    dummy_e_nr = np.logspace(np.int64(low) - 2, np.int64(high) + 2,
                              1000)
     # Need to have dummy_e_x with large sampling
     dummy_e_x = energy_func(dummy_e_nr)
 
-    energy_func_inverse = interp1d(dummy_e_x, dummy_e_nr, bounds_error=False, fill_value='extrapolate')
+    energy_func_inverse = interp1d(dummy_e_x, dummy_e_nr, bounds_error=False,
+                                   fill_value='extrapolate')
     denergy_nr_denergy_x = partial(_derivative, energy_func_inverse)
     return denergy_nr_denergy_x(a=energy_func_inverse(energy_nr)) * base_resolution
 

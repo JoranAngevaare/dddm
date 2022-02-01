@@ -25,19 +25,19 @@ def main():
 
     stats = cx.get_sampler_for_detector(
         wimp_mass=float(args.mw),
-        cross_section=10**float(args.log_cross_section),
+        cross_section=10 ** float(args.log_cross_section),
         sampler_name=args.sampler,
         detector_name=dddm.utils.to_str_tuple(args.sub_experiments),
         prior=get_prior(args),
         halo_name='shm' if not args.shielding else 'shielded_shm',
-        detector_kwargs = dict(n_energy_bins=args.bins),
-        halo_kwargs = None,
-        sampler_kwargs = dict(nlive=args.nlive,
-                              tol=args.tol,
-                              notes=args.notes,
-                              verbose=args.verbose,
-                              detector_name=args.target
-                              ),
+        detector_kwargs=dict(n_energy_bins=args.bins),
+        halo_kwargs=None,
+        sampler_kwargs=dict(nlive=args.nlive,
+                            tol=args.tol,
+                            notes=args.notes,
+                            verbose=args.verbose,
+                            detector_name=args.target
+                            ),
         fit_parameters=dddm.statistics.get_param_list()[:args.nparams],
     )
 

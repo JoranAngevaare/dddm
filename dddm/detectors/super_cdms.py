@@ -120,9 +120,9 @@ class SuperCdmsHvGeNr(_BaseSuperCdms):
 
     def background_function(self, energies_in_kev):
         """Flat bg rate"""
-        bg_rate_nr = 27     # counts/kg/keV/year
+        bg_rate_nr = 27  # counts/kg/keV/year
         conv_units = 1.0e3  # Tonne
-        return self._flat_background(len(energies_in_kev), bg_rate_nr*conv_units)
+        return self._flat_background(len(energies_in_kev), bg_rate_nr * conv_units)
 
 
 @export
@@ -144,9 +144,9 @@ class SuperCdmsHvSiNr(_BaseSuperCdms):
 
     def background_function(self, energies_in_kev):
         """Flat bg rate"""
-        bg_rate_nr = 300    # counts/kg/keV/year
+        bg_rate_nr = 300  # counts/kg/keV/year
         conv_units = 1.0e3  # Tonne
-        return self._flat_background(len(energies_in_kev), bg_rate_nr*conv_units)
+        return self._flat_background(len(energies_in_kev), bg_rate_nr * conv_units)
 
 
 @export
@@ -168,9 +168,9 @@ class SuperCdmsIzipGeNr(_BaseSuperCdms):
 
     def background_function(self, energies_in_kev):
         """Flat bg rate"""
-        bg_rate_nr = 3300e-6 # counts/kg/keV/year
+        bg_rate_nr = 3300e-6  # counts/kg/keV/year
         conv_units = 1.0e3  # Tonne
-        return self._flat_background(len(energies_in_kev), bg_rate_nr*conv_units)
+        return self._flat_background(len(energies_in_kev), bg_rate_nr * conv_units)
 
 
 @export
@@ -192,9 +192,9 @@ class SuperCdmsIzipSiNr(_BaseSuperCdms):
 
     def background_function(self, energies_in_kev):
         """Flat bg rate"""
-        bg_rate_nr = 2900e-6 # counts/kg/keV/year
+        bg_rate_nr = 2900e-6  # counts/kg/keV/year
         conv_units = 1.0e3  # Tonne
-        return self._flat_background(len(energies_in_kev), bg_rate_nr*conv_units)
+        return self._flat_background(len(energies_in_kev), bg_rate_nr * conv_units)
 
 
 @export
@@ -218,9 +218,9 @@ class SuperCdmsHvGeMigdal(_BaseSuperCdms):
 
     def background_function(self, energies_in_kev):
         """Flat bg rate"""
-        bg_rate_nr = 27 # counts/kg/keV/year
+        bg_rate_nr = 27  # counts/kg/keV/year
         conv_units = 1.0e3  # Tonne
-        return self._flat_background(len(energies_in_kev), bg_rate_nr*conv_units)
+        return self._flat_background(len(energies_in_kev), bg_rate_nr * conv_units)
 
 
 @export
@@ -244,9 +244,9 @@ class SuperCdmsHvSiMigdal(_BaseSuperCdms):
 
     def background_function(self, energies_in_kev):
         """Flat bg rate"""
-        bg_rate_nr = 300# counts/kg/keV/year
+        bg_rate_nr = 300  # counts/kg/keV/year
         conv_units = 1.0e3  # Tonne
-        return self._flat_background(len(energies_in_kev), bg_rate_nr*conv_units)
+        return self._flat_background(len(energies_in_kev), bg_rate_nr * conv_units)
 
 
 @export
@@ -270,9 +270,9 @@ class SuperCdmsIzipGeMigdal(_BaseSuperCdms):
 
     def background_function(self, energies_in_kev):
         """Flat bg rate"""
-        bg_rate_nr = 22# counts/kg/keV/year
+        bg_rate_nr = 22  # counts/kg/keV/year
         conv_units = 1.0e3  # Tonne
-        return self._flat_background(len(energies_in_kev), bg_rate_nr*conv_units)
+        return self._flat_background(len(energies_in_kev), bg_rate_nr * conv_units)
 
 
 @export
@@ -296,9 +296,9 @@ class SuperCdmsIzipSiMigdal(_BaseSuperCdms):
 
     def background_function(self, energies_in_kev):
         """Flat bg rate"""
-        bg_rate_nr = 370# counts/kg/keV/year
+        bg_rate_nr = 370  # counts/kg/keV/year
         conv_units = 1.0e3  # Tonne
-        return self._flat_background(len(energies_in_kev), bg_rate_nr*conv_units)
+        return self._flat_background(len(energies_in_kev), bg_rate_nr * conv_units)
 
 
 def energy_ee_from_energy_phonon(e_ph, e_delta_v, epsilon):
