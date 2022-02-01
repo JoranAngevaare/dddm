@@ -81,7 +81,7 @@ class NestleTest(TestCase):
         print('opening results')
         print(os.listdir(sampler.results_dir))
         results = dddm.ResultsManager(os.path.join(sampler.results_dir,
-                                                   f'*{sampler.__class__.__name__}*'),
+                                                   f'*{sampler.__class__.__name__[:3]}*'),
                                       sampler='nestle')
         print(results)
         results.apply_mask(results.df['nlive'] > 1)

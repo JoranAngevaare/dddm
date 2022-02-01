@@ -246,7 +246,7 @@ class MultiNestSampler(dddm.StatModel):
         if saved_ok and not force_index:
             return saved_in
         target_save = dddm.context.open_save_dir(
-            f'nes_{self.__class__.__name__}',
+            f'nes_{self.__class__.__name__[:3]}',
             base_dir=self.results_dir,
             force_index=force_index,
             _hash=_hash)
