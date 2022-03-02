@@ -1,7 +1,7 @@
 corner==2.2.1
 coveralls==3.3.1
 emcee==3.1.1
-gitpython==3.1.26
+gitpython==3.1.27
 hypothesis==6.21.1
 immutabledict==2.2.1
 matplotlib==3.5.1
@@ -10,11 +10,11 @@ nestle==0.2.0
 numba==0.55.1
 numericalunits==1.25
 numpy==1.21.5
-pandas==1.4.0
+pandas==1.4.1
 psutil==5.9.0
-pytest==6.2.5
-pytest-runner==5.3.1
-scipy==1.7.3
+pytest==7.0.1
+pytest-runner==6.0.0
+scipy==1.8.0
 seaborn==0.11.2
 tqdm==4.62.2
 
