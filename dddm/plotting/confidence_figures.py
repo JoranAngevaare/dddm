@@ -247,12 +247,13 @@ def _pow10(x):
 
 def set_xticks_top(show_lines=False,
                    rotation=0,
-                   x_label=r"$M_{\chi}$ $[GeV/c^{2}]$"):
+                   x_ticks = (0.001, 0.01, 0.1, 0.5, 1, 5, 10, 100, 1000, 10_000),
+                   x_label=r"$M_{\chi}$ $[\mathrm{GeV}/\mathrm{c}^{2}]$"):
     ax = plt.gca()
     bin_range = ax.get_xlim()
     secax = ax.secondary_xaxis('top', functions=(_pow10, np.log10))
 
-    x_ticks = [0.001, 0.01, 0.1, 0.5, 1, 5, 10, 100, 1000, 10_000]
+
     x_ticks = [t for t in x_ticks if t > 10 ** bin_range[0] and t < 10 ** bin_range[1]]
     if show_lines:
         for x_tick in x_ticks:
@@ -270,11 +271,12 @@ def set_xticks_top(show_lines=False,
     secax.set_ticks(x_ticks, labels=str_fmt(x_ticks))
     secax.xaxis.set_tick_params(rotation=rotation)
     secax.set_xlabel(x_label)
+    return secax
 
 
 def x_label():
-    plt.xlabel(r"$\log_{10}(M_{\chi}$/$[GeV/c^{2}]$)")
+    plt.xlabel(r"$\log_{10}(M_{\chi}$/$[\mathrm{GeV}/\mathrm{c}^{2}]$)")
 
 
 def y_label():
-    plt.ylabel(r"$\log_{10}(\sigma_{S.I.}$/$[cm^{2}]$)")
+    plt.ylabel(r"$\log_{10}(\sigma_{S.I.}$/$[\mathrm{cm}^{2}]$)")
