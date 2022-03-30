@@ -231,7 +231,7 @@ class ResultsManager:
 
     def build_df(self):
         dfs = [r.summary() for r in self.result_cache]
-        if len(dfs) < 0:
+        if not len(dfs):
             raise ValueError('No files!')
         self.result_df = pd.concat(dfs)
 
