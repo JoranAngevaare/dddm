@@ -17,8 +17,7 @@ Dark Matter models
 Please follow the installation
 script [here](https://github.com/JoranAngevaare/dddm/blob/master/.github/scripts/install_on_linux.sh)
 
-For running on multiple cores, I'd advice using 
-``conda install -c conda-forge mpi4py openmpi``
+For running on multiple cores, I'd advice using `conda install -c conda-forge mpi4py openmpi`
 
 # Author
 
