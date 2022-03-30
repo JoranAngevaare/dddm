@@ -24,4 +24,4 @@ def test_to_str_tuple():
 def test_get_hash():
     dddm.utils.deterministic_hash({'bla': np.zeros(19),
                                    'foo': pd.DataFrame()})
-    dddm.utils.deterministic_hash(np.arange(19))
+    dddm.utils.deterministic_hash(list(np.arange(19, dtype=np.int64)))
