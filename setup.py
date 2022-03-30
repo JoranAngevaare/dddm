@@ -19,7 +19,7 @@ setuptools.setup(
     description='Direct Detection of Dark Matter: '
                 'Probing the complementarity of several targets for dark matter detection',
     long_description=readme + '\n\n' + history,
-    long_description_content_type='text/md',
+    long_description_content_type='text/markdown',
     author='Joran R. Angevaare',
     url='https://github.com/jorana/DD_DM_targets',
     packages=setuptools.find_packages() + ['extra_requirements'],
