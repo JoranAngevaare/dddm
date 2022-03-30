@@ -263,10 +263,10 @@ def set_xticks_top(show_lines=False,
         if isinstance(x, (list, tuple, np.ndarray)):
             return [str_fmt(x) for x in x]
         if x <= 0.1:
-            return f'{x:.2f}'
+            return f'${x:.2f}$'
         if x <= 1:
-            return f'{x:.1f}'
-        return f'{int(x)}'
+            return f'${x:.1f}$'
+        return f'${int(x)}$'
 
     secax.set_ticks(x_ticks, labels=str_fmt(x_ticks))
     secax.xaxis.set_tick_params(rotation=rotation)
