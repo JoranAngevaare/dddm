@@ -1,21 +1,21 @@
 3.0.2 / 2022-03-30
 ------------------
 minor:
-- Plotting tweaks (#203, 2e05346ed6f89d500e191eec3969d357b57a05b4) 
-- Test requirements (#184, #183, #187, #188, #189, #190, #191, 
-                     #192, #193, #194, #196, #202, #200, #198)
 
+- Plotting tweaks (#203, 2e05346ed6f89d500e191eec3969d357b57a05b4)
+- Test requirements (#184, #183, #187, #188, #189, #190, #191, #192, #193, #194, #196, #202, #200, #198)
 
 3.0.1 / 2022-02-01
 ------------------
 minor:
+
 - Fix submission to stoomboot (#179)
 - Fixes to the energy resolution / threshold (#176)
-
 
 3.0.0 / 2022-01-30
 ------------------
 major:
+
 - Refactor dddm (#158)
 
 patch:

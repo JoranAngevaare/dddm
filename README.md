@@ -7,8 +7,6 @@
 |[![Python Versions](https://img.shields.io/pypi/pyversions/reprox.svg)](https://pypi.python.org/pypi/reprox)| [![Coverage Status](https://coveralls.io/repos/github/JoranAngevaare/dddm/badge.svg?branch=master)](https://coveralls.io/github/JoranAngevaare/dddm?branch=master)|
 | | [![DOI](https://zenodo.org/badge/214990710.svg)](https://zenodo.org/badge/latestdoi/214990710)|
 
-
-
 Probing the complementarity of several in Direct Detection Dark Matter Experiments to reconstruct
 Dark Matter models
 
