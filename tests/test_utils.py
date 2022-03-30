@@ -25,3 +25,8 @@ def test_get_hash():
     dddm.utils.deterministic_hash({'bla': np.zeros(19),
                                    'foo': pd.DataFrame()})
     dddm.utils.deterministic_hash(list(np.arange(19, dtype=np.int64)))
+    dddm.utils.deterministic_hash(
+        list(np.arange(3, dtype=np.int64)) + 
+        [{str(a): a for a in np.arange(3, dtype=np.float64)}] +
+        [np.array([np.arange(2), np.arange(2)])]
+    )
