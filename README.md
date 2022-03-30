@@ -1,6 +1,6 @@
 # DirectDetectionDarkMatter-experiments
 
- Package | CI |
+| Package | CI |
 | --- | --- |
 |[![Documentation Status](https://readthedocs.org/projects/dddm/badge/?version=latest)](https://dddm.readthedocs.io/en/latest/?badge=latest) | [![CodeFactor](https://www.codefactor.io/repository/github/joranangevaare/dddm/badge)](https://www.codefactor.io/repository/github/joranangevaare/dddm)|
 |[![PyPI version shields.io](https://img.shields.io/pypi/v/dddm.svg)](https://pypi.python.org/pypi/dddm/) | [![Pytest](https://github.com/joranangevaare/dddm/workflows/Pytest/badge.svg)](https://github.com/joranangevaare/dddm/actions?query=workflow%3APytest) |
