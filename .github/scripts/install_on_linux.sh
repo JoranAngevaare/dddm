@@ -23,6 +23,6 @@ echo "Doing other conda and pip:"
 # We need the data files from this
 git clone https://github.com/joranangevaare/verne ../verne
 pip install -e ../verne
-git clone https://github.com/JoranAngevaare/DarkELF
-pip install -e DarkELF
+git clone https://github.com/JoranAngevaare/DarkELF ../darkelf
+pip install -e ../darkelf
 echo "done"
