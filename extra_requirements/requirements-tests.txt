@@ -2,6 +2,7 @@ corner==2.2.1
 coveralls==3.3.1
 emcee==3.1.1
 gitpython==3.1.27
+gvar==11.9.7
 hypothesis==6.21.1
 immutabledict==2.2.1
 matplotlib==3.5.1
@@ -19,6 +20,7 @@ pytest-xdist==2.5.0
 scipy==1.8.0
 seaborn==0.11.2
 tqdm==4.64.0
+vegas==5.1.1
 
 # These two packages require metadata not shipped via pip+git
 git+https://github.com/jorana/wimprates
