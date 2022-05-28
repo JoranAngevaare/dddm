@@ -88,7 +88,6 @@ jobs:
         run: |
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
           coverage run --source=dddm -m pytest -vsx --durations 0
-          coveralls --service=github
       - name: Coveralls
         if: matrix.test == 'coveralls'
         env:
