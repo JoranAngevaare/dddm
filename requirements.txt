@@ -20,3 +20,4 @@ tqdm
 # These two packages require metadata not shipped via pip+git
 # git+https://github.com/jorana/wimprates
 # git+https://github.com/jorana/verne
+# git+https://github.com/JoranAngevaare/DarkELF

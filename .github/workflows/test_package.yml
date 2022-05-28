@@ -68,6 +68,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           coverage run --source=dddm -m pytest -vsx --durations 0
+          coverage run --append --source=dddm -m pytest --nbmake -n=auto ./notebooks
           coveralls --service=github
       - name: Test package (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'pytest'
@@ -77,6 +78,7 @@ jobs:
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
           export RUN_TEST_EXTENDED=1
           coverage run --source=dddm -m pytest -vsx --durations 0
+          coverage run --append --source=dddm -m pytest --nbmake -n=auto ./notebooks
           coveralls --service=github
       - name: Test package - fail fast (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'fail-fast'
@@ -96,6 +98,7 @@ jobs:
           export LD_LIBRARY_PATH=/home/runner/work/dddm/dddm/MultiNest/lib
           export RUN_TEST_EXTENDED=1
           coverage run --source=dddm setup.py test -v
+          coverage run --append --source=dddm -m pytest --nbmake -n=auto ./notebooks
           coveralls --service=github
       - name: goodbye
         run: echo goodbye

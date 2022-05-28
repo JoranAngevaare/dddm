@@ -33,16 +33,6 @@ def test_simple_spectrum():
     plt.close()
 
 
-def plt_ll_sigma_mass(spec_clas, vary,
-                      det_class=dddm.examples.XenonSimple, bins=10, m=50,
-                      sig=1e-45):
-    assert vary in ['mass', 'sig'], "use sig or mass"
-    use_SHM = dddm.SHM()
-    det = det_class(n_energy_bins=bins)
-    events = spec_clas(dark_matter_model=use_SHM, experiment=det)
-    data = events.get_data(m, sig, poisson=False)
-
-
 def _galactic_spectrum_inner(
         use_SHM,
         det_class=dddm.examples.XenonSimple,
