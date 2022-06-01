@@ -1,6 +1,6 @@
 corner==2.2.1
 coveralls==3.3.1
-emcee==3.1.1
+emcee==3.1.2
 gitpython==3.1.27
 gvar==11.10
 hypothesis==6.21.1
