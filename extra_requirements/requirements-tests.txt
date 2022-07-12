@@ -12,7 +12,7 @@ nestle==0.2.0
 nbmake==1.3.0 
 numba==0.55.2
 numericalunits==1.25
-numpy==1.22.4
+numpy==1.23.1
 pandas==1.4.3
 psutil==5.9.1
 pytest==7.1.2
