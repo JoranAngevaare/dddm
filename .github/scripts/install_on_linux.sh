@@ -18,11 +18,13 @@ echo "in that folder is:"
 ls $LD_LIBRARY_PATH ; echo $LD_LIBRARY_PATH
 echo "go back to installation; ls ; pwd "
 
-cd dddm
+
 echo "Doing other conda and pip:"
 # We need the data files from this
 git clone https://github.com/joranangevaare/verne ../verne
 pip install -e ../verne
 git clone https://github.com/JoranAngevaare/DarkELF ../darkelf
 pip install -e ../darkelf
+
+cd dddm
 echo "done"
