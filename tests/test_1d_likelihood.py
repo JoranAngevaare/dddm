@@ -57,9 +57,11 @@ class TestLikelihoodMinimum(TestCase):
                                          sigma=sigma,
                                          prior_i=prior_i,
                                          include_astrophysics=include_astrophysics,
-                                         detector_name=['SuperCDMS_HV_Ge_NR', 'SuperCDMS_HV_Si_NR',
+                                         detector_name=['SuperCDMS_HV_Ge_NR',
+                                                        'SuperCDMS_HV_Si_NR',
                                                         'SuperCDMS_iZIP_Ge_NR',
-                                                        'SuperCDMS_iZIP_Si_NR', 'XENONnT_NR'],
+                                                        'SuperCDMS_iZIP_Si_NR',
+                                                        'XENONnT_NR'],
                                          )
 
     @settings(deadline=None, max_examples=5)

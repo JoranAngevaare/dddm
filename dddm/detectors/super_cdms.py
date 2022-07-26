@@ -99,6 +99,9 @@ class _BaseSuperCdms(Experiment, ABC):
             return partial(energy_ionization_from_e_nr,
                            Z=this_conf['Z'],
                            k=this_conf['k'],
+                           c0=this_conf['c0'],
+                           c1=this_conf['c1'],
+                           U=this_conf['U'],
                            )
         if 'hv' in det_key:
             return partial(energy_phonon_from_energy_nr,
@@ -106,6 +109,9 @@ class _BaseSuperCdms(Experiment, ABC):
                            k=this_conf['k'],
                            e_delta_v=this_conf['e_delta_v'],
                            epsilon=this_conf['epsilon'],
+                           c0=this_conf['c0'],
+                           c1=this_conf['c1'],
+                           U=this_conf['U'],
                            )
         raise ValueError(f'got {det_key}?!')
 
