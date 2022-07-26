@@ -7,6 +7,7 @@ from dddm import utils
 import typing as ty
 from .halo import SHM
 from .halo_shielded import ShieldedSHM
+import darkelf
 
 export, __all__ = dddm.exporter()
 
@@ -14,6 +15,9 @@ export, __all__ = dddm.exporter()
 @export
 class GenSpectrum:
     required_detector_fields = 'name material type exp_eff'.split()
+
+    # Cache the dark-elf class to allow re-evaluation
+    _darkelf_cache: darkelf.darkelf = None
 
     def __init__(self,
                  dark_matter_model: ty.Union[SHM, ShieldedSHM],
@@ -32,6 +36,15 @@ class GenSpectrum:
         :return: sting of class info
         """
         return f'{self.dm_model} at {self.detector}'
+
+    @property
+    def darkelf_class(self):
+        if self._darkelf_cache is None:
+            self._darkelf_cache = darkelf.darkelf(
+                target=self.detector.target_material,
+                filename=f"{self.detector.target_material}_gpaw_withLFE.dat"
+            )
+        return self._darkelf_cache
 
     def get_data(self,
                  wimp_mass: ty.Union[int, float],
@@ -130,6 +143,26 @@ class GenSpectrum:
                                     halo_model=self.dm_model,
                                     material=material
                                     )
+        elif 'migdal_SI_darkelf' in exp_type:
+            halo_pars = self.dm_model.parameter_dict()
+            self.darkelf_class.rhoX = halo_pars['rho_dm'] * 1e9  # eV/cm^3
+            method = exp_type.split('_')[-1]
+            assert method in ['ibe', 'grid'], f'{method} unknown'
+            self.darkelf_class.update_params(
+                mX=wimp_mass * 1e9,  # eV -> GeV
+                vesckms=halo_pars['v_esc'],
+                v0kms=halo_pars['v_0'],
+            )
+            rate = self.darkelf_class.dRdomega_migdal(
+                omega=energy_bins * 1e3,  # keV -> eV
+                sigma_n=cross_section,
+                method=method,  # TODO
+                approximation="free",
+                Zionkdependence=True,
+                fast=False,
+            ) * 1e6  # eV/kg -> keV/tonne
+            # Clip Nans
+            rate[np.isnan(rate)] = 0
         elif exp_type in ['migdal_SI']:
             # This integration takes a long time, hence, we will lower the
             # default precision of the scipy dblquad integration
