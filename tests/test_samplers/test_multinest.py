@@ -54,7 +54,7 @@ class PymultinestTest(TestCase):
             message = (f'For {thing}: expected {expected:.2f} yielded '
                        f'{avg:.2f} +/- {std:.2f}. Off '
                        f'by {nsigma_off:.1f} sigma')
-            if nsigma_off > 5:
+            if nsigma_off > max_sigma_off:
                 fails += [message]
             print(message)
 
