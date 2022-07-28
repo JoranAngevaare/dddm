@@ -15,7 +15,7 @@ Dark Matter models
 Please follow the installation
 script [here](https://github.com/JoranAngevaare/dddm/blob/master/.github/scripts/install_on_linux.sh)
 
-For running on multiple cores, I'd advice using `conda install -c conda-forge mpi4py openmpi`
+For running on multiple cores, I'd advise using `conda install -c conda-forge mpi4py openmpi`
 
 # Author
 
@@ -23,12 +23,16 @@ Joran Angevaare <j.angevaare@nikhef.nl>
 
 # Requirements
 
-- [`wimprates`](https://github.com/joranangevaare/wimprates).
-- [`verne`](https://github.com/joranangevaare/verne)
+
+- WIMP spectrum generation modules:
+  - [`wimprates`](https://github.com/joranangevaare/wimprates). For generic spectra generation
+  - [`verne`](https://github.com/joranangevaare/verne). For generating spectra taking into account earth shielding
+  - [`darkelf`](https://github.com/JoranAngevaare/DarkELF). For Ge/Si Migdal spectra generation
 - Optimizer:
-    - [`multinest`](https://github.com/JohannesBuchner/PyMultiNest)
-    - [`emcee`](https://emcee.readthedocs.io/en/stable/)
-    - [`nestle`](http://kylebarbary.com/nestle/)
+    - [`multinest`](https://github.com/JohannesBuchner/PyMultiNest). The fastest, but installation can be tricky
+    - [`emcee`](https://emcee.readthedocs.io/en/stable/). Used mostly for validation of the other methods
+    - [`nestle`](http://kylebarbary.com/nestle/). Fully pythonic, works on all platforms and
+    - [`ultranest`]( https://johannesbuchner.github.io/UltraNest/using-ultranest.html). Still in alpha phase but has a lot of nice features
 
 # Options
 

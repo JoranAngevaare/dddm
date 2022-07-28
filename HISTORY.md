@@ -1,3 +1,46 @@
+4.0.0  / 2022-07-28
+------------------
+Major changes:
+ - Add ultranest sampler by @JoranAngevaare in https://github.com/JoranAngevaare/dddm/pull/246
+ - Add dark-elf example by @JoranAngevaare in https://github.com/JoranAngevaare/dddm/pull/234
+ - Add DarkElf + test notebooks by @JoranAngevaare in https://github.com/JoranAngevaare/dddm/pull/215
+
+## What's Changed
+* Up utils coverage by @JoranAngevaare in https://github.com/JoranAngevaare/dddm/pull/206
+* Bump actions/setup-python from 3.0.0 to 3.1.0 by @dependabot in https://github.com/JoranAngevaare/dddm/pull/207
+* Bump typing-extensions from 4.1.1 to 4.2.0 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/211
+* Bump pandas from 1.4.1 to 1.4.2 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/210
+* Bump github/codeql-action from 1 to 2 by @dependabot in https://github.com/JoranAngevaare/dddm/pull/209
+* Bump actions/setup-python from 3.1.0 to 3.1.2 by @dependabot in https://github.com/JoranAngevaare/dddm/pull/208
+* Bump pytest from 7.1.1 to 7.1.2 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/212
+* Bump tqdm from 4.63.1 to 4.64.0 by @dependabot in https://github.com/JoranAngevaare/dddm/pull/213
+* Update numpy by @JoranAngevaare in https://github.com/JoranAngevaare/dddm/pull/214
+* Add DarkElf + test notebooks by @JoranAngevaare in https://github.com/JoranAngevaare/dddm/pull/215
+* Bump gvar from 11.9.7 to 11.10 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/219
+* Bump emcee from 3.1.1 to 3.1.2 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/218
+* Bump matplotlib from 3.5.1 to 3.5.2 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/216
+* Bump psutil from 5.9.0 to 5.9.1 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/217
+* Bump scipy from 1.8.0 to 1.8.1 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/220
+* Bump sphinx from 4.5.0 to 5.0.0 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/221
+* Bump nbsphinx from 0.8.8 to 0.8.9 by @dependabot in https://github.com/JoranAngevaare/dddm/pull/231
+* Bump pandas from 1.4.2 to 1.4.3 by @dependabot in https://github.com/JoranAngevaare/dddm/pull/228
+* Bump sphinx from 5.0.0 to 5.0.2 by @dependabot in https://github.com/JoranAngevaare/dddm/pull/227
+* Bump nbsphinx from 0.8.8 to 0.8.9 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/226
+* Bump pandas from 1.4.2 to 1.4.3 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/225
+* Bump actions/setup-python from 3.1.2 to 4.1.0 by @dependabot in https://github.com/JoranAngevaare/dddm/pull/232
+* Bump typing-extensions from 4.2.0 to 4.3.0 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/236
+* Bump sphinx from 5.0.2 to 5.1.0 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/237
+* Bump numba from 0.55.2 to 0.56.0 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/239
+* Bump nbmake from 1.3.0 to 1.3.3 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/240
+* Add dark-elf example by @JoranAngevaare in https://github.com/JoranAngevaare/dddm/pull/234
+* Bump sphinx from 5.1.0 to 5.1.1 in /extra_requirements by @dependabot in https://github.com/JoranAngevaare/dddm/pull/245
+* Add ultranest sampler by @JoranAngevaare in https://github.com/JoranAngevaare/dddm/pull/246
+* Semiconductor experiments energy range by @JoranAngevaare in https://github.com/JoranAngevaare/dddm/pull/252
+
+
+**Full Changelog**: https://github.com/JoranAngevaare/dddm/compare/v3.0.2...v4.0.0
+
+
 3.0.2 / 2022-03-30
 ------------------
 minor:
