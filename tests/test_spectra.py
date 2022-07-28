@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numericalunits as nu
 import numpy as np
 import wimprates as wr
+from unittest import skipIf
 
 
 def test_simple_spectrum():
