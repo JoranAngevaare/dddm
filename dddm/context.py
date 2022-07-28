@@ -35,6 +35,15 @@ base_detectors = [
     dddm.detectors.super_cdms.SuperCdmsHvSiMigdal,
     dddm.detectors.super_cdms.SuperCdmsIzipGeMigdal,
     dddm.detectors.super_cdms.SuperCdmsIzipSiMigdal,
+
+    dddm.detectors.super_cdms_darkelf.DarkElfIbeSuperCdmsHvGeMigdal,
+    dddm.detectors.super_cdms_darkelf.DarkElfIbeSuperCdmsHvSiMigdal,
+    dddm.detectors.super_cdms_darkelf.DarkElfIbeSuperCdmsIzipGeMigdal,
+    dddm.detectors.super_cdms_darkelf.DarkElfIbeSuperCdmsIzipSiMigdal,
+    dddm.detectors.super_cdms_darkelf.DarkElfSuperCdmsHvGeMigdal,
+    dddm.detectors.super_cdms_darkelf.DarkElfSuperCdmsHvSiMigdal,
+    dddm.detectors.super_cdms_darkelf.DarkElfSuperCdmsIzipGeMigdal,
+    dddm.detectors.super_cdms_darkelf.DarkElfSuperCdmsIzipSiMigdal,
 ]
 
 

@@ -1,4 +1,5 @@
-from .experiment import Experiment, lindhard_quenching_factor, _get_nr_resolution
+from .experiment import Experiment
+from .lindhard_factors import lindhard_quenching_factor, _get_nr_resolution
 import dddm
 import numpy as np
 from functools import partial
