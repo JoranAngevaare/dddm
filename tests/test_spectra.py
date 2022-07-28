@@ -63,7 +63,8 @@ def test_shielded_detector_spectrum():
     use_SHM = dddm.ShieldedSHM(location='XENON')
     assert len(_galactic_spectrum_inner(use_SHM))
 
-
+    
+@skipIf(dddm.utils.is_windows(), "Darkelf only works on linux")
 def test_detector_spectra():
     use_SHM = dddm.SHM()
     ct = dddm.test_context()
