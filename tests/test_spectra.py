@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numericalunits as nu
 import numpy as np
 import wimprates as wr
+from unittest import skipIf
 
 
 def test_simple_spectrum():
@@ -63,7 +64,8 @@ def test_shielded_detector_spectrum():
     use_SHM = dddm.ShieldedSHM(location='XENON')
     assert len(_galactic_spectrum_inner(use_SHM))
 
-
+    
+@skipIf(dddm.utils.is_windows(), "Darkelf only works on linux")
 def test_detector_spectra():
     use_SHM = dddm.SHM()
     ct = dddm.test_context()
