@@ -22,11 +22,12 @@ PyYAML==6.0
 scipy==1.8.1
 seaborn==0.11.2
 tqdm==4.64.0
+ultranest==3.4.6
 vegas==5.1.1
 
 
-# These two packages require metadata not shipped via pip+git
 git+https://github.com/jorana/wimprates
+# These two packages require metadata not shipped via pip+git
 # git+https://github.com/JoranAngevaare/DarkELF
 # git+https://github.com/jorana/verne
 

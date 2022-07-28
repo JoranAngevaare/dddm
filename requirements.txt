@@ -15,7 +15,7 @@ pytest-runner
 scipy
 seaborn~=0.11.2
 tqdm
-
+ultranest
 
 # These two packages require metadata not shipped via pip+git
 # git+https://github.com/jorana/wimprates
