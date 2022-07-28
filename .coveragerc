@@ -4,5 +4,7 @@
 exclude_lines =
     if __name__ == .__main__.:
     raise
+    print
+    warn
 
 ignore_errors = True

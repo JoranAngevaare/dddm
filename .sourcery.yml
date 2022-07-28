@@ -8,6 +8,7 @@ refactor:
   skip:
     inline-immediately-returned-variable
     use-named-expression
+    use-dictionary-union
 
 github:
   request_review: owner
