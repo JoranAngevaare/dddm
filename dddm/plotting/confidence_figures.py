@@ -92,9 +92,7 @@ class DDDMResult:
     @property
     def mass(self):
         log_mass = self.get_from_config('log_mass', None)
-        if log_mass is None:
-            return -1
-        return round(np.power(10, log_mass), 3)
+        return -1 if log_mass is None else round(np.power(10, log_mass), 3)
 
     @property
     def halo_model(self):
@@ -107,10 +105,7 @@ class DDDMResult:
     @property
     def n_parameters(self):
         param = self.get_from_config('fit_parameters')
-        if param is None:
-            return None
-
-        return len(param)
+        return None if param is None else len(param)
 
 
 @export
@@ -247,12 +242,11 @@ def _pow10(x):
 
 def set_xticks_top(show_lines=False,
                    rotation=0,
-                   x_ticks = (0.001, 0.01, 0.1, 0.5, 1, 5, 10, 100, 1000, 10_000),
+                   x_ticks=(0.001, 0.01, 0.1, 0.5, 1, 5, 10, 100, 1000, 10_000),
                    x_label=r"$M_{\chi}$ $[\mathrm{GeV}/\mathrm{c}^{2}]$"):
     ax = plt.gca()
     bin_range = ax.get_xlim()
     secax = ax.secondary_xaxis('top', functions=(_pow10, np.log10))
-
 
     x_ticks = [t for t in x_ticks if t > 10 ** bin_range[0] and t < 10 ** bin_range[1]]
     if show_lines:
@@ -264,9 +258,7 @@ def set_xticks_top(show_lines=False,
             return [str_fmt(x) for x in x]
         if x <= 0.1:
             return f'${x:.2f}$'
-        if x <= 1:
-            return f'${x:.1f}$'
-        return f'${int(x)}$'
+        return f'${x:.1f}$' if x <= 1 else f'${int(x)}$'
 
     secax.set_ticks(x_ticks, labels=str_fmt(x_ticks))
     secax.xaxis.set_tick_params(rotation=rotation)
