@@ -1,6 +1,7 @@
 corner
 coveralls
 emcee
+h5py
 hypothesis
 immutabledict
 matplotlib
