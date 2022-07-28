@@ -20,7 +20,7 @@ class PymultinestTest(TestCase):
                            sampler_kwargs=dict(nlive=100, tol=0.9, verbose=1),
                            fit_parameters=('log_mass', 'log_cross_section',),
                            )
-        config = base_config | kwargs
+        config = {**base_config, **kwargs}  # noqa
         sampler = self.ct.get_sampler_for_detector(**config)
 
         results, _ = sampler.run()
