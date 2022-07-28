@@ -48,9 +48,9 @@ class _CombinedInference:
             if 'logging' not in c.config:
                 raise ValueError(f'{c} does not have logging in config ({list(c.config.keys())})')
             save_as = os.path.join(f'{save_dir}', f'{c.config["detector"]}_')
-            with open(save_as + 'config.json', 'w') as file:
+            with open(f'{save_as}config.json', 'w') as file:
                 json.dump(convert_dic_to_savable(c.config), file, indent=4)
-            np.save(save_as + 'config.npy', convert_dic_to_savable(c.config))
+            np.save(f'{save_as}config.npy', convert_dic_to_savable(c.config))
             shutil.copy(c.config['logging'], save_as +
                         c.config['logging'].split('/')[-1])
             self.log.info('save_sub_configs::\tdone_saving')
