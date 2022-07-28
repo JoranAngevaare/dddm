@@ -3,6 +3,7 @@ coveralls==3.3.1
 emcee==3.1.2
 gitpython==3.1.27
 gvar==11.10
+h5py==3.6.0
 hypothesis==6.21.1
 immutabledict==2.2.1
 matplotlib==3.5.2
