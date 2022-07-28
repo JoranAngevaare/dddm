@@ -57,8 +57,8 @@ jobs:
           pip install git+https://github.com/jorana/wimprates
           git clone https://github.com/jorana/verne
           pip install -e verne
-          git clone https://github.com/JoranAngevaare/DarkELF ../../
-          pip install -e ../../DarkELF
+          git clone https://github.com/JoranAngevaare/DarkELF ../DarkELF
+          pip install -e ../DarkELF
       - name: Install other stuff
         run: |
           pip install -r extra_requirements/requirements-tests.txt
