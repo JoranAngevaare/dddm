@@ -71,8 +71,8 @@ jobs:
         run: |
           coverage run --source=dddm -m pytest -vsx --durations 0
           coveralls --service=github
-          # Failfast since we don't using coveralls
-          pytest -vsx
+          # Do pytest again since we don't fail using coveralls because of it's setup
+          pytest -vs
       - name: Test package (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'pytest'
         env:
