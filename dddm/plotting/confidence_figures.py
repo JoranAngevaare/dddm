@@ -247,12 +247,11 @@ def _pow10(x):
 
 def set_xticks_top(show_lines=False,
                    rotation=0,
-                   x_ticks = (0.001, 0.01, 0.1, 0.5, 1, 5, 10, 100, 1000, 10_000),
+                   x_ticks=(0.001, 0.01, 0.1, 0.5, 1, 5, 10, 100, 1000, 10_000),
                    x_label=r"$M_{\chi}$ $[\mathrm{GeV}/\mathrm{c}^{2}]$"):
     ax = plt.gca()
     bin_range = ax.get_xlim()
     secax = ax.secondary_xaxis('top', functions=(_pow10, np.log10))
-
 
     x_ticks = [t for t in x_ticks if t > 10 ** bin_range[0] and t < 10 ** bin_range[1]]
     if show_lines:

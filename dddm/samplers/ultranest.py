@@ -13,6 +13,7 @@ class UltraNestSampler(MultiNestSampler):
     """
     Skeleton of ultranest sampler
     """
+
     def run(self):
         warnings.warn(f'Ultranest sampler is not completely implemented yet')
         self._fix_parameters()

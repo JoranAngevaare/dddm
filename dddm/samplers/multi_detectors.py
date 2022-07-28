@@ -171,6 +171,7 @@ class CombinedNestle(_CombinedInference, NestleSampler):
         ]
         self.log.debug(f'Sub detectors are set: {self.sub_classes}')
 
+
 @export
 class CombinedUltraNest(_CombinedInference, UltraNestSampler):
     def __init__(
