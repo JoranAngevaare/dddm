@@ -15,7 +15,7 @@ requirements = open_requirements('requirements.txt')
 
 setuptools.setup(
     name='dddm',
-    version='3.0.2',
+    version='4.0.0',
     description='Direct Detection of Dark Matter: '
                 'Probing the complementarity of several targets for dark matter detection',
     long_description=readme + '\n\n' + history,
