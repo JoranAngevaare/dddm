@@ -15,7 +15,7 @@ class UltraNestSampler(MultiNestSampler):
     """
 
     def run(self):
-        warnings.warn(f'Ultranest sampler is not completely implemented yet')
+        warnings.warn('Ultranest sampler is not completely implemented yet')
         self._fix_parameters()
         self._print_before_run()
 

@@ -20,19 +20,18 @@ class PymultinestTest(TestCase):
                            sampler_kwargs=dict(nlive=100, tol=0.9, verbose=1),
                            fit_parameters=('log_mass', 'log_cross_section',),
                            )
-        config = {**base_config, **kwargs}
+        config = base_config | kwargs
         sampler = self.ct.get_sampler_for_detector(**config)
 
         results, _ = sampler.run()
 
         fails = []
-        for i, (thing, expected, avg, std) in enumerate(
-                zip(
+        for thing, expected, avg, std in zip(
                     base_config.get('fit_parameters'),
                     [getattr(sampler, f) for f in base_config.get('fit_parameters')],
                     results['posterior']['mean'],
                     results['posterior']['stdev']
-                )):
+                ):
             nsigma_off = np.abs(expected - avg) / std
             # assert False, dict(thing=thing, expected=expected, avg=avg, nsigma_off=nsigma_off)
             message = (f'For {thing}: expected {expected:.2f} yielded '
