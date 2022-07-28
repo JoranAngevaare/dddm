@@ -60,8 +60,10 @@ class Context:
         'nestle': dddm.samplers.nestle.NestleSampler,
         'multinest': dddm.samplers.pymultinest.MultiNestSampler,
         'emcee': dddm.samplers.emcee.MCMCStatModel,
+        'ultranest': dddm.samplers.ultranest.UltraNestSampler,
         'multinest_combined': dddm.samplers.multi_detectors.CombinedMultinest,
         'nestle_combined': dddm.samplers.multi_detectors.CombinedNestle,
+        'ultranest_combined': dddm.samplers.multi_detectors.CombinedUltraNest,
     })
     _halo_classes = immutabledict({
         'shm': dddm.SHM,
