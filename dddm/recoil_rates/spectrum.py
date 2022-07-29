@@ -147,16 +147,16 @@ class GenSpectrum:
             halo_pars = self.dm_model.parameter_dict()
             self.darkelf_class.rhoX = halo_pars['rho_dm'] * 1e9  # eV/cm^3
             method = exp_type.split('_')[-1]
-            assert method in ['ibe', 'grid'], f'{method} unknown'
+            assert method in ['ibe', 'grid', 'mixed', 'lindhard'], f'{method} unknown'
             self.darkelf_class.update_params(
                 mX=wimp_mass * 1e9,  # eV -> GeV
                 vesckms=halo_pars['v_esc'],
                 v0kms=halo_pars['v_0'],
             )
-            rate = self.darkelf_class.dRdomega_migdal(
+            rate = self.darkelf_class.dRdomega_migdal_mixed(
                 omega=energy_bins * 1e3,  # keV -> eV
                 sigma_n=cross_section,
-                method=method,  # TODO
+                method=method,
                 approximation="free",
                 Zionkdependence=True,
                 fast=False,
