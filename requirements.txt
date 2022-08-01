@@ -9,7 +9,6 @@ multihist
 nestle
 numba
 numericalunits
-numpy
 pandas
 pytest
 pytest-runner
