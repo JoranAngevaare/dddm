@@ -1,5 +1,5 @@
 ========
-reprox
+DirectDetectionDarkMatter-experiments
 ========
 
 Github page: https://github.com/JoranAngevaare/dddm
