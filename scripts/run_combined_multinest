@@ -184,4 +184,10 @@ def open_json(path):
 
 
 if __name__ == '__main__':
-    main()
+    if True:
+        from memory_profiler import memory_usage
+        
+        mem = memory_usage(proc=(main, [], dict()))
+        print(f"Memory profiler says peak RAM usage was: {max(mem):.1f} MB")
+    else:
+        sys.exit(main())

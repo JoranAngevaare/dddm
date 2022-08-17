@@ -239,6 +239,12 @@ class ResultsManager:
 def _pow10(x):
     return 10 ** x
 
+def str_fmt(x):
+    if isinstance(x, (list, tuple, np.ndarray)):
+        return [str_fmt(x) for x in x]
+    if x <= 0.1:
+        return f'${x:.2f}$'
+    return f'${x:.1f}$' if x <= 1 else f'${int(x)}$'
 
 def set_xticks_top(show_lines=False,
                    rotation=0,
@@ -246,6 +252,7 @@ def set_xticks_top(show_lines=False,
                    x_label=r"$M_{\chi}$ $[\mathrm{GeV}/\mathrm{c}^{2}]$"):
     ax = plt.gca()
     bin_range = ax.get_xlim()
+#     ax_top = ax.secondary_xaxis('top')
     secax = ax.secondary_xaxis('top', functions=(_pow10, np.log10))
 
     x_ticks = [t for t in x_ticks if t > 10 ** bin_range[0] and t < 10 ** bin_range[1]]
@@ -253,22 +260,47 @@ def set_xticks_top(show_lines=False,
         for x_tick in x_ticks:
             ax.axvline(np.log10(x_tick), alpha=0.1)
 
-    def str_fmt(x):
-        if isinstance(x, (list, tuple, np.ndarray)):
-            return [str_fmt(x) for x in x]
-        if x <= 0.1:
-            return f'${x:.2f}$'
-        return f'${x:.1f}$' if x <= 1 else f'${int(x)}$'
+
 
     secax.set_ticks(x_ticks, labels=str_fmt(x_ticks))
     secax.xaxis.set_tick_params(rotation=rotation)
     secax.set_xlabel(x_label)
     return secax
 
+def set_xticks_bottom(
+    show_lines=False,
+    rotation=0,
+    x_ticks=("0.001", "0.01", "0.1", "0.5", "1", "5", "10", "100", "1000", "10000"),
+    x_label=r"$\log_{10}(M_{\chi}/[\mathrm{GeV}/\mathrm{c}^{2}]$)",
+    top=True,
+):
+    ax = plt.gca()
+    bin_range = ax.get_xlim()
+    if top:
+        secax = ax.secondary_xaxis('top')
+        secax.set_xlabel(x_label)
+        secax.xaxis.labelpad = 12
+    
+    x_ticks_pos = [float(t) for t in x_ticks]
+    x_ticks_pos = [t for t in x_ticks_pos if t > 10 ** bin_range[0] and t < 10 ** bin_range[1]]
+    x_ticks = [f'${t}$' for t in x_ticks if float(t) in x_ticks_pos]
+    if show_lines:
+        for x_tick in x_ticks:
+            ax.axvline(np.log10(x_tick), alpha=0.1)
+
+    labels = x_ticks if all(isinstance(s, str) for s in x_ticks) else str_fmt(x_ticks)
+    ax.set_xticks(np.log10(x_ticks_pos), 
+                  labels=labels)
+    ax.xaxis.set_tick_params(rotation=rotation)
+    if top:
+        return secax
+
 
 def x_label():
     plt.xlabel(r"$\log_{10}(M_{\chi}$/$[\mathrm{GeV}/\mathrm{c}^{2}]$)")
 
+def x_label_lin():
+    plt.xlabel(r"$M_{\chi}$ $[\mathrm{GeV}/\mathrm{c}^{2}]$")
 
 def y_label():
     plt.ylabel(r"$\log_{10}(\sigma_{S.I.}$/$[\mathrm{cm}^{2}]$)")

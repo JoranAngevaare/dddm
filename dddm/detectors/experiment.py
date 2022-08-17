@@ -56,7 +56,8 @@ class Experiment:
         ]:
             raise NotImplementedError(f'Missing {missing} for {self}')
         assert self.interaction_type in ['SI', 'migdal_SI', 'migdal_SI_darkelf_grid',
-                                         'migdal_SI_darkelf_ibe'], f'{self.interaction_type} unknown'
+                                         'migdal_SI_darkelf_ibe', 'migdal_SI_darkelf_mixed'
+                                        ], f'{self.interaction_type} unknown'
         # Should not raise a ValueError
         self.resolution(energies_in_kev=np.array([1]))
         self.background_function(energies_in_kev=np.array([1]))

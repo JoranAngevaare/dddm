@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # J. Angevaare 21-10-2019 <j.angevaare@nikhef.nl>
 
-import dddm
+# import dddm
 import subprocess
 import os
 import argparse
@@ -130,8 +130,10 @@ basic_options = '-W group_list=xenon -e %s -o %s -j eo ' % (err_logs, err_logs)
 if args.walltime != 'false':
     basic_options = basic_options + ' -l walltime=' + args.walltime
 basic_options += f' -l nodes={n_machines}:ppn={args.n_cores} -l pvmem={args.mem}gb'
+assert os.path.exists(scriptfile)
 cmd = 'qsub %s %s %s' % (basic_options, "-q " + args.q, scriptfile)
-subprocess.call(cmd, shell=False)
+subprocess.call(cmd, shell=True)
+os.makedirs('scripts/stbc', exist_ok=True)
 sub_cmd = f'scripts/stbc/sub_{_scriptfile.split("_")[0]}.sh'
 print(f'Write command to {sub_cmd}')
 with open(sub_cmd, 'w') as fout:
