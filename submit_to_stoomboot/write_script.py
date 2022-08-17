@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # J. Angevaare 21-10-2019 <j.angevaare@nikhef.nl>
 
-import dddm
+# import dddm
 import subprocess
 import os
 import argparse
@@ -13,7 +13,7 @@ print("write_script.py::\tstart writing script and submit it to the queue")
 #
 base_dir = "/project/xenon/jorana/software/DD_DM_targets/"
 log_dir = "/data/xenon/joranang/log_files/dddm/"
-prof_dir = base_dir + "/submit_to_stoomboot/profiles/"
+prof_dir = f"{base_dir}/submit_to_stoomboot/profiles/"
 default_conda = "/project/xenon/jorana/software/miniconda3/bin:$PATH"
 default_envr = "dddm_2021"
 
@@ -74,11 +74,11 @@ _scriptfile = _scriptfile.replace(" ", "").replace("__", "_")
 if _scriptfile[-1] == "_":
     _scriptfile = _scriptfile[:-1]
 if len(_scriptfile) > 80:
-    _scriptfile = _scriptfile[:80] + '_cropped.sh'
+    _scriptfile = f'{_scriptfile[:80]}_cropped.sh'
 log_file = 'log_%s_' % _scriptfile
 prof_file = prof_dir + _scriptfile.replace('.sh', '.prof')
 log_done = 'done_%s' % log_file
-scriptfile = 'scripts/' + _scriptfile
+scriptfile = f'scripts/{_scriptfile}'
 #
 # Check that the paths exist
 #
@@ -99,7 +99,7 @@ with open(scriptfile, 'w') as fout:
     if os.path.exists(log_dir + log_done) or os.path.exists(log_dir + log_file):
         print(f'MAIN::remove {log_done} and/or {log_file}')
         if os.path.exists(log_dir + log_file):
-            fout.write('rm -f ' + log_dir + log_file + ' \n')
+            fout.write(f'rm -f {log_dir}' + log_file + ' \n')
         if os.path.exists(log_dir + log_done):
             fout.write('rm -f ' + log_dir + log_done + ' \n')
 
@@ -130,8 +130,10 @@ basic_options = '-W group_list=xenon -e %s -o %s -j eo ' % (err_logs, err_logs)
 if args.walltime != 'false':
     basic_options = basic_options + ' -l walltime=' + args.walltime
 basic_options += f' -l nodes={n_machines}:ppn={args.n_cores} -l pvmem={args.mem}gb'
+assert os.path.exists(scriptfile)
 cmd = 'qsub %s %s %s' % (basic_options, "-q " + args.q, scriptfile)
-subprocess.call(cmd, shell=False)
+subprocess.call(cmd, shell=True)
+os.makedirs('scripts/stbc', exist_ok=True)
 sub_cmd = f'scripts/stbc/sub_{_scriptfile.split("_")[0]}.sh'
 print(f'Write command to {sub_cmd}')
 with open(sub_cmd, 'w') as fout:

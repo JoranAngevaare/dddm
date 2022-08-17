@@ -50,3 +50,10 @@ def test_plt_ll_sigma_det():
 
 def test_plt_ll_mass_det():
     dddm.plot_basics.plt_ll_mass_det()
+
+def text_axis_labels():
+    plt.scatter([1,10], [1,10])
+    dddm.plotting.confidence_figures.set_xticks_top(show_lines=True)
+    dddm.plotting.confidence_figures.set_xticks_bottom(show_lines=True, top=False)
+    dddm.plotting.confidence_figures.set_xticks_bottom(top=True)
+    dddm.plotting.confidence_figures.x_label_lin()
