@@ -240,6 +240,7 @@ def _pow10(x):
     return 10 ** x
 
 def str_fmt(x):
+    """Guess the disired precision of floats based on the values provided"""
     if isinstance(x, (list, tuple, np.ndarray)):
         return [str_fmt(x) for x in x]
     if x <= 0.1:
@@ -252,7 +253,6 @@ def set_xticks_top(show_lines=False,
                    x_label=r"$M_{\chi}$ $[\mathrm{GeV}/\mathrm{c}^{2}]$"):
     ax = plt.gca()
     bin_range = ax.get_xlim()
-#     ax_top = ax.secondary_xaxis('top')
     secax = ax.secondary_xaxis('top', functions=(_pow10, np.log10))
 
     x_ticks = [t for t in x_ticks if t > 10 ** bin_range[0] and t < 10 ** bin_range[1]]
