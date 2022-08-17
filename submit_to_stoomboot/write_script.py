@@ -13,7 +13,7 @@ print("write_script.py::\tstart writing script and submit it to the queue")
 #
 base_dir = "/project/xenon/jorana/software/DD_DM_targets/"
 log_dir = "/data/xenon/joranang/log_files/dddm/"
-prof_dir = base_dir + "/submit_to_stoomboot/profiles/"
+prof_dir = f"{base_dir}/submit_to_stoomboot/profiles/"
 default_conda = "/project/xenon/jorana/software/miniconda3/bin:$PATH"
 default_envr = "dddm_2021"
 
@@ -74,7 +74,7 @@ _scriptfile = _scriptfile.replace(" ", "").replace("__", "_")
 if _scriptfile[-1] == "_":
     _scriptfile = _scriptfile[:-1]
 if len(_scriptfile) > 80:
-    _scriptfile = _scriptfile[:80] + '_cropped.sh'
+    _scriptfile = f'{_scriptfile[:80]}_cropped.sh'
 log_file = 'log_%s_' % _scriptfile
 prof_file = prof_dir + _scriptfile.replace('.sh', '.prof')
 log_done = 'done_%s' % log_file

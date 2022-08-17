@@ -29,17 +29,19 @@ def main():
         sampler_name=args.sampler,
         detector_name=dddm.utils.to_str_tuple(args.sub_experiments),
         prior=get_prior(args),
-        halo_name='shm' if not args.shielding else 'shielded_shm',
+        halo_name='shielded_shm' if args.shielding else 'shm',
         detector_kwargs=dict(n_energy_bins=args.bins),
         halo_kwargs=None,
-        sampler_kwargs=dict(nlive=args.nlive,
-                            tol=args.tol,
-                            notes=args.notes,
-                            verbose=args.verbose,
-                            detector_name=args.target
-                            ),
-        fit_parameters=dddm.statistics.get_param_list()[:args.nparams],
+        sampler_kwargs=dict(
+            nlive=args.nlive,
+            tol=args.tol,
+            notes=args.notes,
+            verbose=args.verbose,
+            detector_name=args.target,
+        ),
+        fit_parameters=dddm.statistics.get_param_list()[: args.nparams],
     )
+
 
     log = stats.log
 
@@ -73,7 +75,7 @@ def get_multiprocessing_rank():
     try:
         from mpi4py import MPI
         rank = MPI.COMM_WORLD.Get_rank()
-    except (ModuleNotFoundError, ImportError) as e:
+    except ImportError as e:
         raise ModuleNotFoundError('Cannot run in multicore mode as'
                                   ' mpi4py is not installed') from e
     print(f"MPI-info\tn_cores: {multiprocessing.cpu_count()}\t"
@@ -184,10 +186,7 @@ def open_json(path):
 
 
 if __name__ == '__main__':
-    if True:
-        from memory_profiler import memory_usage
-        
-        mem = memory_usage(proc=(main, [], dict()))
-        print(f"Memory profiler says peak RAM usage was: {max(mem):.1f} MB")
-    else:
-        sys.exit(main())
+    from memory_profiler import memory_usage
+
+    mem = memory_usage(proc=(main, [], {}))
+    print(f"Memory profiler says peak RAM usage was: {max(mem):.1f} MB")
