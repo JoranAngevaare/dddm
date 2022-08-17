@@ -57,8 +57,8 @@ jobs:
           pip install git+https://github.com/jorana/wimprates
           git clone https://github.com/jorana/verne
           pip install -e verne
-          git clone https://github.com/JoranAngevaare/DarkELF
-          pip install -e DarkELF
+          git clone https://github.com/JoranAngevaare/DarkELF ../DarkELF
+          pip install -e ../DarkELF
       - name: Install other stuff
         run: |
           pip install -r extra_requirements/requirements-tests.txt
@@ -71,8 +71,8 @@ jobs:
         run: |
           coverage run --source=dddm -m pytest -vsx --durations 0
           coveralls --service=github
-          # Failfast since we don't using coveralls
-          pytest -vsx
+          # Do pytest again since we don't fail using coveralls because of it's setup
+          pytest -vs
       - name: Test package (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.test == 'pytest'
         env:
