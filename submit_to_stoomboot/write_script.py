@@ -78,7 +78,7 @@ if len(_scriptfile) > 80:
 log_file = 'log_%s_' % _scriptfile
 prof_file = prof_dir + _scriptfile.replace('.sh', '.prof')
 log_done = 'done_%s' % log_file
-scriptfile = 'scripts/' + _scriptfile
+scriptfile = f'scripts/{_scriptfile}'
 #
 # Check that the paths exist
 #
@@ -99,7 +99,7 @@ with open(scriptfile, 'w') as fout:
     if os.path.exists(log_dir + log_done) or os.path.exists(log_dir + log_file):
         print(f'MAIN::remove {log_done} and/or {log_file}')
         if os.path.exists(log_dir + log_file):
-            fout.write('rm -f ' + log_dir + log_file + ' \n')
+            fout.write(f'rm -f {log_dir}' + log_file + ' \n')
         if os.path.exists(log_dir + log_done):
             fout.write('rm -f ' + log_dir + log_done + ' \n')
 
