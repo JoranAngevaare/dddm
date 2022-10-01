@@ -13,7 +13,7 @@ pandas
 pytest
 pytest-runner
 scipy
-seaborn~=0.11.2
+seaborn~=0.12.0
 tqdm
 ultranest
 
