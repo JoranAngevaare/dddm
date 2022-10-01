@@ -1,6 +1,6 @@
 corner==2.2.1
 coveralls==3.3.1
-emcee==3.1.2
+emcee==3.1.3
 gitpython==3.1.27
 gvar==11.10.1
 h5py==3.6.0
