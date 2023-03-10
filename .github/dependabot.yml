@@ -14,9 +14,7 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 25
-    assignees:
-      - JoranAngevaare
+    open-pull-requests-limit: 5
   # Maintain the requirements requirements folder
   - package-ecosystem: "pip"
     directory: "/extra_requirements"
@@ -24,6 +22,4 @@ updates:
       # Check for updates to requirements every week
       interval: "monthly" 
       time: "12:00"
-    open-pull-requests-limit: 100
-    assignees:
-      - JoranAngevaare
+    open-pull-requests-limit: 5
