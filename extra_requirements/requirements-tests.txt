@@ -2,7 +2,7 @@ corner==2.2.1
 coveralls==3.3.1
 emcee==3.1.4
 gitpython==3.1.30
-gvar==11.11.1
+gvar==11.11.2
 h5py==3.8.0
 hypothesis==6.21.1
 immutabledict==2.2.3
@@ -16,14 +16,14 @@ numericalunits==1.25
 numpy==1.23.4
 pandas==1.5.3
 psutil==5.9.4
-pytest==7.2.1
+pytest==7.2.2
 pytest-runner==6.0.0
 pytest-xdist==3.1.0
 PyYAML==6.0
 scipy==1.10.0; python_version=="3.8"
 scipy==1.9.3; python_version>"3.8"
 seaborn==0.11.2
-tqdm==4.64.1
+tqdm==4.65.0
 ultranest==3.5.7
 vegas==5.4
 
