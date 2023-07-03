@@ -12,6 +12,7 @@ build:
 python:
   version: "3.8"
   install:
+    - requirements: extra_requirements/requirements-base.txt
     - requirements: extra_requirements/requirements-tests.txt
     - requirements: extra_requirements/requirements-docs.txt
     - method: setuptools
