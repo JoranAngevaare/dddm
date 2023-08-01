@@ -1,5 +1,6 @@
 corner==2.2.1
 coveralls==3.3.1
+cython==0.29.36
 emcee==3.1.4
 gitpython==3.1.30
 gvar==11.11.11
