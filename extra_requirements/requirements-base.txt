@@ -1,3 +1,4 @@
 wheel
 setuptools
 numpy
+cython==0.29.36
