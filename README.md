@@ -21,6 +21,9 @@ For running on multiple cores, I'd advise using `conda install -c conda-forge mp
 
 Joran Angevaare <j.angevaare@nikhef.nl>
 
+# Citation
+Please cite [Zenodo](https://zenodo.org/badge/latestdoi/214990710) and [Angevaare, J. R., et al. "Complementarity of direct detection experiments in search of light Dark Matter." Journal of Cosmology and Astroparticle Physics 2022.10 (2022): 004. ](https://iopscience.iop.org/article/10.1088/1475-7516/2022/10/004/meta)
+
 # Requirements
 
 
