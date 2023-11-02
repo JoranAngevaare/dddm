@@ -7,7 +7,7 @@ h5py==3.9.0
 hypothesis==6.21.1
 immutabledict==3.0.0
 matplotlib==3.5.3
-matplotlib-label-lines==0.6.0
+matplotlib-label-lines==0.7.0
 multihist==0.6.5
 nestle==0.2.0
 nbmake==1.4.3 
