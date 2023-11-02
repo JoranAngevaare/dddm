@@ -8,6 +8,7 @@ sphinx:
 
 build:
   image: latest
+  os: ubuntu-20.04
 
 python:
   version: "3.8"
