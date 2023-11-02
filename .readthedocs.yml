@@ -7,10 +7,11 @@ sphinx:
   configuration: docs/source/conf.py
 
 build:
-  image: latest
+  os: ubuntu-20.04
+  tools:
+    python: "3.8"
 
 python:
-  version: "3.8"
   install:
     - requirements: extra_requirements/requirements-base.txt
     - requirements: extra_requirements/requirements-tests.txt
