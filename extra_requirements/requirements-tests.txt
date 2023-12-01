@@ -5,7 +5,7 @@ gitpython==3.1.40
 gvar==11.11.12
 h5py==3.10.0
 hypothesis==6.21.1
-immutabledict==3.0.0
+immutabledict==4.0.0
 matplotlib==3.5.3
 matplotlib-label-lines==0.7.0
 multihist==0.6.5
