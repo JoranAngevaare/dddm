@@ -28,3 +28,5 @@ updates:
       patches:
         update-types:
           - "patch"
+     ignore:
+      - dependency-name: "corner"
