@@ -28,3 +28,7 @@ updates:
       patches:
         update-types:
           - "patch"
+    ignore:
+      - dependency-name: "corner"
+      - dependency-name: "sphinxcontrib_htmlhelp"
+      - dependency-name: "sphinxcontrib_qthelp"
