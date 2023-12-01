@@ -28,5 +28,6 @@ updates:
       patches:
         update-types:
           - "patch"
-     ignore:
+    ignore:
       - dependency-name: "corner"
+      - dependency-name: "sphinxcontrib_htmlhelp"
