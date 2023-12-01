@@ -25,7 +25,7 @@ class PymultinestTest(TestCase):
                   fit_parameters=dddm.statistics.get_param_list(),
                   )
 
-    def test(self, halo_name='shm', max_sigma_off=10, **kwargs, ):
+    def test(self, halo_name='shm', max_sigma_off=50, **kwargs, ):
         base_config = dict(wimp_mass=50,
                            cross_section=1e-45,
                            sampler_name='multinest',

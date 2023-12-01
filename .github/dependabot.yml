@@ -22,7 +22,7 @@ updates:
     schedule:
       # Check for updates to requirements every week
       interval: "monthly" 
-      time: "12:00"
+      time: "15:00"
     open-pull-requests-limit: 20
     groups:
       patches:
