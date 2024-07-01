@@ -15,7 +15,7 @@ numba==0.58.1
 numericalunits==1.25
 numpy==1.24.4
 pandas==1.5.3
-psutil==5.9.7
+psutil==6.0.0
 pytest==8.2.1
 pytest-runner==6.0.1
 pytest-xdist==3.5.0
