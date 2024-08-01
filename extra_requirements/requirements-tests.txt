@@ -1,8 +1,8 @@
 corner==2.2.1
 coveralls==3.3.1
-emcee==3.1.4
+emcee==3.1.6
 gitpython==3.1.43
-gvar==13.1
+gvar==13.1.1
 h5py==3.10.0
 hypothesis==6.21.1
 immutabledict==4.1.0
@@ -10,7 +10,7 @@ matplotlib==3.5.3
 matplotlib-label-lines==0.7.0
 multihist==0.6.5
 nestle==0.2.0
-nbmake==1.5.3 
+nbmake==1.5.4 
 numba==0.58.1
 numericalunits==1.25
 numpy==1.24.4
