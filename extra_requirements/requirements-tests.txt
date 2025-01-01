@@ -25,7 +25,7 @@ scipy==1.10.1; python_version>"3.8"
 seaborn==0.11.2
 tqdm==4.66.1
 ultranest==4.3.2
-vegas==6.1.2
+vegas==6.2
 
 
 git+https://github.com/jorana/wimprates
