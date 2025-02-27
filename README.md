@@ -1,4 +1,6 @@
 # DirectDetectionDarkMatter-experiments
+[![status: archive](https://github.com/GIScience/badges/raw/master/status/archive.svg)](https://github.com/GIScience/badges#archive)
+This package has been archived.
 
 | Package | CI |
 | --- | --- |
